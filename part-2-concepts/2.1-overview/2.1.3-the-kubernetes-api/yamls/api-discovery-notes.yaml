@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-discovery-notes
+  namespace: kube-system
+data:
+  notes: |
+    - The API server is the front door to all Kubernetes state.
+    - Discovery endpoints reveal available API groups, versions, and resources.
+    - Controllers and kubectl both work through the API, not by bypassing it.

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-5-7-dns-for-services-and-pods-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.5.7 DNS for Services and Pods should be taught as a practical Kubernetes concept tied to real operational decisions.

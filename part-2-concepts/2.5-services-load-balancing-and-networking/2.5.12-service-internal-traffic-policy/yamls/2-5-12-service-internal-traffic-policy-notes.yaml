@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-5-12-service-internal-traffic-policy-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.5.12 Service Internal Traffic Policy should be taught as a practical Kubernetes concept tied to real operational decisions.

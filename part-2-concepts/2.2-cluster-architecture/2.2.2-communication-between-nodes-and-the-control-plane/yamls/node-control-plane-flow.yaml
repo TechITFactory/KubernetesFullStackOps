@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-control-plane-flow
+  namespace: kube-system
+data:
+  flow: |
+    kubelet authenticates to the API server, posts node status, renews leases, fetches PodSpecs, and reports pod status back through the API.

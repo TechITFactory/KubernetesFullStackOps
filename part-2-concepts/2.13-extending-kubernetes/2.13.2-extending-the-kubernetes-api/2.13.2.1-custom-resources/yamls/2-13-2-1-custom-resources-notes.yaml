@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-13-2-1-custom-resources-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.13.2.1 Custom Resources should be taught as a practical Kubernetes concept tied to real operational decisions.

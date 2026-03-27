@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-11-4-certificates-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.11.4 Certificates should be taught as a practical Kubernetes concept tied to real operational decisions.

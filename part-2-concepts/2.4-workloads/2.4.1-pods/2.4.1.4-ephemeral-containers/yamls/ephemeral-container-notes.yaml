@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ephemeral-container-notes
+  namespace: kube-system
+data:
+  notes: |
+    Use kubectl debug to attach ephemeral containers to running pods for troubleshooting.

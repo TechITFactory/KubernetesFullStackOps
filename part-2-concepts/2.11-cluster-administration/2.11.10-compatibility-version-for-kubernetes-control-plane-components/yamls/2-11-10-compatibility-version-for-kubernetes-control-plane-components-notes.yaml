@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-11-10-compatibility-version-for-kubernetes-control-plane-components-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.11.10 Compatibility Version For Kubernetes Control Plane Components should be taught as a practical Kubernetes concept tied to real operational decisions.

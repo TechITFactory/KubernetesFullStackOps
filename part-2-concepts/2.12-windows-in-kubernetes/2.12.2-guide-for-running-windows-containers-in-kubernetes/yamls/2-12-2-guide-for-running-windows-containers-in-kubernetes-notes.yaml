@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-12-2-guide-for-running-windows-containers-in-kubernetes-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.12.2 Guide for Running Windows Containers in Kubernetes should be taught as a practical Kubernetes concept tied to real operational decisions.

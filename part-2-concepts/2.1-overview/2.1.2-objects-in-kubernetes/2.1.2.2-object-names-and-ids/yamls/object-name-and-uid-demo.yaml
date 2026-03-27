@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  generateName: generated-object-
+  namespace: default
+data:
+  lesson: names-and-uids

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-namespaces-notes
+  namespace: kube-system
+data:
+  notes: |
+    User namespaces depend on kernel and runtime support and are most useful when paired with strong pod security settings.

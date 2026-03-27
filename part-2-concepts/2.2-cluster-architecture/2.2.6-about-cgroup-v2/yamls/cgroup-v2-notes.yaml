@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cgroup-v2-notes
+  namespace: kube-system
+data:
+  notes: |
+    Align kubelet and runtime with systemd cgroups when using modern Linux hosts and cgroup v2.

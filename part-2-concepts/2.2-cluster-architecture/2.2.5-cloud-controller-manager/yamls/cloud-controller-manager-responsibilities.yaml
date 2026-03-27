@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-controller-manager-responsibilities
+  namespace: kube-system
+data:
+  responsibilities: |
+    Node controller initialization, load balancer integration, route management, and cloud-specific service reconciliation.

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: large-cluster-planning-checklist
+  namespace: kube-system
+data:
+  checklist: |
+    - Define API QPS and burst expectations for controllers and automation.
+    - Plan node pools by workload type, not only by team ownership.
+    - Use topology spread constraints and PodDisruptionBudgets for critical replicas.
+    - Review service and pod CIDR sizing before growth.
+    - Validate metrics, logs, and tracing volume budgets.
+    - Confirm etcd backup, defrag, and restore procedures before scale-out.

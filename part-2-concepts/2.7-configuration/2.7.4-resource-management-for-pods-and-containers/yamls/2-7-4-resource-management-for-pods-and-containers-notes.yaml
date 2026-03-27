@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-7-4-resource-management-for-pods-and-containers-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.7.4 Resource Management for Pods and Containers should be taught as a practical Kubernetes concept tied to real operational decisions.

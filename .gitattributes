@@ -1,0 +1,10 @@
+# Normalize line endings
+* text=auto eol=lf
+
+# Force shell scripts to always use LF
+*.sh text eol=lf
+
+# Force YAML and Markdown to always use LF
+*.yaml text eol=lf
+*.yml  text eol=lf
+*.md   text eol=lf

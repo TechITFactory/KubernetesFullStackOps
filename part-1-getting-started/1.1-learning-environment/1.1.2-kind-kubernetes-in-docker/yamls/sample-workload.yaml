@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kind-lab
+  labels:
+    course: kubernetes-full-stack-ops
+    section: "1.1.2"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echoserver
+  namespace: kind-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echoserver
+  template:
+    metadata:
+      labels:
+        app: echoserver
+    spec:
+      containers:
+        - name: echoserver
+          image: registry.k8s.io/echoserver:1.10
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echoserver
+  namespace: kind-lab
+spec:
+  selector:
+    app: echoserver
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      nodePort: 30080
+  type: NodePort

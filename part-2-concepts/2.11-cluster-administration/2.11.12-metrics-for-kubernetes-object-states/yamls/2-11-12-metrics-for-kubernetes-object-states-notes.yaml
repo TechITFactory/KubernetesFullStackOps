@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-11-12-metrics-for-kubernetes-object-states-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.11.12 Metrics for Kubernetes Object States should be taught as a practical Kubernetes concept tied to real operational decisions.

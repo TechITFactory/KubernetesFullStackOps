@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-11-16-api-priority-and-fairness-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.11.16 API Priority and Fairness should be taught as a practical Kubernetes concept tied to real operational decisions.

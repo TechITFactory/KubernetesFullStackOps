@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-11-5-cluster-networking-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.11.5 Cluster Networking should be taught as a practical Kubernetes concept tied to real operational decisions.

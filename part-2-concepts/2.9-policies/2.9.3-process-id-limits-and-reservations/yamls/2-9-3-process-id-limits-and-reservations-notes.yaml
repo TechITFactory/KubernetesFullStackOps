@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-9-3-process-id-limits-and-reservations-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.9.3 Process ID Limits and Reservations should be taught as a practical Kubernetes concept tied to real operational decisions.
