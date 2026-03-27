@@ -47,6 +47,10 @@ install_kubectl() {
 
   if [[ "$version" == "stable" ]]; then
     version="$(curl -fsSL https://dl.k8s.io/release/stable.txt)"
+    if [[ -z "$version" ]]; then
+      echo "Failed to fetch stable kubectl version." >&2
+      exit 1
+    fi
   fi
 
   if command -v kubectl >/dev/null 2>&1; then
@@ -72,6 +76,10 @@ ARCH="$(detect_arch)"
 
 if [[ "$VERSION" == "latest" ]]; then
   VERSION="$(curl -fsSL https://api.github.com/repos/kubernetes/minikube/releases/latest | sed -n 's/.*"tag_name": "\(.*\)".*/\1/p' | head -n 1)"
+  if [[ -z "$VERSION" ]]; then
+    echo "Failed to fetch latest minikube version (possible GitHub API rate limit). Pass a version explicitly, e.g.: $0 v1.38.1" >&2
+    exit 1
+  fi
 fi
 
 if command -v minikube >/dev/null 2>&1; then
