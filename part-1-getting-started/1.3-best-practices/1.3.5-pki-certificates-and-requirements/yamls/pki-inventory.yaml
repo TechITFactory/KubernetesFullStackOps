@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pki-inventory
+  namespace: kube-system
+data:
+  certificates: |
+    - ca.crt / ca.key: cluster root CA
+    - apiserver.crt / apiserver.key: Kubernetes API server serving cert
+    - apiserver-kubelet-client.crt / key: API server -> kubelet client auth
+    - front-proxy-ca.crt / key: front-proxy trust root
+    - front-proxy-client.crt / key: aggregation layer client auth
+    - etcd/ca.crt / key: etcd trust root
+    - etcd/server.crt / key: etcd serving cert
+    - etcd/peer.crt / key: etcd peer cert
+    - etcd/healthcheck-client.crt / key: etcd health probes
+    - apiserver-etcd-client.crt / key: API server -> etcd client auth
+  san-guidance: |
+    Ensure the API server certificate includes the control-plane endpoint DNS name and any required IPs.

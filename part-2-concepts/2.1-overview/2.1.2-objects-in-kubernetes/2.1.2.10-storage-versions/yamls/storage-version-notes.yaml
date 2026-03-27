@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-version-notes
+  namespace: kube-system
+data:
+  notes: |
+    A resource can be served under one or more API versions, but it is stored in etcd using a single storage version.
+    During upgrades, storage version migration may be required so persisted objects match the desired storage version.

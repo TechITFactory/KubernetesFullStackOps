@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-11-11-metrics-for-kubernetes-system-components-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.11.11 Metrics For Kubernetes System Components should be taught as a practical Kubernetes concept tied to real operational decisions.

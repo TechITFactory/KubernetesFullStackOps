@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: certificate-renewal-runbook
+  namespace: kube-system
+data:
+  runbook: |
+    1. Check expiry with kubeadm certs check-expiration.
+    2. Back up /etc/kubernetes/pki before renewal.
+    3. Renew certificates with kubeadm certs renew where appropriate.
+    4. Restart static pod control-plane components if required.
+    5. Verify SAN coverage and control-plane health after renewal.

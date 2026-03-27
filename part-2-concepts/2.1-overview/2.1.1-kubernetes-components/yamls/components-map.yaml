@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-components-map
+  namespace: kube-system
+data:
+  control-plane: |
+    kube-apiserver: serves the Kubernetes API
+    etcd: stores cluster state
+    kube-scheduler: binds Pods to Nodes
+    kube-controller-manager: runs reconciliation loops
+  node-plane: |
+    kubelet: manages Pods on each node
+    kube-proxy: implements Service networking
+    container-runtime: runs containers via CRI

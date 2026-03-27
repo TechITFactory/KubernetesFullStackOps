@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-13-3-operator-pattern-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.13.3 Operator Pattern should be taught as a practical Kubernetes concept tied to real operational decisions.

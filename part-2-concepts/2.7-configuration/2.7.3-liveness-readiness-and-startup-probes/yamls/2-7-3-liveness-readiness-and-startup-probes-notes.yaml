@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-7-3-liveness-readiness-and-startup-probes-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.7.3 Liveness, Readiness, and Startup Probes should be taught as a practical Kubernetes concept tied to real operational decisions.

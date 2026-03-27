@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: self-healing-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: self-healing-demo
+  namespace: self-healing-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: self-healing-demo
+  template:
+    metadata:
+      labels:
+        app: self-healing-demo
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-10-15-node-declared-features-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.10.15 Node Declared Features should be taught as a practical Kubernetes concept tied to real operational decisions.

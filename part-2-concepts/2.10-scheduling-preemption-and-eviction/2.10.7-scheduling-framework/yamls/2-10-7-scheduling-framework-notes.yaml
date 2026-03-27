@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-10-7-scheduling-framework-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.10.7 Scheduling Framework should be taught as a practical Kubernetes concept tied to real operational decisions.

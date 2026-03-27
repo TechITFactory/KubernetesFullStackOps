@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: labels-demo
+  namespace: default
+  labels:
+    app.kubernetes.io/name: labels-demo
+    app.kubernetes.io/instance: labels-demo-prod
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: overview-module
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: labels-demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: labels-demo
+        app.kubernetes.io/instance: labels-demo-prod
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: web
+        app.kubernetes.io/part-of: overview-module
+        app.kubernetes.io/managed-by: kubectl
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-8-5-pod-security-policies-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.8.5 Pod Security Policies should be taught as a practical Kubernetes concept tied to real operational decisions.

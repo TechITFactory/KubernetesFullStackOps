@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lease-notes
+  namespace: kube-system
+data:
+  notes: |
+    Node heartbeats are usually tracked through Lease objects in kube-node-lease to reduce control-plane write pressure.

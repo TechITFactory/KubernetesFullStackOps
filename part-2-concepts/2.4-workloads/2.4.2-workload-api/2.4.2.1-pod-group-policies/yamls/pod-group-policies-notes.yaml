@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-group-policies-notes
+  namespace: kube-system
+data:
+  notes: |
+    Group behavior often emerges from affinity rules, disruption budgets, topology spread, and controller semantics rather than a single universal API.

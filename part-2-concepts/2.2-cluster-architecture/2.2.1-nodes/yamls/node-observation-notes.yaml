@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-observation-notes
+  namespace: kube-system
+data:
+  notes: |
+    Inspect capacity versus allocatable, node conditions, taints, labels, kubelet version, and runtime details.

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-8-11-multi-tenancy-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.8.11 Multi-tenancy should be taught as a practical Kubernetes concept tied to real operational decisions.

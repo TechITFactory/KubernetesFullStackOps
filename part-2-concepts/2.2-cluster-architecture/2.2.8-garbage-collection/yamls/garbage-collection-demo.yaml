@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gc-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gc-demo
+  namespace: gc-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gc-demo
+  template:
+    metadata:
+      labels:
+        app: gc-demo
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27

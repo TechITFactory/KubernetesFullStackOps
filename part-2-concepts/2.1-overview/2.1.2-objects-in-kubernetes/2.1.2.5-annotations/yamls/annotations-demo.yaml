@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: annotations-demo
+  namespace: default
+  annotations:
+    training.kfsops.io/lesson: annotations
+    training.kfsops.io/owner: platform-team
+data:
+  topic: annotations

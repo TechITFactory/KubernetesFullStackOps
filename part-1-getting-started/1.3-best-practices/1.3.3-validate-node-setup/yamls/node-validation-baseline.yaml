@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-validation-baseline
+  namespace: kube-system
+data:
+  baseline: |
+    kubelet: installed and enabled
+    kubeadm: installed
+    swap: disabled
+    cgroupDriver: systemd
+    sysctls:
+      - net.bridge.bridge-nf-call-iptables=1
+      - net.ipv4.ip_forward=1
+    kernelModules:
+      - overlay
+      - br_netfilter

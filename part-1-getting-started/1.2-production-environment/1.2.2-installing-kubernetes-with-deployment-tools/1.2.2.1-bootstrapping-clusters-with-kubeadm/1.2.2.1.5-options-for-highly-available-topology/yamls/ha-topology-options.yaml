@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ha-topology-options
+  namespace: kube-system
+data:
+  stacked-etcd: |
+    Pros: simpler initial setup, fewer moving parts, lower infrastructure footprint.
+    Cons: etcd fate is tied more closely to control-plane nodes.
+  external-etcd: |
+    Pros: stronger separation of concerns and failure domains.
+    Cons: higher operational overhead, certificate management, and extra hosts.

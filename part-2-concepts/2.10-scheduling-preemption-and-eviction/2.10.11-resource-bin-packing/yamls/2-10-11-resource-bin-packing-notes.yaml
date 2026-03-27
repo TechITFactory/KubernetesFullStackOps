@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-10-11-resource-bin-packing-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.10.11 Resource Bin Packing should be taught as a practical Kubernetes concept tied to real operational decisions.

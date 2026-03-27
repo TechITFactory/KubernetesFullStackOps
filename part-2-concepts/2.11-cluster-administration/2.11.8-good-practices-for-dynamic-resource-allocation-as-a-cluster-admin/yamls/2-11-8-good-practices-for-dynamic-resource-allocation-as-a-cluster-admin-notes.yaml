@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-11-8-good-practices-for-dynamic-resource-allocation-as-a-cluster-admin-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.11.8 Good Practices for Dynamic Resource Allocation as a Cluster Admin should be taught as a practical Kubernetes concept tied to real operational decisions.

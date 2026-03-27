@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-8-12-hardening-guide-authentication-mechanisms-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.8.12 Hardening Guide - Authentication Mechanisms should be taught as a practical Kubernetes concept tied to real operational decisions.

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: finalizer-demo
+  namespace: default
+  finalizers:
+    - training.kfsops.io/cleanup-required
+data:
+  note: delete-me-to-observe-finalizer

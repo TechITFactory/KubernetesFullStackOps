@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-8-15-linux-kernel-security-constraints-for-pods-and-containers-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.8.15 Linux Kernel Security Constraints for Pods and Containers should be taught as a practical Kubernetes concept tied to real operational decisions.

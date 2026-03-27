@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-6-6-volume-attributes-classes-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.6.6 Volume Attributes Classes should be taught as a practical Kubernetes concept tied to real operational decisions.

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-11-3-node-autoscaling-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.11.3 Node Autoscaling should be taught as a practical Kubernetes concept tied to real operational decisions.

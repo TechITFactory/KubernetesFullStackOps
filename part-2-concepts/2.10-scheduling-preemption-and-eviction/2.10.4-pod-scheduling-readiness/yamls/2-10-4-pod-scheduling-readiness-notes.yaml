@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-10-4-pod-scheduling-readiness-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.10.4 Pod Scheduling Readiness should be taught as a practical Kubernetes concept tied to real operational decisions.

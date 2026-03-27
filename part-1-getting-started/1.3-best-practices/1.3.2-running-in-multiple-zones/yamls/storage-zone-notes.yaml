@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: multi-zone-storage-notes
+  namespace: kube-system
+data:
+  notes: |
+    - Prefer storage classes that understand topology-aware provisioning.
+    - Confirm whether volumes are zonal or regional before scheduling stateful workloads.
+    - Review attach limits and failure behavior when nodes move across zones.

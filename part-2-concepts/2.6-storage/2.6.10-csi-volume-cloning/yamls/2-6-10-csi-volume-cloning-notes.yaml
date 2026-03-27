@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-6-10-csi-volume-cloning-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.6.10 CSI Volume Cloning should be taught as a practical Kubernetes concept tied to real operational decisions.

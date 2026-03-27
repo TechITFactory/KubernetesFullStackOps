@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-12-1-windows-containers-in-kubernetes-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.12.1 Windows Containers in Kubernetes should be taught as a practical Kubernetes concept tied to real operational decisions.

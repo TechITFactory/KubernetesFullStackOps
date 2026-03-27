@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-8-13-hardening-guide-scheduler-configuration-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.8.13 Hardening Guide - Scheduler Configuration should be taught as a practical Kubernetes concept tied to real operational decisions.

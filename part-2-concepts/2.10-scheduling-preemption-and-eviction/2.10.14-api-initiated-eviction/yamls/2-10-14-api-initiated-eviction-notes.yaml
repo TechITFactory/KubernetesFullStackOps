@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 2-10-14-api-initiated-eviction-notes
+  namespace: kube-system
+data:
+  notes: |
+    2.10.14 API-initiated Eviction should be taught as a practical Kubernetes concept tied to real operational decisions.
