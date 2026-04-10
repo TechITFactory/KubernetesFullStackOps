@@ -2,28 +2,23 @@
 
 ## Overview
 
-Before you can run a single `kubectl` command, you need a Kubernetes cluster to talk to. This module gets that cluster running on your laptop — no cloud account, no credit card, no waiting for infrastructure.
+Before you run `kubectl` against real work, you need a **cluster on your machine** — no cloud account required for this module.
 
-You will choose one of two local cluster tools (Minikube or Kind), get it running, then set up a governed development namespace you will reuse throughout the course.
+You will **either** use **Minikube (1.1.1)** **or** **Kind (1.1.2)** — pick one and stay on it. Then **1.1.3** adds a governed workspace namespace (`dev-local`) on top of whichever cluster you chose.
 
-- **Objective**: Set up a local Kubernetes cluster ready for every lab in this course.
-- **Outcomes**: A running local cluster, `kubectl` connected and verified, and a baseline development namespace with resource controls in place.
-- **Note**: Sections 1.1.1 and 1.1.2 are alternatives — pick one and stick with it. Section 1.1.3 runs on top of whichever you chose and must come after.
+Lessons **1.1.1–1.1.3** use the same format as Part 0: **teaching transcript** with **Say → Run → Expected** in numbered steps.
 
 ## Sections
 
-### 1.1.1 Minikube Setup and Configuration
-The most popular local Kubernetes tool. Runs a single-node cluster inside Docker or a VM on your laptop. Best choice if you want rich add-ons (Ingress, Dashboard) and a smooth developer experience.
-
-### 1.1.2 Kind (Kubernetes in Docker)
-Runs Kubernetes nodes as Docker containers. Supports multi-node clusters and starts in seconds. Best choice if you plan to use CI/CD pipelines or want to simulate a multi-node topology.
-
-### 1.1.3 Local Development Clusters
-Sets up a consistent, resource-governed development namespace (`dev-local`) on whichever cluster you just created. Covers Namespaces, ResourceQuotas, and LimitRanges — the three controls every production cluster uses to keep workloads isolated and safe.
+| Lesson | Link | Choose if… |
+|--------|------|------------|
+| **1.1.1** | [Minikube setup](1.1.1-minikube-setup-and-configuration/README.md) | You want one node, addons (e.g. Ingress), familiar “minikube service” flow. |
+| **1.1.2** | [Kind](1.1.2-kind-kubernetes-in-docker/README.md) | You want multi-node-in-Docker, fast spin-up, CI-like workflows. |
+| **1.1.3** | [Local dev clusters / dev-local](1.1.3-local-development-clusters/README.md) | **After** 1.1.1 or 1.1.2 — quotas, limit ranges, demo app in `dev-local`. |
 
 ## Module wrap — quick validation
 
-After **1.1.3**, confirm your workspace and API access (use your Kind context flag if you are on Kind):
+After **1.1.3**, with your usual context (add `--context kind-kfsops-kind` if you use Kind):
 
 ```bash
 kubectl cluster-info

@@ -1,249 +1,174 @@
-# 1.1.2 Kind (Kubernetes in Docker)
+# 1.1.2 Kind (Kubernetes in Docker) — teaching transcript
 
-- **Summary**: Install Kind, create a local multi-node Kubernetes cluster entirely inside Docker containers, and validate it with a sample workload accessible on `localhost:8080`.
-- **Content**: What Kind is and how it differs from Minikube, multi-node cluster topology, port mapping from host to NodePort, idempotent cluster creation.
-- **Lab**: Run `install-kind.sh`, run `create-kind-cluster.sh`, apply `sample-workload.yaml`, reach the echoserver at `localhost:8080`, run `teardown.sh` to clean up.
+## Intro
 
-## Files
+This lesson builds a **multi-node Kubernetes cluster** where each node runs as a **Docker container** — that is **Kind** (Kubernetes in Docker). Fast to create, great for **CI-style** workflows and testing scheduling across nodes.
 
-| Path | Purpose |
-|------|---------|
-| `scripts/install-kind.sh` | Idempotent: installs Kind + kubectl, skips if already at target version |
-| `scripts/create-kind-cluster.sh` | Idempotent: creates the cluster, reuses it if already exists |
-| `scripts/teardown.sh` | Idempotent: deletes the Kind cluster, no-op if already gone |
-| `yamls/kind-cluster-config.yaml` | 1 control-plane + 1 worker node; maps NodePort 30080 → host port 8080 |
-| `yamls/sample-workload.yaml` | Namespace + Deployment + NodePort Service — validates networking end to end |
+**You need:** Docker running; [Part 0](../../../part-0-prerequisites/README.md)–level terminal comfort. **Kind requires Docker** — no Docker, no Kind.
 
-## Quick Start
+Replace **`/path/to/K8sOps`** with your clone path.
+
+**Context:** This course names the cluster **`kfsops-kind`**. Most `kubectl` commands below use **`--context kind-kfsops-kind`** so you do not accidentally hit another cluster.
+
+**Note:** If you use **Minikube** instead, skip this lesson and use [1.1.1](../1.1.1-minikube-setup-and-configuration/README.md). Pick one local stack for a clean path through 1.1.3.
+
+---
+
+## Step 1 — Open this lesson in the terminal
+
+**Say:**  
+I stand in the lesson folder so scripts and YAML paths resolve.
+
+**Run:**
+
+```bash
+cd /path/to/K8sOps/part-1-getting-started/1.1-learning-environment/1.1.2-kind-kubernetes-in-docker
+pwd
+```
+
+**Expected:**  
+Path ending in `1.1.2-kind-kubernetes-in-docker`.
+
+---
+
+## Step 2 — Make scripts executable
+
+**Run:**
+
+```bash
+chmod +x scripts/*.sh
+```
+
+**Expected:**  
+No errors.
+
+---
+
+## Step 3 — Install Kind and kubectl (idempotent)
+
+**Say:**  
+Same idea as Minikube’s installer: checks version, skips if already correct. May use `sudo` for `/usr/local/bin`.
+
+**Run:**
 
 ```bash
 ./scripts/install-kind.sh
+```
+
+**Expected:**  
+`kind version` works; `kubectl version --client` works.
+
+---
+
+## Step 4 — Create the Kind cluster (idempotent)
+
+**Say:**  
+The script uses `yamls/kind-cluster-config.yaml` — one control-plane node, one worker, and **host port 8888 → node port 30080** so we can `curl` from the laptop. If the cluster already exists, the script reuses it.
+
+**Run:**
+
+```bash
 ./scripts/create-kind-cluster.sh
-kubectl apply -f yamls/sample-workload.yaml --context kind-kfsops-kind
-curl localhost:8080
-./scripts/teardown.sh
 ```
 
-## Expected output
-
-- `kubectl get nodes --context kind-kfsops-kind` lists control-plane and worker `Ready`.
-- Workload pods in `kind-lab` (or as in `sample-workload.yaml`) are `Running`.
-- `curl localhost:8080` returns a response from the sample service (after NodePort mapping).
+**Expected:**  
+Cluster created or “already exists”; `kubectl get nodes --context kind-kfsops-kind` shows **two** nodes `Ready` (control-plane + worker).
 
 ---
 
-## Transcript — 10-Minute Lesson
+## Step 5 — Apply the sample workload
 
-### [0:00–0:45] Hook
+**Say:**  
+This creates namespace `kind-lab`, an `echoserver` Deployment, and a **NodePort** Service on **30080** — matching the Kind config mapping to **localhost:8888** on the host.
 
-In the last lesson we used Minikube. It's great for learning — one node, easy addons, browser-friendly.
-
-But here is a problem. Real Kubernetes clusters have multiple nodes — a control-plane that makes decisions, and workers that run your apps. Minikube only simulates one node, so you cannot test certain things: what happens when a worker node goes down, how pods get scheduled across nodes, multi-node networking.
-
-And there is another problem: CI/CD pipelines. When your team pushes code, automated systems need to spin up a Kubernetes cluster in seconds, run tests, then destroy it. Minikube is too heavy for that.
-
-**Kind** solves both. That's what we're setting up today.
-
----
-
-### [0:45–2:30] What Is Kind?
-
-Kind stands for **Kubernetes IN Docker**.
-
-Here is the idea: normally, a Kubernetes node is an entire server — a physical or virtual machine. Kind fakes it. It runs each Kubernetes node as a **Docker container** on your machine.
-
-So if you ask Kind for a cluster with 1 control-plane and 2 workers, it starts 3 Docker containers. Each one behaves exactly like a real Kubernetes node. They can communicate with each other. Pods get scheduled across them. Network policies work. It is the real thing, just compressed into Docker containers.
-
-**Analogy**: think of a movie set. In a real city, buildings are solid concrete. On a movie set, the buildings are just facades — they look and photograph exactly like real buildings, but they're lightweight and you can build ten of them in a day. Kind is the movie set version of a Kubernetes cluster.
-
-**Kind vs Minikube — when to use which**:
-
-| | Minikube | Kind |
-|---|---|---|
-| Nodes | 1 (single node) | Multiple (control-plane + workers) |
-| Driver | Docker or VM | Docker only |
-| Addons | Rich (dashboard, ingress, etc) | Minimal — you install manually |
-| Start speed | Moderate (30–60s) | Fast (10–20s) |
-| Best for | Local development | CI/CD pipelines, multi-node testing |
-
-Real-world usage: GitHub Actions, GitLab CI, and Jenkins all use Kind to run Kubernetes integration tests. When you open a pull request at a company like Grafana or HashiCorp, Kind spins up a throwaway cluster, runs their test suite, then deletes it. The whole thing takes under a minute.
-
----
-
-### [2:30–4:00] The Cluster Config YAML
-
-Let's look at `kind-cluster-config.yaml`:
-
-```yaml
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-name: kfsops-kind
-nodes:
-  - role: control-plane
-    extraPortMappings:
-      - containerPort: 30080
-        hostPort: 8080
-        protocol: TCP
-  - role: worker
-```
-
-This tells Kind: "give me two nodes — one control-plane, one worker."
-
-The `extraPortMappings` section is how we reach the cluster from our laptop. Here is the chain:
-
-```
-Your browser → localhost:8080
-             → Kind node container port 30080
-             → Kubernetes NodePort Service port 30080
-             → echoserver pod port 8080
-```
-
-Each arrow is a forwarding step. The `containerPort: 30080` is the Kubernetes NodePort. The `hostPort: 8080` is what you type in your browser. Without this mapping, a NodePort service would be trapped inside Docker with no way out.
-
-This is why we fixed `sample-workload.yaml` to use `type: NodePort` with `nodePort: 30080` — matching this mapping exactly. A ClusterIP service would be unreachable from outside the Docker network.
-
----
-
-### [4:00–5:30] The Install Script
-
-`install-kind.sh` follows the exact same pattern as `install-minikube.sh`:
-
-```bash
-VERSION="${1:-v0.23.0}"
-```
-Default version pinned. Pass a version number as argument to override. This is important for CI — you want reproducible builds, so you pin the version rather than always pulling "latest".
-
-```bash
-if command -v kind >/dev/null 2>&1; then
-  CURRENT_KIND="$(kind version ...)"
-fi
-
-if [[ "$(normalize_version "$CURRENT_KIND")" == "$(normalize_version "$VERSION")" ]]; then
-  echo "Kind already installed. Skipping."
-```
-Idempotency check. Same pattern as before — check before acting.
-
-```bash
-curl -fsSL -o kind "https://kind.sigs.k8s.io/dl/${VERSION}/kind-${OS}-${ARCH}"
-sudo install kind "$INSTALL_DIR/kind"
-```
-Downloads the single Kind binary and installs it. Kind is one small file — no dependencies, no package manager.
-
----
-
-### [5:30–6:45] The Create Cluster Script
-
-`create-kind-cluster.sh`:
-
-```bash
-CLUSTER_NAME="${CLUSTER_NAME:-kfsops-kind}"
-CONFIG_PATH="${CONFIG_PATH:-$SCRIPT_DIR/../yamls/kind-cluster-config.yaml}"
-```
-The cluster name and config are configurable via environment variables. Need a second cluster? `CLUSTER_NAME=my-test ./create-kind-cluster.sh`.
-
-```bash
-command -v docker >/dev/null 2>&1 || {
-  echo "docker was not found. Kind requires Docker." >&2
-  exit 1
-}
-```
-Kind cannot run without Docker. This guard gives a clear error instead of a confusing Docker connection failure later.
-
-```bash
-if kind get clusters 2>/dev/null | grep -Fxq "$CLUSTER_NAME"; then
-  echo "Kind cluster '$CLUSTER_NAME' already exists. Reusing it."
-else
-  kind create cluster --name "$CLUSTER_NAME" --config "$CONFIG_PATH"
-fi
-```
-Idempotency. `kind get clusters` lists existing clusters. If ours is there, skip creation. This means running `create-kind-cluster.sh` twice is completely safe — it will not try to create a duplicate.
-
-```bash
-kubectl cluster-info --context "kind-${CLUSTER_NAME}"
-kubectl get nodes --context "kind-${CLUSTER_NAME}"
-```
-After creating, verify the cluster is reachable and both nodes (`control-plane` and `worker`) show as `Ready`.
-
----
-
-### [6:45–8:00] Apply the Sample Workload
+**Run:**
 
 ```bash
 kubectl apply -f yamls/sample-workload.yaml --context kind-kfsops-kind
 ```
 
-This creates three resources:
-
-**Namespace** `kind-lab` — same isolation pattern you saw in 1.1.1. Always use namespaces, never deploy into `default` for lab work.
-
-**Deployment** `echoserver` — runs the `registry.k8s.io/echoserver:1.10` image. Echoserver is a tiny HTTP server that echoes back everything in your request — headers, URL, body. Perfect for verifying that traffic is actually flowing through Kubernetes networking.
-
-**Service** `echoserver` of type `NodePort:30080` — matches the port mapping in our Kind config so traffic from `localhost:8080` reaches the pod.
-
-Wait for the pod:
-```bash
-kubectl get pods -n kind-lab -w --context kind-kfsops-kind
-```
-
-Then test:
-```bash
-curl localhost:8080
-```
-
-You will see the echoserver echo back your HTTP request details. That proves the full chain is working: host → Docker → Kind node → NodePort → pod.
+**Expected:**  
+Resources created or unchanged.
 
 ---
 
-### [8:00–9:30] Real World — CI/CD with Kind
+## Step 6 — Wait for the pod, then curl
 
-Here is a real GitHub Actions workflow that uses Kind:
+**Say:**  
+Once the pod is ready, traffic from **localhost:8888** should reach the echoserver through the published port mapping.
 
-```yaml
-- name: Create Kind cluster
-  uses: helm/kind-action@v1
-  with:
-    cluster_name: test-cluster
+**Run:**
 
-- name: Deploy app
-  run: kubectl apply -f k8s/
-
-- name: Run integration tests
-  run: ./tests/run.sh
+```bash
+kubectl rollout status deployment/echoserver -n kind-lab --context kind-kfsops-kind --timeout=120s
+kubectl get pods -n kind-lab -o wide --context kind-kfsops-kind
+curl -sS http://localhost:8888/ | head -n 5
 ```
 
-Every time someone opens a pull request, GitHub spins up a fresh Kind cluster, deploys the app, runs tests, and destroys the cluster. The whole thing takes about 90 seconds. If tests fail, the PR is blocked. If they pass, the code merges.
-
-This is the real value of Kind: disposable clusters. You create one, use it, destroy it. No cleanup, no shared state, no "it works on my machine" — everyone runs the same cluster config from the same YAML file.
-
-Companies like Kubernetes itself (yes, Kubernetes uses Kind to test Kubernetes), Flux, ArgoCD, and Helm all use Kind in their CI pipelines.
+**Expected:**  
+Rollout success; pod `Running`; `curl` returns echo output (HTTP body with request details).
 
 ---
 
-### [9:30–10:00] Recap
+## Step 7 — Fast validation
 
-- **Kind** = Kubernetes nodes running as Docker containers — lightweight, fast, multi-node.
-- **kind-cluster-config.yaml** defines the node topology and the host port mapping that makes NodePort services reachable from your laptop.
-- **install-kind.sh** is idempotent — checks version before downloading.
-- **create-kind-cluster.sh** is idempotent — reuses an existing cluster, never duplicates.
-- **sample-workload.yaml** uses NodePort:30080 to match the port mapping — ClusterIP would be unreachable.
-- **teardown.sh** deletes the cluster cleanly, no-op if already gone.
-
-Clean up:
-
-```bash
-./scripts/teardown.sh
-```
-
-Next: 1.1.3 — Local Development Clusters, where we set up a proper workspace namespace with quotas and defaults on whichever cluster you just created.
-
-## Video close — fast validation
+**Run:**
 
 ```bash
 kubectl get nodes --context kind-kfsops-kind
-kubectl get pods -A --context kind-kfsops-kind | head
-curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:8080
+kubectl get pods -A --context kind-kfsops-kind | head -n 15
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:8888/
 ```
 
-## Failure Troubleshooting Asset
+**Expected:**  
+Two Ready nodes; `kind-lab` pod listed; HTTP **200** (or success code).
 
-- `yamls/failure-troubleshooting.yaml` - common Kind creation, networking, and kubeconfig-context issues.
+---
+
+## Step 8 — Tear down (optional)
+
+**Run:**
+
+```bash
+./scripts/teardown.sh
+```
+
+**Expected:**  
+Kind cluster deleted or already absent.
+
+---
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `scripts/install-kind.sh` | Installs `kind` + `kubectl` |
+| `scripts/create-kind-cluster.sh` | Creates `kfsops-kind` from config |
+| `scripts/teardown.sh` | Deletes cluster |
+| `yamls/kind-cluster-config.yaml` | Topology + port mapping |
+| `yamls/sample-workload.yaml` | `kind-lab` + NodePort **30080** |
+| `yamls/failure-troubleshooting.yaml` | Kind / context / networking hints |
+
+---
+
+## Troubleshooting
+
+- **docker: not found** → start Docker; Kind depends on it
+- **port 8888 in use** → change `hostPort` in `kind-cluster-config.yaml` and align Service `nodePort`, or stop the conflicting process
+- **wrong cluster** → `kubectl config current-context`; use `--context kind-kfsops-kind` every time
+- **Image pull errors** → network / registry access for `registry.k8s.io`
+- **Cluster create fails** → `docker info`; WSL2: enough RAM/disk
+
+---
+
+## Learning objective
+
+- Install Kind; create a multi-node cluster from config; apply NodePort workload; verify with `curl`; tear down.
+
+## Why this matters
+
+Kind is the default answer for **throwaway clusters in CI** and for **multi-node** behavior on a laptop.
+
+## Next
+
+[1.1.3 Local development clusters](../1.1.3-local-development-clusters/README.md) — add `dev-local` namespace, quota, and limit range on **this** cluster (keep `kubectl` context on `kind-kfsops-kind`).

@@ -1,202 +1,151 @@
-# 1.2.1.1 containerd
+# 1.2.1.1 containerd — teaching transcript
 
-- **Summary**: Install `containerd`, configure it as a CRI-compatible runtime with the systemd cgroup driver, and verify the socket path kubelet will use.
-- **Content**: What a container runtime is, why `SystemdCgroup = true` is mandatory, idempotent install automation, CRI socket validation.
-- **Lab**: Run `install-containerd.sh` as root, confirm the socket exists at `/run/containerd/containerd.sock`, apply the kubeadm node config.
+## Intro
 
-## Files
+**containerd** is the usual production choice: CRI-native, used by major clouds, good default before `kubeadm init` / `join`.
 
-| Path | Purpose |
-|------|---------|
-| `scripts/install-containerd.sh` | Idempotent: installs containerd, generates default config, patches `SystemdCgroup`, restarts service |
-| `yamls/kubeadm-node-config-containerd.yaml` | kubeadm `InitConfiguration` pointing kubelet at the containerd CRI socket |
+**You need:** a **Linux node** (VM or bare metal) where you can use **`sudo`**. These steps are **not** for your Minikube laptop unless you know you are configuring node OS packages there.
 
-## Quick Start
+Replace **`/path/to/K8sOps`** with your clone path.
+
+**Pick one runtime:** if you use **CRI-O** or **Docker + cri-dockerd**, skip this lesson and open the matching sibling under [1.2.1](../README.md).
+
+---
+
+## Step 1 — Open this lesson in the terminal
+
+**Say:**  
+I run install scripts from this folder so `./scripts` resolves.
+
+**Run:**
 
 ```bash
-# Run as root on each node
+cd /path/to/K8sOps/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.1-containerd
+pwd
+chmod +x scripts/*.sh
+```
+
+**Expected:**  
+Path ends with `1.2.1.1-containerd`.
+
+---
+
+## Step 2 — Install containerd (root, idempotent)
+
+**Say:**  
+The script installs packages, generates or patches config (`SystemdCgroup = true`), and restarts **containerd**. Safe to run again on the same node.
+
+**Run:**
+
+```bash
 sudo ./scripts/install-containerd.sh
+```
 
-# Verify the socket exists
+**Expected:**  
+Script completes without error; no duplicate-install explosions on re-run.
+
+---
+
+## Step 3 — Service is up
+
+**Run:**
+
+```bash
+sudo systemctl is-active containerd
+sudo systemctl status containerd --no-pager
+```
+
+**Expected:**  
+`active`; status shows running (no fatal errors in last lines).
+
+---
+
+## Step 4 — CRI socket exists
+
+**Say:**  
+kubelet will dial this socket. Wrong path = node never becomes Ready later.
+
+**Run:**
+
+```bash
 ls -la /run/containerd/containerd.sock
+```
 
-# Verify CRI
+**Expected:**  
+Socket file present.
+
+---
+
+## Step 5 — CRI responds
+
+**Run:**
+
+```bash
 sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock info
 ```
 
----
-
-## Transcript — 10-Minute Lesson
-
-### [0:00–0:45] Hook
-
-You have a Kubernetes cluster in mind. You have nodes — servers, virtual machines, or cloud instances — ready to join. But Kubernetes itself does not run containers. It needs something on every node that can take an image, start it as a process, and report back.
-
-That something is a **container runtime**. And the runtime you install here, before you even touch kubeadm, determines how every pod on that node lives and dies.
-
-In this lesson we install `containerd` — the most widely deployed production runtime on the planet.
+**Expected:**  
+JSON with healthy runtime info (no “connection refused”).
 
 ---
 
-### [0:45–2:30] What Is a Container Runtime?
+## Step 6 — Match kubeadm to this socket
 
-Let's start with an analogy. Kubernetes is like a city planning department — it decides where buildings go, how many are built, when to tear them down. But the planning department doesn't pour concrete. It calls a **construction company** that does the actual physical work.
+**Say:**  
+When you bootstrap with kubeadm, node registration must use the **same** socket. This repo ships an example manifest.
 
-The container runtime is that construction company. Kubernetes tells it: "start this container image on this node." The runtime does the work: downloads the image, sets up the filesystem, starts the process, manages its lifecycle.
-
-Before Kubernetes 1.24, it could talk to Docker directly. That created a mess — Docker wasn't designed for Kubernetes, there was an awkward translation layer called dockershim, and it was removed. Kubernetes now requires runtimes to implement the **Container Runtime Interface (CRI)** — a standard API.
-
-Three runtimes implement CRI today:
-
-| Runtime | Designed for K8s? | Default in |
-|---------|------------------|-----------|
-| `containerd` | Partly (extracted from Docker) | EKS, GKE, AKS, kubeadm |
-| `CRI-O` | Yes — built solely for K8s | OpenShift |
-| Docker + `cri-dockerd` | No — needs a shim | Legacy environments |
-
-`containerd` is the right default for new clusters. It is battle-tested, lightweight, supported by every major cloud provider, and is what kubeadm assumes by default.
-
----
-
-### [2:30–4:00] The CRI Socket — How kubelet Finds the Runtime
-
-When kubelet starts on a node, it needs to know where to find the runtime. It does this through a **CRI socket** — a Unix socket file on the filesystem.
-
-For `containerd`, that socket is at:
-```
-/run/containerd/containerd.sock
-```
-
-kubelet connects to this socket and sends instructions: "start this pod," "kill that container," "what is the status of this container?" The runtime handles everything; kubelet just gives orders.
-
-This is why, in `kubeadm-node-config-containerd.yaml`, you see:
-
-```yaml
-nodeRegistration:
-  criSocket: unix:///run/containerd/containerd.sock
-```
-
-You are telling kubeadm: when you register this node, tell kubelet to use this socket. If the socket path is wrong, kubelet cannot talk to the runtime, and the node never becomes Ready.
-
----
-
-### [4:00–5:45] Why `SystemdCgroup = true` Is Not Optional
-
-This is the single most common reason kubeadm clusters fail to start: the cgroup driver mismatch.
-
-Here is what is happening. Linux uses **cgroups** to limit CPU and memory for processes. There are two ways to manage cgroups: through `systemd` or directly through `cgroupfs`. On modern Linux systems (Ubuntu 22.04+, RHEL 9+), `systemd` owns cgroup management.
-
-If `containerd` manages cgroups via `cgroupfs` but `kubelet` manages them via `systemd`, they fight each other. Pods get killed. Nodes become unstable. The error messages are cryptic.
-
-The fix is simple: both must use `systemd`. In the containerd config:
-
-```toml
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-  SystemdCgroup = true
-```
-
-The install script patches this automatically:
-
-```python
-if 'SystemdCgroup = false' in text:
-    text = text.replace('SystemdCgroup = false', 'SystemdCgroup = true')
-```
-
-And in the kubeadm config, the KubeletConfiguration also sets `cgroupDriver: systemd`. Both sides must agree. The script handles containerd; the YAML handles kubelet.
-
----
-
-### [5:45–7:15] The Install Script — Line by Line
+**Run:**
 
 ```bash
-require_root
+grep -n criSocket yamls/kubeadm-node-config-containerd.yaml
 ```
-containerd needs root to install system packages and manage systemd services. The script checks `EUID` and exits immediately if not root — a clear error beats a mysterious permission failure five steps in.
 
-```bash
-if ! package_installed containerd; then
-  apt-get install -y containerd
-else
-  echo "containerd already installed. Skipping."
-```
-**Idempotency.** `dpkg -s containerd` checks whether the package is installed. If yes, skip the install. Run this script on a node that already has containerd — nothing breaks, nothing duplicates.
-
-```bash
-if [[ ! -f "$CONTAINERD_CONFIG" ]]; then
-  containerd config default > "$CONTAINERD_CONFIG"
-fi
-```
-Generate the default config only if one does not already exist. Preserves any manual edits on subsequent runs.
-
-```bash
-python3 - <<'PY'
-...patch SystemdCgroup and disabled_plugins...
-PY
-```
-Python reads the config file, patches two values, and writes it back only if changes were needed. Idempotent: if `SystemdCgroup = true` is already there, the file is untouched.
-
-```bash
-systemctl enable --now containerd
-systemctl restart containerd
-```
-Enable the service so it survives reboots, then restart to pick up the config changes.
+**Expected:**  
+Line showing `unix:///run/containerd/containerd.sock` (or equivalent).
 
 ---
 
-### [7:15–8:30] Verify Before Proceeding
+## Step 7 — Fast recap
 
-After the script runs, confirm the runtime is healthy before touching kubeadm:
-
-```bash
-# Socket exists
-ls -la /run/containerd/containerd.sock
-
-# Service status
-systemctl status containerd
-
-# CRI endpoint responds
-sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock info
-```
-
-`crictl info` outputs containerd's status in JSON. If you see `"status": "ok"`, the CRI is working. If you see connection errors, check `journalctl -u containerd -n 50` for the root cause.
-
-Run these checks on every node before proceeding to kubeadm installation.
-
----
-
-### [8:30–9:30] Real World — Where containerd Is Deployed
-
-`containerd` is the default runtime for:
-
-- **Amazon EKS** — all managed node groups run containerd.
-- **Google GKE** — default since GKE 1.19.
-- **Azure AKS** — replaced Docker in AKS 1.21.
-- **kubeadm clusters** — detected automatically when containerd's socket exists.
-
-At companies running self-managed clusters — banks, telcos, enterprises with compliance requirements — `containerd` is the near-universal choice for new infrastructure. It is stable, well-documented, and has years of production hardening behind it.
-
-The `SystemdCgroup = true` requirement is the same everywhere. If you ever see a node stuck in `NotReady` with kubelet failing to start pods, cgroup driver mismatch is the first thing to check.
-
----
-
-### [9:30–10:00] Recap
-
-- A **container runtime** is what actually runs containers on a node. Kubernetes uses CRI to talk to it.
-- **containerd** is the default, most widely deployed CRI runtime — used by all major cloud providers.
-- **CRI socket** `/run/containerd/containerd.sock` is how kubelet finds containerd. Must match the kubeadm node config.
-- **`SystemdCgroup = true`** must be set in both containerd config and kubelet config. Mismatch = node instability.
-- The install script is **idempotent** — checks before installing, patches only what is needed, safe to run again.
-
-Next: 1.2.1.2 — CRI-O, the runtime built exclusively for Kubernetes with no Docker lineage.
-
-## Video close — fast validation
+**Run:**
 
 ```bash
 sudo systemctl status containerd --no-pager
-sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock info
-kubectl get nodes -o wide
+sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock version
 ```
 
-## Failure Troubleshooting Asset
+**Expected:**  
+Service OK; `crictl` prints client/server versions.
 
-- `yamls/failure-troubleshooting.yaml` - common containerd install, CRI socket, and kubelet integration failures.
+---
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `scripts/install-containerd.sh` | Install + configure `SystemdCgroup` + restart |
+| `yamls/kubeadm-node-config-containerd.yaml` | Example `criSocket` for kubeadm |
+| `yamls/failure-troubleshooting.yaml` | Socket / cgroup / install hints |
+
+---
+
+## Troubleshooting
+
+- **Not root** → install script must run under `sudo`
+- **cgroup errors later with kubelet** → confirm `SystemdCgroup = true` in containerd config and kubelet uses `cgroupDriver: systemd`
+- **`crictl` fails** → `sudo journalctl -u containerd -n 50`
+- **Socket missing** → service not started or wrong path for your distro (check lesson + distro docs)
+
+---
+
+## Learning objective
+
+- Install containerd, verify socket and `crictl`, align kubeadm config with the CRI endpoint.
+
+## Why this matters
+
+Wrong runtime or cgroup mismatch is a top reason fresh kubeadm nodes stay **NotReady**.
+
+## Next
+
+[CRI-O](../1.2.1.2-cri-o/README.md) (alternative) or [Docker + cri-dockerd](../1.2.1.3-docker-engine-via-cri-dockerd/README.md) (legacy), then [1.2.2 Installing Kubernetes with deployment tools](../../1.2.2-installing-kubernetes-with-deployment-tools/README.md) when your course path says so.

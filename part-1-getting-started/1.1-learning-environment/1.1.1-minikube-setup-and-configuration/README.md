@@ -1,215 +1,137 @@
-# 1.1.1 Minikube Setup and Configuration
+# 1.1.1 Minikube Setup and Configuration — teaching transcript
 
-- **Summary**: Install Minikube and `kubectl`, start a local single-node Kubernetes cluster, and validate it with a smoke-test workload.
-- **Content**: What Minikube is and why it exists, how the install and start scripts work, idempotency in setup automation, smoke-testing a cluster.
-- **Lab**: Run `install-minikube.sh`, run `start-minikube.sh`, apply `smoke-test.yaml`, access the service, run `teardown.sh` to clean up.
+## Intro
 
-## Files
+This lesson gives you a **real Kubernetes cluster on your laptop** using **Minikube** — one node, same `kubectl` as production-style clusters, good for learning and add-ons.
 
-| Path | Purpose |
-|------|---------|
-| `scripts/install-minikube.sh` | Idempotent: installs Minikube + kubectl, skips if already at target version |
-| `scripts/start-minikube.sh` | Idempotent: starts the cluster, skips if already running, enables ingress addon |
-| `scripts/teardown.sh` | Idempotent: deletes the Minikube profile, no-op if already gone |
-| `yamls/smoke-test.yaml` | Namespace + Deployment + Service — validates the cluster end to end |
+**You need:** [Part 0](../../../part-0-prerequisites/README.md) (or equivalent terminal + Docker skills); **Docker** (or another Minikube driver you configure). Minikube can use the **Docker driver** (common) or a VM — the scripts default toward Docker-style setups.
 
-## Quick Start
+Replace **`/path/to/K8sOps`** with your clone path. All **`Run`** blocks assume you start from this lesson folder after **Step 1**.
+
+**Note:** If you use **Kind** instead, skip this lesson and do [1.1.2](../1.1.2-kind-kubernetes-in-docker/README.md). Do **not** run both for the same course track unless you know why.
+
+---
+
+## Step 1 — Open this lesson in the terminal
+
+**Say:**  
+I work from the lesson directory so `./scripts` and `./yamls` paths work.
+
+**Run:**
+
+```bash
+cd /path/to/K8sOps/part-1-getting-started/1.1-learning-environment/1.1.1-minikube-setup-and-configuration
+pwd
+```
+
+**Expected:**  
+Path ending in `1.1.1-minikube-setup-and-configuration`.
+
+---
+
+## Step 2 — Make scripts executable
+
+**Say:**  
+Shell scripts need the execute bit before I can run them.
+
+**Run:**
+
+```bash
+chmod +x scripts/*.sh
+```
+
+**Expected:**  
+No errors.
+
+---
+
+## Step 3 — Install Minikube and kubectl (idempotent)
+
+**Say:**  
+The install script checks what is already installed — safe to run more than once. It may use `sudo` to place binaries under `/usr/local/bin`.
+
+**Run:**
 
 ```bash
 ./scripts/install-minikube.sh
+```
+
+**Expected:**  
+Success messages; `minikube version` and `kubectl version --client` work afterward.
+
+---
+
+## Step 4 — Start the Minikube cluster (idempotent)
+
+**Say:**  
+The start script uses a **profile** (this course uses `kfsops-minikube`). If the cluster is already running, the script reuses it. Ingress add-on is enabled for later lessons.
+
+**Run:**
+
+```bash
 ./scripts/start-minikube.sh
-kubectl apply -f yamls/smoke-test.yaml
-minikube service hello-nginx -n minikube-lab
-./scripts/teardown.sh
 ```
 
-## Expected output
-
-- `kubectl get nodes` shows one node in `Ready`.
-- Pods in namespace `minikube-lab` reach `Running` after `kubectl apply`.
-- Service is reachable (browser or `curl` via `minikube service` / port-forward as in the lab).
+**Expected:**  
+Cluster starts or “already running”; `kubectl get nodes` shows one node `Ready`.
 
 ---
 
-## Transcript — 10-Minute Lesson
+## Step 5 — Apply the smoke test (namespace + app + service)
 
-### [0:00–0:45] Hook
+**Say:**  
+One manifest creates namespace `minikube-lab`, a Deployment `hello-nginx`, and a Service. This proves scheduling, DNS, and networking.
 
-Welcome to lesson 1.1.1. By the end of the next ten minutes, you will have a fully working Kubernetes cluster running on your laptop — not a pretend version, not a web simulator, an actual cluster you can deploy apps to, break things, fix things, and learn from.
-
-No cloud account needed. No credit card. No waiting for infrastructure. Let's go.
-
----
-
-### [0:45–2:30] What Is Kubernetes? (In 60 Seconds)
-
-Before we touch Minikube, you need to know — in the simplest possible terms — what Kubernetes actually is.
-
-Imagine you run a pizza restaurant. At lunch, you need 10 chefs. At 3am, you need zero. And if a chef gets sick mid-shift, someone has to cover. You need a manager who watches all of this, adjusts the headcount, and replaces sick chefs automatically.
-
-Kubernetes is that manager — but for software. Instead of chefs, it manages **containers** — small packages of software that run your applications. Kubernetes decides where to run them, restarts them if they crash, adds more when traffic spikes, and removes them when they are not needed.
-
-Real Kubernetes clusters run on multiple powerful servers in data centres at companies like Spotify, Airbnb, and GitHub. They are not something you spin up on a laptop.
-
-So how do you learn it?
-
----
-
-### [2:30–3:30] What Is Minikube?
-
-**Minikube** is a version of Kubernetes that fits on your laptop. It squishes an entire cluster — normally spread across many machines — into a single virtual machine or Docker container on your local computer.
-
-Think of it like a **flight simulator**. A real passenger jet costs $200 million and needs a runway. A flight simulator costs a fraction of that, fits in a room, and teaches you everything you need to know before you ever touch the real thing.
-
-Minikube is your flight simulator.
-
-It supports:
-- The same `kubectl` commands you use on real clusters
-- Add-ons like Ingress, the Kubernetes Dashboard, and metrics
-- Multiple Kubernetes versions so you can test compatibility
-
-What it is NOT good for: running production workloads. It is a single node — no high availability, no real resource isolation. The moment you want production, you graduate to a real cluster (covered in Part 1.2).
-
-**Real-world usage**: Every Kubernetes engineer on a dev team runs some kind of local cluster for rapid testing before pushing changes to staging or production. Minikube is the most popular choice for developers because of its addon ecosystem.
-
----
-
-### [3:30–5:00] The Install Script — Line by Line
-
-Let's look at `install-minikube.sh`.
-
-```bash
-VERSION="${1:-latest}"
-INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
-```
-These are environment variables with defaults. If you run the script with no arguments, it installs the latest Minikube. If you want a specific version: `VERSION=v1.32.0 ./install-minikube.sh`. This is how you make scripts flexible without hardcoding values.
-
-```bash
-detect_os() { ... }
-detect_arch() { ... }
-```
-The script figures out your operating system (Linux or Mac) and CPU architecture (x86 or ARM) automatically. The same script works on your Intel Mac, your M1 Mac, and a Linux server.
-
-```bash
-if command -v minikube >/dev/null 2>&1; then
-  CURRENT_MINIKUBE="$(minikube version --short ...)"
-fi
-
-if [[ "$(normalize_version "$CURRENT_MINIKUBE")" == "$(normalize_version "$VERSION")" ]]; then
-  echo "Minikube already installed. Skipping."
-```
-This is **idempotency**. Before downloading anything, the script checks if the right version is already installed. If yes, it skips. Run this script ten times — it downloads Minikube exactly once. This is a critical property for automation: safe to run again without causing damage or doing unnecessary work.
-
-```bash
-curl -fsSL -o minikube "https://storage.googleapis.com/minikube/releases/..."
-sudo install minikube "$INSTALL_DIR/minikube"
-```
-Downloads the binary and installs it system-wide. The same idempotency logic protects `kubectl` installation right below this.
-
----
-
-### [5:00–6:30] The Start Script — Line by Line
-
-`start-minikube.sh` does the same idempotency trick for the cluster itself.
-
-```bash
-PROFILE="${PROFILE:-kfsops-minikube}"
-```
-A Minikube **profile** is like a named saved cluster. You can have multiple profiles for different projects. We always use `kfsops-minikube` for this course so scripts stay consistent.
-
-```bash
-if minikube profile list -o json >/tmp/minikube-profiles.json 2>/dev/null; then
-  CURRENT_STATUS="$(... | grep Status ...)"
-fi
-
-if [[ "$CURRENT_STATUS" == "Running" ]]; then
-  echo "Already running. Reusing it."
-```
-Before starting, the script checks if the profile already exists and is running. If you call this script again after the cluster is already up, it reuses the existing cluster instead of trying to create a duplicate.
-
-```bash
-minikube start \
-  --driver="$DRIVER" \
-  --cpus="$CPUS" \
-  --memory="$MEMORY_MB" \
-  --kubernetes-version="$KUBERNETES_VERSION" \
-  --profile="$PROFILE"
-```
-This is the actual start command. `--driver=docker` means Minikube runs inside Docker instead of a full VM — faster to start, lighter on memory. If you prefer a VM, set `DRIVER=virtualbox`.
-
-```bash
-minikube addons enable ingress --profile "$PROFILE"
-```
-Enables the Ingress controller — needed for later lessons where we route HTTP traffic by hostname.
-
----
-
-### [6:30–8:00] Smoke Test — Validate the Cluster
-
-With the cluster running, apply the smoke test:
+**Run:**
 
 ```bash
 kubectl apply -f yamls/smoke-test.yaml
 ```
 
-`smoke-test.yaml` creates three things in a single file:
+**Expected:**  
+`namespace/minikube-lab created` (or unchanged), deployment and service created/unchanged.
 
-- **Namespace** `minikube-lab` — an isolated workspace so the test doesn't pollute the default namespace.
-- **Deployment** `hello-nginx` — one pod running Nginx. Includes CPU and memory limits so it behaves like production workloads.
-- **Service** `hello-nginx` of type ClusterIP — exposes the pod inside the cluster.
+---
 
-Wait for the pod:
+## Step 6 — Wait until the pod is ready
+
+**Say:**  
+I wait for the Deployment to roll out before I open the service — otherwise I might hit an empty endpoint.
+
+**Run:**
 
 ```bash
-kubectl get pods -n minikube-lab -w
+kubectl rollout status deployment/hello-nginx -n minikube-lab --timeout=120s
+kubectl get pods -n minikube-lab -o wide
 ```
 
-You will see `STATUS` go from `ContainerCreating` → `Running`. Once it is `Running`, expose it locally:
+**Expected:**  
+`successfully rolled out`; pod `Running`.
+
+---
+
+## Step 7 — Reach the app from your machine
+
+**Say:**  
+`minikube service` opens a tunnel and often launches a browser to the Nginx welcome page. That confirms the full path from laptop → cluster → pod.
+
+**Run:**
 
 ```bash
 minikube service hello-nginx -n minikube-lab
 ```
 
-Minikube opens a tunnel and your browser loads the Nginx welcome page. The cluster is working end to end — networking, DNS, pod scheduling, everything.
+**Expected:**  
+URL printed and/or browser shows Nginx; or use the URL with `curl` in another terminal.
 
 ---
 
-### [8:00–9:30] Real World — Where This Is Used
+## Step 8 — Quick validation (optional recap)
 
-When you join a company that uses Kubernetes, Day 1 your laptop setup will include a local cluster. Here is what that looks like in the real world:
+**Say:**  
+These three commands are my fast health check before moving on.
 
-**Developer workflow**: Write code → build Docker image → `kubectl apply` to local cluster → test → push to git → CI/CD deploys to staging.
-
-Minikube fits the first three steps. It lets you catch Kubernetes configuration errors — wrong environment variables, missing secrets, wrong port numbers — before they reach shared environments.
-
-**Add-ons in practice**: The `ingress` addon we enabled mirrors what production clusters use. When you write an Ingress manifest here, the exact same manifest works on a cloud cluster with minimal changes.
-
-**Version testing**: Minikube lets you pin a Kubernetes version. If production runs v1.29, you run `--kubernetes-version=v1.29` locally and catch API deprecation warnings before they hit production.
-
-Companies that use Minikube for local dev: Google (internal Kubernetes teams), Red Hat, VMware, and effectively every team that ships software on Kubernetes.
-
----
-
-### [9:30–10:00] Recap
-
-Here is what we covered:
-
-- **Kubernetes** manages containers the way a restaurant manager manages chefs — automatic, self-healing, scalable.
-- **Minikube** is a single-node Kubernetes cluster that runs on your laptop inside Docker or a VM.
-- **install-minikube.sh** is idempotent — checks before downloading, safe to run multiple times.
-- **start-minikube.sh** is idempotent — reuses a running cluster, never starts a duplicate.
-- **smoke-test.yaml** proves the cluster works: namespace → deployment → pod → service → browser.
-- **teardown.sh** deletes the profile cleanly when you are done.
-
-Clean up:
-
-```bash
-./scripts/teardown.sh
-```
-
-Next: 1.1.2 — Kind (Kubernetes in Docker), which is better suited for multi-node simulation and CI pipelines.
-
-## Video close — fast validation
+**Run:**
 
 ```bash
 kubectl get nodes
@@ -217,6 +139,57 @@ kubectl get pods -n minikube-lab -o wide
 kubectl get svc -n minikube-lab
 ```
 
-## Failure Troubleshooting Asset
+**Expected:**  
+One Ready node; pod Running; `hello-nginx` Service present.
 
-- `yamls/failure-troubleshooting.yaml` - common Minikube setup/runtime failures, checks, and fixes.
+---
+
+## Step 9 — Tear down when you are done (optional)
+
+**Say:**  
+Teardown deletes the Minikube profile for this course. Idempotent — safe if already deleted.
+
+**Run:**
+
+```bash
+./scripts/teardown.sh
+```
+
+**Expected:**  
+Profile removed or script reports nothing to do.
+
+---
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `scripts/install-minikube.sh` | Installs Minikube + kubectl |
+| `scripts/start-minikube.sh` | Starts profile `kfsops-minikube`, enables ingress |
+| `scripts/teardown.sh` | Deletes the profile |
+| `yamls/smoke-test.yaml` | `minikube-lab` + `hello-nginx` + Service |
+| `yamls/failure-troubleshooting.yaml` | Optional cheat sheet (Minikube failures) |
+
+---
+
+## Troubleshooting
+
+- **Cannot connect to cluster** → `minikube status`; re-run `start-minikube.sh`
+- **Image pull errors** → network / proxy; check `kubectl describe pod -n minikube-lab`
+- **minikube: command not found** → re-run install; check `PATH`
+- **Permission denied on scripts** → Step 2 `chmod +x`
+- **Driver issues** → see Minikube docs for `docker` vs `virtualbox` / `hyperv`
+
+---
+
+## Learning objective
+
+- Install and start Minikube; apply a manifest; verify pods and service; tear down cleanly.
+
+## Why this matters
+
+Local clusters are how teams reproduce Kubernetes bugs before staging. Minikube is a common “flight simulator” for real clusters.
+
+## Next
+
+Either continue with [1.1.3 Local development clusters](../1.1.3-local-development-clusters/README.md) on this cluster, **or** if you chose Kind instead, open [1.1.2](../1.1.2-kind-kubernetes-in-docker/README.md) and skip this lesson next time.
