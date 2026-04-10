@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ha-topology-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "HA design lacks fault tolerance"
+      check: "Review control-plane and etcd node count"
+      fix: "Use odd etcd member counts and valid failure domains"
+    - symptom: "single zone/rack concentration"
+      check: "Map node placement by zone/rack"
+      fix: "Redistribute control-plane and etcd nodes"
+    - symptom: "quorum risk under one failure"
+      check: "Simulate one-node outage impact"
+      fix: "Adjust topology before production rollout"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-namespaces-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Pod rejected: user namespaces not supported"
+      check: "kubectl describe pod <pod>; node kernel and kubelet feature gates"
+      fix: "Use nodes with required kernel; enable UserNamespacesSupport; verify runtime (containerd/CRI-O) version"
+    - symptom: "Security context conflicts with user namespace mode"
+      check: "PodSecurity / PSA warnings; validate pod.spec"
+      fix: "Align runAsUser with user namespace mapping policy; consult cluster baseline"
+    - symptom: "Volume or device access fails inside user-namespaced pod"
+      check: "Runtime and CSI driver logs"
+      fix: "Some volume types restrict user namespaces; test without userns or use supported drivers"

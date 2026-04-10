@@ -201,3 +201,15 @@ For etcd specifically: etcd is sensitive to disk latency. In cloud environments,
 - **Load balancer health checks** at `/healthz:6443` — required for automatic failover.
 
 Next: 1.2.2.1.7 — Set up a High Availability etcd Cluster with kubeadm, for teams choosing the external etcd topology.
+
+## Video close — fast validation
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l tier=control-plane -o wide 2>/dev/null || kubectl get pods -n kube-system -o wide | head -n 20
+kubectl get endpoints kubernetes -o wide
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common HA control-plane join, LB health check, and cert-key issues.

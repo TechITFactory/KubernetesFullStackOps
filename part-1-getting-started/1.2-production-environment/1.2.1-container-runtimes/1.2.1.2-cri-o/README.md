@@ -173,4 +173,16 @@ Beyond OpenShift, CRI-O appears in:
 - **CRI socket**: `/var/run/crio/crio.sock` — reference this in your kubeadm node config.
 - Install script is **idempotent** — skips package install if already present, writes config fresh each time.
 
+## Video close — fast validation
+
+```bash
+sudo systemctl status crio --no-pager
+sudo crictl --runtime-endpoint unix:///var/run/crio/crio.sock info
+kubectl get nodes -o wide
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common CRI-O install, socket, and cgroup alignment failures.
+
 Next: 1.2.1.3 — Docker Engine via `cri-dockerd`, for environments with an existing Docker dependency.

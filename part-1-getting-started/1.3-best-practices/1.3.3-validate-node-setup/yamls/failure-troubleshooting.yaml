@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-setup-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubelet fails to start"
+      check: "sudo journalctl -u kubelet -xe"
+      fix: "Correct kubelet config and runtime endpoint"
+    - symptom: "swap enabled"
+      check: "swapon --show"
+      fix: "Disable swap and update /etc/fstab"
+    - symptom: "CNI/kernel prereqs missing"
+      check: "lsmod | grep br_netfilter"
+      fix: "Load kernel modules and apply sysctl settings"

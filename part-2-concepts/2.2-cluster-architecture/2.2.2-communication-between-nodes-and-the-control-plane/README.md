@@ -8,3 +8,29 @@
 
 - `scripts/inspect-node-control-plane-communication.sh`
 - `yamls/node-control-plane-flow.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+./scripts/inspect-node-control-plane-communication.sh
+kubectl get nodes
+kubectl get lease -n kube-node-lease
+```
+
+## Expected output
+
+- Node lease objects are visible and correlate with node names.
+- Node heartbeats and status updates can be observed from API objects/events.
+
+## Video close - fast validation
+
+```bash
+kubectl get lease -n kube-node-lease | head -n 20
+kubectl get events -n kube-system --sort-by=.lastTimestamp | tail -n 20
+kubectl get nodes -o wide
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common node registration, lease heartbeat, and API communication failures.

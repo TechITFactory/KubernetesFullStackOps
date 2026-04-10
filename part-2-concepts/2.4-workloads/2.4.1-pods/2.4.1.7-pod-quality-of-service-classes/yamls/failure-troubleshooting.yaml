@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-qos-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Expected Guaranteed QoS but got Burstable"
+      check: "kubectl get pod <pod> -o jsonpath='{.status.qosClass}'; compare requests vs limits per container"
+      fix: "Set limits = requests for every container in the pod (cpu and memory)"
+    - symptom: "Burstable pod OOMKilled under node pressure"
+      check: "kubectl describe node; dmesg on node if permitted"
+      fix: "Raise memory limits or requests; reduce BestEffort neighbors; right-size workload"
+    - symptom: "CPU throttling despite low utilization"
+      check: "kubectl top pod; compare cpu limit vs actual burst needs"
+      fix: "Increase cpu limit or set cpu request closer to steady usage"

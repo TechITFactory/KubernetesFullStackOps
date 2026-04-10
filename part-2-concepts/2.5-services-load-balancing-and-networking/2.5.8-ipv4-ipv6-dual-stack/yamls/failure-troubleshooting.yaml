@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dual-stack-networking-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Service only gets single stack ClusterIPs"
+      check: "kubectl get svc <name> -o yaml | grep -E 'ipFamilies|ipFamilyPolicy|clusterIPs'"
+      fix: "Set ipFamilyPolicy RequireDualStack or PreferDualStack when cluster supports it"
+    - symptom: "Pods have IPv4 only on dual-stack cluster"
+      check: "Node and CNI IPv6 configuration; pod status.podIPs"
+      fix: "Enable IPv6 on nodes; install dual-stack CNI; verify RA/ULA addressing plan"
+    - symptom: "Egress works on one family only"
+      check: "NAT64/DNS64; default routes inside pod network namespace"
+      fix: "Align firewall and cloud routes for both families; avoid asymmetric policies"

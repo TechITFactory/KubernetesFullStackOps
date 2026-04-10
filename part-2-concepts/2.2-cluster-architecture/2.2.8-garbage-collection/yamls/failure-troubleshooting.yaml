@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: garbage-collection-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "dependent resources are not deleted"
+      check: "kubectl get <resource> -o yaml"
+      fix: "Verify ownerReferences and deletion propagation policy"
+    - symptom: "objects remain in Terminating"
+      check: "kubectl get <resource>/<name> -o yaml"
+      fix: "Inspect blocking finalizers and remove only after safe cleanup"
+    - symptom: "unexpected orphan resources after delete"
+      check: "kubectl api-resources --namespaced=true"
+      fix: "Use foreground deletion and ensure controllers set ownership correctly"

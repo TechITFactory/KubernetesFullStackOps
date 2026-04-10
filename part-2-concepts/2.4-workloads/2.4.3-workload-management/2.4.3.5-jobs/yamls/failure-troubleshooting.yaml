@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jobs-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Job pods complete but Job not marked complete"
+      check: "kubectl describe job <name>; completions vs parallelism"
+      fix: "Align completions and succeeded count; check backoffLimit retries consuming attempts"
+    - symptom: "Job never creates pods"
+      check: "kubectl get job -o yaml; suspend field; resource quota"
+      fix: "Set suspend false; fix quota; verify restartPolicy OnFailure/Never on pod template"
+    - symptom: "Parallel job stuck: fewer active than parallelism"
+      check: "kubectl get pods -l job-name=<name>; node capacity"
+      fix: "Scheduling or image pull failures on some workers; fix pod template errors"

@@ -8,3 +8,11 @@
 
 - `2.4.5.1 Horizontal Pod Autoscaling`
 - `2.4.5.2 Vertical Pod Autoscaling`
+
+## Module wrap - quick validation
+
+```bash
+kubectl get hpa -A 2>/dev/null || true
+kubectl api-resources | grep -i verticalpodautoscaler || true
+kubectl top pods -A 2>/dev/null | head -n 15 || true
+```

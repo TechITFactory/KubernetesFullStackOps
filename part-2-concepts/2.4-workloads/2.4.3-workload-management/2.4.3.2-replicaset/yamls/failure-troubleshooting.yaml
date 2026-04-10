@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: replicaset-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Orphan pods not owned by expected ReplicaSet"
+      check: "kubectl get pod <pod> -o jsonpath='{.metadata.ownerReferences}'"
+      fix: "Match pod labels to RS selector; avoid manual pod create without controller"
+    - symptom: "Two ReplicaSets fight over same pods"
+      check: "kubectl get rs -n <ns> --show-labels"
+      fix: "Ensure unique app/version labels; one Deployment per logical app or distinct selectors"
+    - symptom: "ReplicaSet scaled but pods not created"
+      check: "kubectl describe rs <name>; quota and limits"
+      fix: "Namespace resource quota; priority; admission denials"

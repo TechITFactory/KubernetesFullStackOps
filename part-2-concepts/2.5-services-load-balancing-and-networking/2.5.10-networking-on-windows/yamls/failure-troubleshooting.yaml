@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: windows-kube-networking-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Pods on Windows nodes cannot reach ClusterIP"
+      check: "Windows kube-proxy version vs control plane; HNS policy errors"
+      fix: "Align kube-proxy and CNI versions with Kubernetes support matrix; restart kube-proxy-win"
+    - symptom: "HostProcess or overlay networking partial failures"
+      check: "Windows Server version; containerd configuration"
+      fix: "Meet Windows OS + KB requirements; follow vendor CNI Windows install guide"
+    - symptom: "DNS works on Linux workers but not Windows"
+      check: "WinDNS vs CoreDNS forwarding; kube-dns Service connectivity from Windows pod"
+      fix: "Verify Windows pod can reach cluster DNS IP; check outbound NAT and firewall"

@@ -172,6 +172,18 @@ Some teams stay on `cri-dockerd` longer because their build pipelines depend on 
 - **Two sockets**: `/var/run/docker.sock` (Docker) and `/run/cri-dockerd.sock` (CRI). kubeadm must point at the CRI socket.
 - **When to use**: legacy Docker environments, migration bridges. Not recommended for new clusters.
 - Install script is **idempotent** — checks each package before installing, safe to re-run.
+
+## Video close — fast validation
+
+```bash
+sudo systemctl status docker --no-pager
+sudo systemctl status cri-docker --no-pager
+sudo crictl --runtime-endpoint unix:///run/cri-dockerd.sock info
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common cri-dockerd socket, Docker daemon, and kubelet runtime endpoint issues.
 - **Check cgroup driver** manually on older distributions — Docker may default to `cgroupfs`.
 
 Next: 1.2.2 — Installing Kubernetes with kubeadm, where we use the runtime you just installed to bootstrap a full cluster.

@@ -168,6 +168,10 @@ sysctl --system
 
 These are prerequisites that should be applied before installing kubeadm. If your node is missing them, the diagnostic bundle tells you — and the fix is two commands.
 
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common preflight, CRI, CNI, and kubelet startup failures.
+
 ---
 
 ### [8:00–9:15] Real World — Diagnostics in On-Call Runbooks
@@ -193,3 +197,12 @@ The script's `[OK]` / `[WARN]` output format is intentional — it is designed t
 - The `run_capture` helper is a reusable pattern — add commands to it for any node-level diagnostic you need.
 
 Next: 1.2.2.1.3 — Creating a Cluster with kubeadm, where we run `kubeadm init` and join worker nodes.
+
+## Video close — fast validation
+
+```bash
+sudo ./scripts/collect-kubeadm-diagnostics.sh
+ls -la ./kubeadm-diagnostics/
+sudo systemctl status kubelet --no-pager
+head -n 40 ./kubeadm-diagnostics/kubelet-logs.txt
+```

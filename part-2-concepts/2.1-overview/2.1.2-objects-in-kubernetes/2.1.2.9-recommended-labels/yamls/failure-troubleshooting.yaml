@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recommended-labels-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Dashboards or Helm show unknown app name"
+      check: "Consistent app.kubernetes.io/name and instance labels"
+      fix: "Adopt recommended label set across charts and base manifests"
+    - symptom: "Selector accidentally includes version label"
+      check: "Deployment selector matchLabels vs template labels"
+      fix: "Keep selectors stable; put version only on pod template labels if releases must roll"
+    - symptom: "Typo in label key breaks queries"
+      check: "kubectl get --show-labels; diff with documentation"
+      fix: "Lint manifests; use schema or policy (kyverno/OPA) for required labels"

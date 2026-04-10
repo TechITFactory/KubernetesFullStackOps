@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cgroup-v2-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubelet fails with cgroup driver mismatch"
+      check: "journalctl -u kubelet -n 120"
+      fix: "Align kubelet and runtime on systemd cgroup driver"
+    - symptom: "pods stuck in ContainerCreating on new nodes"
+      check: "kubectl describe pod <pod-name>"
+      fix: "Confirm runtime/cgroup config and restart kubelet/runtime services"
+    - symptom: "resource accounting is inconsistent"
+      check: "kubectl top nodes"
+      fix: "Verify cgroup mode, metrics-server health, and runtime compatibility"

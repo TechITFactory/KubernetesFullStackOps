@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clusterip-allocation-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Unable to allocate ClusterIP: range full"
+      check: "apiserver service-cluster-ip-range; count of Services"
+      fix: "Expand IP range (planned change) or delete unused Services; split into more clusters"
+    - symptom: "Specified clusterIP conflicts or invalid"
+      check: "kubectl apply error; static IP inside range"
+      fix: "Pick free IP in range or omit for dynamic allocation"
+    - symptom: "Dual-stack allocation errors"
+      check: "ipFamilies order vs available subnets"
+      fix: "Align ipFamilies with cluster configuration; verify secondary service CIDR"

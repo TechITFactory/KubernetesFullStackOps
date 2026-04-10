@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: replicationcontroller-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "ReplicationController not recommended for new work"
+      check: "Prefer Deployment for rolling updates and revision history"
+      fix: "Migrate to Deployment: same pod template + labels; scale RC down after cutover"
+    - symptom: "RC not adopting existing pods"
+      check: "kubectl get rc -o yaml; selector matchLabels"
+      fix: "Pod labels must match RC selector exactly"
+    - symptom: "Cannot do rolling update like Deployment"
+      check: "kubectl rolling-update (deprecated) vs manual replace"
+      fix: "Use Deployment or recreate RC with new template and controlled scale"

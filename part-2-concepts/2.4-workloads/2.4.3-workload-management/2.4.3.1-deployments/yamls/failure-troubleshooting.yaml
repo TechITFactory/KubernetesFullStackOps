@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deployments-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Rollout stuck: NewReplicaSet has 0 desired"
+      check: "kubectl describe deploy <name>; kubectl get rs -l"
+      fix: "Fix image pull, probes, or resource limits on new template; kubectl rollout undo if urgent"
+    - symptom: "Old pods never terminate"
+      check: "kubectl get pods; PDB; preStop hooks"
+      fix: "Shorten terminationGracePeriodSeconds carefully; fix app shutdown; relax PDB during maintenance"
+    - symptom: "Deployment creates unexpected ReplicaSet"
+      check: "kubectl get rs -l app=<label> -o wide"
+      fix: "Immutable selector changes fork RS; avoid changing spec.selector; migrate with new deploy name"

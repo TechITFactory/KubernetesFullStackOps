@@ -188,3 +188,14 @@ For a team running a 20-node cluster for a single product, the overhead is rarel
 - **Ongoing ops**: backups, certificate rotation, defragmentation, monitoring. Budget time for these.
 
 Next: 1.2.2.1.8 — Configuring each kubelet in your cluster using kubeadm.
+
+## Video close — fast validation
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods -n kube-system | grep -E 'etcd|kube-apiserver' || kubectl get pods -n kube-system | head
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common etcd quorum, cert, endpoint-health, and backup/restore failures.

@@ -1,0 +1,10 @@
+# Course planning artifacts (do not push)
+/COURSE_MASTER_PLAN.md
+/LESSON_TEMPLATE.md
+/TRANSCRIPT_STYLE_GUIDE.md
+/ROADMAP.md
+/KUBERNETES_VERSION_MATRIX.md
+
+# Transcript files (do not push)
+**/TRANSCRIPT*.md
+**/*transcript*.md

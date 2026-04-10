@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pss-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Non-compliant pod still runs"
+      check: "kubectl get ns --show-labels"
+      fix: "Reapply enforce/audit/warn labels correctly"
+    - symptom: "Compliant pod blocked"
+      check: "kubectl describe pod <pod-name>"
+      fix: "Adjust securityContext to meet restricted profile"
+    - symptom: "No admission messages"
+      check: "kubectl get events -A --sort-by=.lastTimestamp"
+      fix: "Verify API server and Pod Security admission behavior"

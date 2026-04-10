@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: topology-aware-routing-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Traffic not staying in-zone as expected"
+      check: "Node labels topology.kubernetes.io/zone; EndpointSlice hints; kube-proxy version"
+      fix: "Ensure hints enabled and supported; verify endpoints actually exist in preferred zones"
+    - symptom: "Hints disabled or ignored after upgrade"
+      check: "Release notes; feature gates; Service field renames across versions"
+      fix: "Migrate to supported fields (e.g. trafficDistribution) per server minor"
+    - symptom: "Uneven load when using locality preferences"
+      check: "Replica distribution across zones; PDBs during zonal outage"
+      fix: "Balance replicas; combine topology hints with health-aware routing expectations"

@@ -1,8 +1,8 @@
 # 2.1 Overview
 
-- Objective: [Add objective]
-- Outcomes: [Add outcomes]
-- Notes: [Add notes]
+- **Objective**: Build the mental model for how Kubernetes represents desired state, how the API exposes it, and how `kubectl` is used to read and change that state safely.
+- **Outcomes**: Name core components and their roles; describe objects, fields, and the API machinery (including discovery and versioning); run confident read-only and change workflows with `kubectl`.
+- **Notes**: Keep each subsection tied to observable cluster output (`kubectl get/describe/explain`). This module is the on-ramp before architecture, workloads, and networking depth in later chapters.
 
 ## Children
 

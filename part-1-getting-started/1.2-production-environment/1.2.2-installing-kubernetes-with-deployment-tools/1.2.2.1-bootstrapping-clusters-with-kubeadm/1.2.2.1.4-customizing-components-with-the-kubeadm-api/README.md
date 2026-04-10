@@ -167,6 +167,10 @@ This means:
 - Changes require review — no one person can silently change API server flags in production.
 - Rollback is `git revert` + reprovisioning.
 
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common kubeadm API config syntax, validation, and component-flag errors.
+
 This is considered best practice for any cluster that handles customer data or has compliance requirements.
 
 ---
@@ -198,3 +202,10 @@ Never manually edit `/etc/kubernetes/manifests/` static pod files — kubeadm wi
 - The config used at init is stored in `kube-system/kubeadm-config` ConfigMap for upgrade reference.
 
 Next: 1.2.2.1.5 — Options for Highly Available Topology, where we choose how to design a cluster that survives control-plane node failure.
+
+## Video close — fast validation
+
+```bash
+./scripts/validate-kubeadm-config.sh
+kubectl get cm kubeadm-config -n kube-system -o yaml | sed -n '1,50p'
+```

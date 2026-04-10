@@ -3,5 +3,7 @@ kind: ConfigMap
 metadata:
   generateName: generated-object-
   namespace: default
+  labels:
+    training.k8sops.io/lesson: object-names-and-ids
 data:
   lesson: names-and-uids

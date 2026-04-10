@@ -20,3 +20,16 @@ Covers `kubeadm` end to end: installing the packages, initialising a control pla
 
 ### 1.2.3 Turnkey Cloud Solutions
 Evaluates managed Kubernetes offerings (EKS, GKE, AKS, and others) for teams where operating the control plane themselves is not the right trade-off.
+
+## Module wrap — quick validation
+
+After the runtime + kubeadm track you should have Linux nodes with a working CRI and (for the kubeadm labs) a healthy control plane:
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -o wide | head -n 25
+kubeadm version 2>/dev/null || true
+kubectl version --client
+```
+
+If you only completed **1.2.1** (no cluster yet), skip `kubectl` and instead verify the runtime service and CRI socket from the lesson you followed (`crictl` against that socket, `systemctl status` on the daemon).

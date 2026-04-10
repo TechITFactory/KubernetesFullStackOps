@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeadm-ha-cluster-failures
+data:
+  common_failures: |
+    - symptom: "control-plane node join fails"
+      check: "kubeadm token list && cert key validity"
+      fix: "Regenerate token/certificate key and retry join"
+    - symptom: "LB health checks fail"
+      check: "curl -k https://<lb-endpoint>:6443/healthz"
+      fix: "Fix LB backend targets and API server cert SANs"
+    - symptom: "etcd quorum unstable after join"
+      check: "etcdctl member list"
+      fix: "Join nodes sequentially and validate each step"

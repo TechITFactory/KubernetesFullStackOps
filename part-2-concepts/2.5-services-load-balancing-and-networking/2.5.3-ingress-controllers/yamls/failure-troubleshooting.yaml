@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-controller-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Controller pods CrashLoop or webhook errors"
+      check: "kubectl logs -n <ingress-ns> deploy/<controller>; validating webhook CA bundle"
+      fix: "Reinstall chart with correct cluster CA; fix admission timeouts; check API server reachability"
+    - symptom: "External IP/LB pending forever"
+      check: "kubectl get svc -n <ingress-ns>; cloud controller logs"
+      fix: "Cloud LB quota/permissions; on bare metal use NodePort or MetalLB-style integration"
+    - symptom: "Wrong controller picks up Ingress"
+      check: "Multiple controllers; default ingress class annotation"
+      fix: "Set ingressClassName explicitly; disable extra controllers in dev"

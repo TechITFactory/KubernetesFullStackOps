@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-versions-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl apply warns deprecated API version"
+      check: "Release notes; kubectl convert (deprecated) or migrate manifest to preferred version"
+      fix: "Update apiVersion to served stable version; test in lower environment first"
+    - symptom: "Storage version migration job failed after upgrade"
+      check: "kube-system migration logs; apiserver etcd health"
+      fix: "Re-run migration per vendor runbook; ensure single storage version in discovery"
+    - symptom: "Cannot apply ConfigMap to kube-system (forbidden)"
+      check: "kubectl auth can-i create configmaps -n kube-system"
+      fix: "Use admin context for lab; in production use a user namespace for notes manifests"

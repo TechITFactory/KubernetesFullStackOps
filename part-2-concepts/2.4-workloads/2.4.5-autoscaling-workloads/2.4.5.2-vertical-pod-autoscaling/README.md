@@ -7,3 +7,27 @@
 ## Assets
 
 - `yamls/vpa-demo.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+kubectl apply -f ../../2.4.4-managing-workloads/yamls/manage-workloads-demo.yaml
+kubectl apply -f yamls/vpa-demo.yaml
+kubectl get verticalpodautoscaler.autoscaling.k8s.io vpa-demo
+```
+
+## Expected output
+
+- **Requires VPA CRDs/controller installed** in the cluster. If CRDs are missing, install the VPA components for your environment first, then re-apply.
+
+## Video close - fast validation
+
+```bash
+kubectl api-resources | grep -i verticalpodautoscaler || true
+kubectl describe vpa vpa-demo 2>/dev/null || true
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common missing CRD, admission webhook, and recommendation loop failures.

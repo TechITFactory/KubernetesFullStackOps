@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lifecycle-hooks-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "postStart hook blocks or fails readiness"
+      check: "kubectl describe pod <pod-name>"
+      fix: "Keep postStart fast and idempotent; avoid blocking the main process startup"
+    - symptom: "preStop not observed during delete"
+      check: "kubectl delete pod <pod-name> --grace-period=30"
+      fix: "Increase terminationGracePeriodSeconds if cleanup needs more time"
+    - symptom: "container terminates before hook completes"
+      check: "kubectl get pod <pod-name> -o yaml"
+      fix: "Align hook duration with grace period and SIGTERM handling"

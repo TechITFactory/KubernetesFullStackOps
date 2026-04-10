@@ -160,3 +160,15 @@ Run this every time you start work on a cluster provisioning task. Expired cloud
 - **cloud-readiness-check.sh** — check CLIs and auth before running provisioning commands.
 
 This concludes Part 1 of the course. In Part 2 we move into Kubernetes Concepts — the mental model behind every resource you create and manage.
+
+## Video close — fast validation
+
+```bash
+./scripts/cloud-readiness-check.sh
+kubectl config current-context
+kubectl get nodes -o wide 2>/dev/null || echo "No cluster context or API unreachable — fix auth/context before provisioning."
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common managed-cluster access, auth, and networking readiness failures.

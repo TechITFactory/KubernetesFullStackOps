@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: self-healing-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "deleted pod is not recreated"
+      check: "kubectl get deploy,rs,pods -l app=self-healing-demo"
+      fix: "Ensure workload is managed by controller and desired replicas > 0"
+    - symptom: "pod restarts but never becomes Ready"
+      check: "kubectl describe pod <pod-name>"
+      fix: "Fix readiness/liveness probe config and dependent service startup"
+    - symptom: "recovery is slow during node failure"
+      check: "kubectl get events -A --sort-by=.lastTimestamp"
+      fix: "Tune probe thresholds, anti-affinity, and resource requests"

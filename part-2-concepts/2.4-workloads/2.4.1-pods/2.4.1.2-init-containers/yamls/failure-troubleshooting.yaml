@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-containers-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Pod stuck in Init:0/1 (or N/N)"
+      check: "kubectl describe pod <pod-name>; kubectl logs <pod-name> -c <init-container>"
+      fix: "Fix init image/command; ensure shared volumes mount paths match; check network to dependencies"
+    - symptom: "Init container ErrImagePull"
+      check: "kubectl get events --field-selector involvedObject.name=<pod-name>"
+      fix: "Same as app containers: image name/tag, pull secrets, registry reachability"
+    - symptom: "Init succeeds but main container never starts as expected"
+      check: "kubectl get pod <pod-name> -o jsonpath='{.status.initContainerStatuses[*]}'"
+      fix: "Verify init exit 0; sidecar-style inits need restartPolicy and Kubernetes version support"

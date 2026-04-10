@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: images-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "ImagePullBackOff or ErrImagePull"
+      check: "kubectl describe pod <pod-name>"
+      fix: "Verify image name/tag, registry auth, and network egress to the registry"
+    - symptom: "wrong image version running"
+      check: "kubectl get pod <pod-name> -o jsonpath='{.spec.containers[*].image}'"
+      fix: "Pin by digest in production and align imagePullPolicy with rollout policy"
+    - symptom: "pulls are slow or rate limited"
+      check: "kubectl get events --field-selector involvedObject.name=<pod-name>"
+      fix: "Use imagePullSecrets, mirror registries, or pre-pull on nodes"

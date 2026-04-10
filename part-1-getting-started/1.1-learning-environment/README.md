@@ -20,3 +20,14 @@ Runs Kubernetes nodes as Docker containers. Supports multi-node clusters and sta
 
 ### 1.1.3 Local Development Clusters
 Sets up a consistent, resource-governed development namespace (`dev-local`) on whichever cluster you just created. Covers Namespaces, ResourceQuotas, and LimitRanges — the three controls every production cluster uses to keep workloads isolated and safe.
+
+## Module wrap — quick validation
+
+After **1.1.3**, confirm your workspace and API access (use your Kind context flag if you are on Kind):
+
+```bash
+kubectl cluster-info
+kubectl get ns dev-local
+kubectl get quota,limitrange -n dev-local
+kubectl get pods -n dev-local -o wide
+```

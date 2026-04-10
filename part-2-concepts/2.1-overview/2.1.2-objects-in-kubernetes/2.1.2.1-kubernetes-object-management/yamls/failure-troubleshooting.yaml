@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: object-management-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl apply returns immutable field errors"
+      check: "kubectl describe <kind>/<name>"
+      fix: "Delete/recreate immutable resources or use a new object name/versioned manifest"
+    - symptom: "label selector returns no objects"
+      check: "kubectl get <kind> --show-labels"
+      fix: "Align selector keys/values with object labels and re-apply manifests"
+    - symptom: "object stuck Terminating"
+      check: "kubectl get <kind>/<name> -o yaml"
+      fix: "Inspect/remove blocked finalizers only after confirming safe cleanup"

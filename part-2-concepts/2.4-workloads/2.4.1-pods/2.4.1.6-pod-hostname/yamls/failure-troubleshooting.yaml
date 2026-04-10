@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-hostname-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "DNS short name does not resolve between pods"
+      check: "kubectl run -it --rm debug --image=busybox -- nslookup <service>"
+      fix: "Use FQDN service.namespace.svc.cluster.local; verify Service and Endpoints"
+    - symptom: "hostname inside pod wrong vs pod name"
+      check: "kubectl exec <pod> -- hostname; get pod -o jsonpath='{.spec.hostname}'"
+      fix: "Set hostname/subdomain in pod spec for StatefulSet-style DNS when required"
+    - symptom: "NetworkPolicy blocks traffic despite correct DNS"
+      check: "kubectl get netpol -A; describe pod for CNI errors"
+      fix: "Allow egress to kube-dns/CoreDNS and required ports"

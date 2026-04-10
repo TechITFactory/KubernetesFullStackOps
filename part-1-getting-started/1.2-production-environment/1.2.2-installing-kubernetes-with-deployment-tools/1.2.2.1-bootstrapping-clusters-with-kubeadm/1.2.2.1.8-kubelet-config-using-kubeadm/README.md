@@ -172,6 +172,10 @@ kubectl describe node <node-name> | grep -A5 Conditions
 
 `MemoryPressure: False`, `DiskPressure: False`, `PIDPressure: False` — these confirm eviction is not active and the node is healthy.
 
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common kubelet config merge, configz, and node-condition failures.
+
 ---
 
 ### [8:15–9:15] Real World — Drift and Configuration Management
@@ -197,3 +201,11 @@ Tools like **Kubelet Configuration Controller** (part of the Node Feature Discov
 - **Verify with `configz`** — do not assume file writes produced the expected running configuration.
 
 Next: 1.2.2.1.9 — Dual-stack Support with kubeadm, for clusters that need to serve both IPv4 and IPv6 traffic.
+
+## Video close — fast validation
+
+```bash
+sudo systemctl is-active kubelet
+kubectl get nodes -o wide
+kubectl describe node "$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')" | sed -n '/Conditions:/,/Addresses:/p'
+```

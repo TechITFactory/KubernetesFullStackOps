@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-dns-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "ndots / search domain causes wrong resolution"
+      check: "kubectl exec <pod> -- cat /etc/resolv.conf"
+      fix: "Use FQDN (trailing dot) for external names; tune pod dnsConfig when justified"
+    - symptom: "CoreDNS CrashLoop or upstream timeouts"
+      check: "kubectl logs -n kube-system -l k8s-app=kube-dns; Corefile forwarders"
+      fix: "Fix node/VPC DNS; point forward to reachable resolvers; increase timeouts"
+    - symptom: "Service name does not resolve from another namespace"
+      check: "Use <svc>.<namespace>.svc.cluster.local"
+      fix: "Correct short vs FQDN; verify Service exists and Endpoints are ready"

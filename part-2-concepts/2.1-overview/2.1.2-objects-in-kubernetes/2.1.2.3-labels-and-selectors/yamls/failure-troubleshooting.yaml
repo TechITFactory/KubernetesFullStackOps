@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labels-selectors-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl get -l returns nothing"
+      check: "kubectl get <kind> --show-labels; exact key=value including case"
+      fix: "Fix typo; use set-based selectors (!=, in, notin) when matching multiple values"
+    - symptom: "Service has no endpoints"
+      check: "kubectl describe svc; compare spec.selector to pod template labels"
+      fix: "Align labels on Pods with Service selector; check readiness"
+    - symptom: "Deployment selector is immutable error"
+      check: "kubectl explain deployment.spec.selector"
+      fix: "Create a new Deployment with the desired selector and migrate traffic"

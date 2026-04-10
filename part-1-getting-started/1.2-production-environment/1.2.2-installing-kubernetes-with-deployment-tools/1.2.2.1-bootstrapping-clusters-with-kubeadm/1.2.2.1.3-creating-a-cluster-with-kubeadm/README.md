@@ -214,3 +214,15 @@ All pods in `kube-system` should be `Running`. `coredns` pods may be `Pending` b
 - **`print-worker-join-command.sh`** — generates a fresh bootstrap token and prints the complete join command. Tokens expire in 24h.
 
 Next: 1.2.2.1.4 — Customizing Components with the kubeadm API, where we explore everything you can control through the init config file.
+
+## Video close — fast validation
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -o wide
+kubectl cluster-info
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common `kubeadm init`, CNI readiness, and worker join issues.

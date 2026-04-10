@@ -24,6 +24,12 @@ curl localhost:8080
 ./scripts/teardown.sh
 ```
 
+## Expected output
+
+- `kubectl get nodes --context kind-kfsops-kind` lists control-plane and worker `Ready`.
+- Workload pods in `kind-lab` (or as in `sample-workload.yaml`) are `Running`.
+- `curl localhost:8080` returns a response from the sample service (after NodePort mapping).
+
 ---
 
 ## Transcript — 10-Minute Lesson
@@ -229,3 +235,15 @@ Clean up:
 ```
 
 Next: 1.1.3 — Local Development Clusters, where we set up a proper workspace namespace with quotas and defaults on whichever cluster you just created.
+
+## Video close — fast validation
+
+```bash
+kubectl get nodes --context kind-kfsops-kind
+kubectl get pods -A --context kind-kfsops-kind | head
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:8080
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common Kind creation, networking, and kubeconfig-context issues.

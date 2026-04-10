@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: namespaces-overview-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl says object not found but manifest is correct"
+      check: "kubectl config view --minify -o jsonpath='{..namespace}'; current context"
+      fix: "Pass -n <namespace> or set context namespace; use FQ object name where supported"
+    - symptom: "Namespace stuck Terminating"
+      check: "kubectl get ns <name> -o yaml; finalizers; resources remaining inside"
+      fix: "Delete leftover objects in namespace; remove blocking finalizers only after safe cleanup"
+    - symptom: "Forbidden when creating namespace or objects"
+      check: "kubectl auth can-i create namespaces; RBAC for target ns"
+      fix: "Use allowed namespace; request RoleBinding; avoid default for team workloads in production"

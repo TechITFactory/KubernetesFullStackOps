@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: containerd-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "containerd service inactive"
+      check: "sudo systemctl status containerd"
+      fix: "Restart service and validate /etc/containerd/config.toml"
+    - symptom: "kubelet runtime endpoint mismatch"
+      check: "sudo journalctl -u kubelet -xe"
+      fix: "Align kubelet CRI socket with containerd socket path"
+    - symptom: "image pull failures"
+      check: "sudo crictl images && sudo crictl pull <image>"
+      fix: "Verify network access and registry auth settings"

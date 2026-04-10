@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: finalizers-lesson-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Resource stuck in Terminating for a long time"
+      check: "kubectl get <kind>/<name> -o yaml | grep -A5 finalizers"
+      fix: "Identify controller responsible for removing finalizer; fix stuck worker; avoid blind patch in prod"
+    - symptom: "Removed finalizer manually and leaked cloud resources"
+      check: "Audit logs; external state (LB, volumes)"
+      fix: "Run proper teardown controller first; treat force-remove as incident-driven break-glass"
+    - symptom: "Namespace delete blocked by one namespaced object"
+      check: "kubectl api-resources --verbs=list --namespaced -o name | xargs -n1 kubectl get -n <ns> 2>/dev/null"
+      fix: "Delete or fix the blocking object; check CRD finalizers"

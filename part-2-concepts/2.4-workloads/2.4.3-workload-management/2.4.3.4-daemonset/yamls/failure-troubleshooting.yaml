@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: daemonset-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "DaemonSet pods not on all nodes"
+      check: "kubectl describe ds <name>; node taints; nodeSelector"
+      fix: "Add tolerations for control-plane/system taints; widen nodeSelector or remove mismatch"
+    - symptom: "DaemonSet pods CrashLoop on some nodes only"
+      check: "Per-node logs; kernel version; path mounts"
+      fix: "Node-specific paths (/var/log) or hostNetwork; use standard paths or tolerations"
+    - symptom: "Update not rolling to every node"
+      check: "kubectl get pods -l <ds-selector> -o wide; maxUnavailable"
+      fix: "Tune updateStrategy; cordoned nodes; surge settings on supported versions"

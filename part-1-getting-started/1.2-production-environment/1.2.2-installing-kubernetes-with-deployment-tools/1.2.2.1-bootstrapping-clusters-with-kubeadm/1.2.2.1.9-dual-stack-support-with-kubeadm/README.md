@@ -179,3 +179,15 @@ For most product companies — a startup, a SaaS app, an internal tool — dual-
 - **Who needs it**: telcos, government, IPv6-mandate environments. Not required for most product companies.
 
 This completes the kubeadm bootstrapping series. Next: 1.2.3 — Turnkey Cloud Solutions, evaluating when managed Kubernetes is the better call.
+
+## Video close — fast validation
+
+```bash
+kubectl get nodes -o wide
+kubectl get svc kubernetes -o jsonpath='{.spec.clusterIPs}{"\n"}'
+kubectl get pods -A -o wide | head -n 15
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common dual-stack CIDR, CNI support, and service family-policy issues.

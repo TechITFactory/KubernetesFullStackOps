@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-controller-manager-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "cloud node initialization never completes"
+      check: "kubectl describe node <node-name>"
+      fix: "Verify CCM deployment, cloud credentials, and provider API access"
+    - symptom: "LoadBalancer services stay pending"
+      check: "kubectl describe svc <service-name>"
+      fix: "Check CCM logs, cloud quotas, and subnet/security-group settings"
+    - symptom: "routes not reconciled"
+      check: "kubectl logs -n kube-system <ccm-pod>"
+      fix: "Validate cloud-route permissions and cluster CIDR configuration"

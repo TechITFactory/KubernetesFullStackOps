@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workload-reference-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl explain / api-resources missing expected kind"
+      check: "kubectl api-versions; kubectl api-resources | grep -i <kind>"
+      fix: "Install CRD or enable feature gate; use correct API group/version"
+    - symptom: "Docs vs cluster behavior differ"
+      check: "kubectl version -o yaml; server minor version"
+      fix: "Match kubernetes.io docs to server version; check deprecation notices"
+    - symptom: "Wrong short name resolves to unexpected resource"
+      check: "kubectl api-resources | grep -w <shortname>"
+      fix: "Use full kind or --api-group explicitly"

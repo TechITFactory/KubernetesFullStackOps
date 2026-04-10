@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mixed-version-proxy-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl errors after component upgrade"
+      check: "kubectl version"
+      fix: "Verify version skew policy and upgrade client/control-plane in order"
+    - symptom: "API behavior differs across nodes"
+      check: "kubectl get nodes -o wide"
+      fix: "Complete rolling upgrades and minimize mixed-version window duration"
+    - symptom: "new API fields rejected unexpectedly"
+      check: "kubectl api-versions"
+      fix: "Confirm target API version support before applying manifests"

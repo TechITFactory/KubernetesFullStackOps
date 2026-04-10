@@ -7,3 +7,10 @@
 ## Children
 
 - `2.4.2.1 Pod Group Policies`
+
+## Module wrap - quick validation
+
+```bash
+kubectl api-resources | grep -E 'deployments|replicasets|statefulsets|daemonsets|jobs|cronjobs' || true
+kubectl get cm -n kube-system | grep -E 'pod-group|workload' || true
+```

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: multi-zone-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "All replicas in one zone"
+      check: "kubectl get pods -o wide"
+      fix: "Add topology spread constraints and anti-affinity"
+    - symptom: "PVC pending in zone"
+      check: "kubectl describe pvc <name>"
+      fix: "Use zone-compatible StorageClass"
+    - symptom: "Node labels missing"
+      check: "kubectl get nodes --show-labels"
+      fix: "Reapply zone labels and verify cloud provider sync"

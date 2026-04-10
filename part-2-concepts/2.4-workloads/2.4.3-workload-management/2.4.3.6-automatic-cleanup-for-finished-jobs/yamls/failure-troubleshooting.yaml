@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: job-ttl-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Finished Job pods not deleted after ttlSecondsAfterFinished"
+      check: "kubectl get job <name> -o yaml | grep ttl; TTL controller enabled"
+      fix: "Ensure TTLAfterFinished feature/controller active on control plane for your version"
+    - symptom: "TTL delay longer than expected"
+      check: "Controller manager logs; job finalizers"
+      fix: "Large backlog of finished jobs; tune retention or batch cleanup"
+    - symptom: "Need history but TTL removes too aggressively"
+      check: "Job spec ttlSecondsAfterFinished"
+      fix: "Increase TTL or use manual cleanup; rely on logs/metrics export before deletion"

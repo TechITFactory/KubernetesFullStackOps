@@ -8,3 +8,29 @@
 
 - `scripts/controller-reconciliation-demo.sh`
 - `yamls/controller-demo-deployment.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+./scripts/controller-reconciliation-demo.sh
+kubectl apply -f yamls/controller-demo-deployment.yaml
+kubectl get deploy,pods -l app=controller-demo
+```
+
+## Expected output
+
+- Deployment reaches desired replicas.
+- Deleting a managed pod triggers controller reconciliation and pod recreation.
+
+## Video close - fast validation
+
+```bash
+kubectl get deploy,pods -l app=controller-demo
+kubectl describe deploy controller-demo | sed -n '1,80p'
+kubectl get events --sort-by=.lastTimestamp | tail -n 20
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common reconciliation, selector, and rollout-state failures.

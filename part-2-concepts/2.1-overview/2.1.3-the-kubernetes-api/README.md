@@ -8,3 +8,29 @@
 
 - `scripts/explore-k8s-api.sh`
 - `yamls/api-discovery-notes.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+./scripts/explore-k8s-api.sh
+kubectl get --raw /api | head -c 300 && echo
+kubectl get --raw /apis | head -c 300 && echo
+```
+
+## Expected output
+
+- API discovery endpoints return version/group payloads.
+- Script output shows accessible resources and confirms cluster API reachability.
+
+## Video close - fast validation
+
+```bash
+kubectl cluster-info
+kubectl api-resources | head -n 25
+kubectl api-versions | head -n 20
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common API auth, discovery, and endpoint query failures.

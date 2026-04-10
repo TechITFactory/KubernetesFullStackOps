@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-control-plane-communication-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "node never registers with control plane"
+      check: "journalctl -u kubelet -n 100"
+      fix: "Validate bootstrap kubeconfig/certs and API endpoint reachability"
+    - symptom: "leases not updating"
+      check: "kubectl get lease -n kube-node-lease -o yaml"
+      fix: "Check kubelet health and API latency/auth issues"
+    - symptom: "intermittent node heartbeat loss"
+      check: "kubectl get events -A --sort-by=.lastTimestamp"
+      fix: "Investigate network instability, CPU starvation, or API overload"

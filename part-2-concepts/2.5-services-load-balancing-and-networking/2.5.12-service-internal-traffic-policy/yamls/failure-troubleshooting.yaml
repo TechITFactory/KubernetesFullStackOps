@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: internal-traffic-policy-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Traffic dropped after setting internalTrafficPolicy Local"
+      check: "Pods on same node as client; DaemonSet-style backends"
+      fix: "Ensure backends exist on every node or use Cluster policy; document trade-offs"
+    - symptom: "Health checks from kubelet or probes behave differently"
+      check: "Source of probe traffic vs policy"
+      fix: "Use readiness on pod; avoid assuming probe path matches client path through Service"
+    - symptom: "External traffic policy vs internal confusion"
+      check: "externalTrafficPolicy on LoadBalancer/NodePort"
+      fix: "Treat internal and external policies separately; read kube-proxy docs for each field"

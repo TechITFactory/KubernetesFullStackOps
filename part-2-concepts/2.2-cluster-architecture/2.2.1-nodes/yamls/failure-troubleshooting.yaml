@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nodes-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "node is NotReady"
+      check: "kubectl describe node <node-name>"
+      fix: "Check kubelet service, runtime health, and CNI readiness"
+    - symptom: "allocatable looks unexpectedly low"
+      check: "kubectl describe node <node-name> | grep -A20 Allocatable"
+      fix: "Review kube-reserved/system-reserved and node sizing limits"
+    - symptom: "node missing expected labels/taints"
+      check: "kubectl get nodes --show-labels"
+      fix: "Apply required labels/taints and verify scheduler selectors"

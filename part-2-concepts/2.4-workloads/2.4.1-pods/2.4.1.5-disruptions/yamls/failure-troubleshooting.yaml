@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: disruptions-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl drain blocks: cannot evict (PDB)"
+      check: "kubectl get pdb -A; kubectl describe pdb <name>"
+      fix: "Relax minAvailable/maxUnavailable temporarily; scale replicas; fix PDB selector to match pods"
+    - symptom: "Evictions allowed but app still disrupted"
+      check: "kubectl get deploy,sts -n <ns>; kubectl get pods -n <ns> -o wide"
+      fix: "Increase replicas; spread across nodes/zones; tune PDB vs SLO"
+    - symptom: "PDB shows 0 pods selected"
+      check: "kubectl get pdb <name> -o yaml"
+      fix: "Align spec.selector.matchLabels with pod template labels"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-resource-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Ingress never gets ADDRESS / stays empty"
+      check: "kubectl describe ingress <name>; ingress class; controller installed"
+      fix: "Install matching ingress controller; set ingressClassName; verify validating webhook if used"
+    - symptom: "HTTP 404 or default backend from controller"
+      check: "Ingress rules host/path vs actual Host header; backend Service port name/number"
+      fix: "Fix rule pathType; ensure Service port matches pod containerPort"
+    - symptom: "TLS handshake fails"
+      check: "kubectl get secret -n <ns>; cert matches host"
+      fix: "Create tls secret or use cert-manager; align hosts in Ingress spec"

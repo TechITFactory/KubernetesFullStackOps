@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: components-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kube-system pods are CrashLoopBackOff"
+      check: "kubectl get pods -n kube-system"
+      fix: "Inspect logs/events for the failing component and verify node resources"
+    - symptom: "kubectl cannot list cluster components"
+      check: "kubectl cluster-info"
+      fix: "Validate context, API endpoint reachability, and kubeconfig credentials"
+    - symptom: "node is NotReady"
+      check: "kubectl describe node <node-name>"
+      fix: "Check kubelet status, CNI health, and runtime service on the node"

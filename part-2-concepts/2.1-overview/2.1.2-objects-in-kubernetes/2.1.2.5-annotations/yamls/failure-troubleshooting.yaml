@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: annotations-lesson-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Request too large or metadata.annotations rejected"
+      check: "Total object size limits (~256KiB); annotation value size"
+      fix: "Store large blobs in ConfigMaps/Secrets; keep annotations as short pointers"
+    - symptom: "Put queryable data in annotations but cannot select"
+      check: "kubectl get does not filter on annotations"
+      fix: "Move filter keys to labels (low cardinality); keep annotations for non-indexed metadata"
+    - symptom: "GitOps or CI strips unknown annotations"
+      check: "Policy engines, linters, or schema validators"
+      fix: "Allowlist required prefixes; document annotation contracts per team"

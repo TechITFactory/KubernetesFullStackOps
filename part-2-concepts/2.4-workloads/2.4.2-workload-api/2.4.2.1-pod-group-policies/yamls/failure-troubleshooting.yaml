@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-group-policies-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "PodGroup / scheduling policy resource not found"
+      check: "kubectl api-resources | grep -i podgroup; scheduler plugins enabled"
+      fix: "Install required scheduler extender/CRD or use supported in-tree alternatives for your version"
+    - symptom: "Jobs scheduled but gang scheduling not honored"
+      check: "Scheduler configuration; plugin order; pod labels matching PodGroup"
+      fix: "Align PodGroup controller and scheduler config; verify feature availability on server version"
+    - symptom: "Docs reference APIs your cluster lacks"
+      check: "kubectl version; compare to kubernetes.io release notes"
+      fix: "Treat vendor or alpha APIs separately; pin course material to server minor"

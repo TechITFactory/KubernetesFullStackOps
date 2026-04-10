@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ha-etcd-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "etcd endpoint unhealthy"
+      check: "etcdctl endpoint health"
+      fix: "Verify certs, endpoint URLs, and network reachability"
+    - symptom: "member missing from quorum"
+      check: "etcdctl member list"
+      fix: "Re-bootstrap failed member and rejoin safely"
+    - symptom: "snapshot/restore failure"
+      check: "etcdctl snapshot status <file>"
+      fix: "Validate snapshot integrity and path permissions"

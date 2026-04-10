@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeadm-troubleshooting-failures
+data:
+  common_failures: |
+    - symptom: "kubeadm preflight fails"
+      check: "sudo kubeadm init --dry-run"
+      fix: "Resolve swap, kernel, and runtime prerequisites"
+    - symptom: "kubelet crashloop"
+      check: "sudo journalctl -u kubelet -xe"
+      fix: "Fix cgroup/socket mismatches and restart kubelet"
+    - symptom: "control-plane pods unhealthy"
+      check: "kubectl get pods -n kube-system"
+      fix: "Inspect static pod manifests and API server logs"

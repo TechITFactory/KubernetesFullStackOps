@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: statefulsets-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "StatefulSet pod Pending: PVC not bound"
+      check: "kubectl get pvc; kubectl describe pvc"
+      fix: "Fix StorageClass/default SC; provisioner; node topology for local volumes"
+    - symptom: "Pods not getting stable network identity"
+      check: "kubectl get svc (headless); spec.serviceName matches Service"
+      fix: "Headless Service clusterIP: None; selector matches pod template labels"
+    - symptom: "Ordered startup stuck on pod-0"
+      check: "kubectl logs statefulset-pod-0; kubectl describe pod"
+      fix: "Fix first replica before scale; check volume mount permissions and readiness"

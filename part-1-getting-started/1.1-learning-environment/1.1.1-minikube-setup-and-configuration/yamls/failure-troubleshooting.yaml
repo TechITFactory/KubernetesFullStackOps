@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minikube-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "minikube start fails"
+      check: "minikube logs"
+      fix: "Verify Docker/virtualization resources and driver selection"
+    - symptom: "kubectl cannot connect"
+      check: "kubectl config current-context"
+      fix: "Switch to minikube context and re-run cluster start"
+    - symptom: "service not reachable"
+      check: "kubectl get svc -n minikube-lab"
+      fix: "Use minikube service URL and verify NodePort exposure"

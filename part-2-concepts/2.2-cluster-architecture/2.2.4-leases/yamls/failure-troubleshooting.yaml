@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: leases-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "lease objects missing for nodes"
+      check: "kubectl get lease -n kube-node-lease"
+      fix: "Ensure kubelet is healthy and has API access permissions"
+    - symptom: "leader election flaps frequently"
+      check: "kubectl get events -A --sort-by=.lastTimestamp"
+      fix: "Investigate API latency and control-plane resource pressure"
+    - symptom: "renewTime stops updating"
+      check: "kubectl describe lease <name> -n kube-node-lease"
+      fix: "Restart failing component and verify stable network path"

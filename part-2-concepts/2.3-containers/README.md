@@ -11,3 +11,11 @@
 - 2.3.3 Runtime Class
 - 2.3.4 Container Lifecycle Hooks
 - 2.3.5 Container Runtime Interface (CRI)
+
+## Module wrap - quick validation
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods -A | head -n 25
+kubectl get runtimeclass 2>/dev/null || true
+```

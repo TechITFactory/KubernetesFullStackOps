@@ -188,3 +188,15 @@ The `SystemdCgroup = true` requirement is the same everywhere. If you ever see a
 - The install script is **idempotent** — checks before installing, patches only what is needed, safe to run again.
 
 Next: 1.2.1.2 — CRI-O, the runtime built exclusively for Kubernetes with no Docker lineage.
+
+## Video close — fast validation
+
+```bash
+sudo systemctl status containerd --no-pager
+sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock info
+kubectl get nodes -o wide
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common containerd install, CRI socket, and kubelet integration failures.

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kind-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kind cluster create fails"
+      check: "kind get clusters && docker ps"
+      fix: "Ensure Docker daemon health and free disk/memory"
+    - symptom: "wrong kubectl context"
+      check: "kubectl config current-context"
+      fix: "Set context to kind-<cluster-name>"
+    - symptom: "NodePort unreachable"
+      check: "kubectl get svc -A"
+      fix: "Confirm kind portMappings and service nodePort values"

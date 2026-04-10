@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: object-names-ids-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Cannot kubectl apply: metadata.name invalid or too long"
+      check: "DNS subdomain rules for the resource type; max length 253 / label segments 63"
+      fix: "Lowercase, alphanumeric, dots, hyphens; shorten name or use generateName"
+    - symptom: "kubectl apply fails: cannot use generate name with apply"
+      check: "metadata.generateName set without metadata.name"
+      fix: "Use kubectl create -f for generateName resources, or switch to a stable metadata.name for apply"
+    - symptom: "UID changed after recreate — references break"
+      check: "kubectl get <kind> <name> -o jsonpath='{.metadata.uid}'"
+      fix: "Never treat UID as stable across delete/recreate; update watchers to name+namespace+GVK"

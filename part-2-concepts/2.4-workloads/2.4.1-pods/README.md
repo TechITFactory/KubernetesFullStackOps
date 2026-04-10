@@ -17,3 +17,11 @@
 - `2.4.1.9 User Namespaces`
 - `2.4.1.10 Downward API`
 - `2.4.1.11 Advanced Pod Configuration`
+
+## Module wrap - quick validation
+
+```bash
+kubectl get pods -A | head -n 30
+kubectl get pdb -A 2>/dev/null || true
+kubectl get events -A --sort-by=.lastTimestamp | tail -n 20
+```

@@ -8,3 +8,26 @@
 
 - `scripts/object-management-demo.sh`
 - `yamls/object-management-demo.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+./scripts/object-management-demo.sh
+kubectl get deploy,pods -n object-management-demo -o wide
+```
+
+## Expected output
+
+- Namespace `object-management-demo` exists; Deployment `demo-nginx` reports available replicas and Pods are `Running`.
+
+## Video close - fast validation
+
+```bash
+kubectl get deploy,pods -n object-management-demo
+kubectl delete -f yamls/object-management-demo.yaml --ignore-not-found
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common apply conflicts, immutable fields, and stuck Terminating objects.

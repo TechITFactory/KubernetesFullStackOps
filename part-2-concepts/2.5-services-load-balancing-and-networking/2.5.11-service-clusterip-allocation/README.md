@@ -8,3 +8,25 @@
 
 - `scripts/inspect-2-5-11-service-clusterip-allocation.sh`
 - `yamls/2-5-11-service-clusterip-allocation-notes.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+kubectl apply -f yamls/2-5-11-service-clusterip-allocation-notes.yaml
+bash scripts/inspect-2-5-11-service-clusterip-allocation.sh
+```
+
+## Expected output
+
+- ConfigMap `2-5-11-service-clusterip-allocation-notes` in `kube-system`; Service and EndpointSlice listing succeeds.
+
+## Video close - fast validation
+
+```bash
+bash scripts/inspect-2-5-11-service-clusterip-allocation.sh
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common ClusterIP range exhaustion, IP allocation conflicts, and Service REST mapping errors.

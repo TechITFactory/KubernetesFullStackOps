@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: owners-dependents-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Deleted parent but children remain"
+      check: "ownerReferences.blockOwnerDeletion; foreground vs background deletion"
+      fix: "Use propagation policy appropriate to the operation; fix admission blocking owner deletion"
+    - symptom: "Orphan pods after RS scale-down"
+      check: "kubectl get pod -o jsonpath='{.metadata.ownerReferences}'"
+      fix: "Normally GC removes them; if not, check finalizers or manual pod creates without owner"
+    - symptom: "Custom CRD does not set ownerReferences"
+      check: "Controller code; garbage collection behavior"
+      fix: "Have controller set ownerReferences or implement explicit cleanup"

@@ -8,3 +8,29 @@
 
 - `scripts/inspect-k8s-components.sh`
 - `yamls/components-map.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+./scripts/inspect-k8s-components.sh
+kubectl get pods -n kube-system -o wide
+kubectl apply -f yamls/components-map.yaml
+```
+
+## Expected output
+
+- Control-plane and node component mapping is visible from `kube-system` pods and node state.
+- The component map manifest applies without schema errors.
+
+## Video close - fast validation
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods -n kube-system
+kubectl get componentstatuses 2>/dev/null || true
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common component visibility and API connectivity failures.

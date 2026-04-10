@@ -27,6 +27,12 @@ curl localhost:8080
 ./scripts/teardown.sh
 ```
 
+## Expected output
+
+- `check-local-prereqs.sh` reports required tools present (or clearly lists gaps).
+- Namespace `dev-local` exists with quota and limit range bound.
+- `whoami` deployment is `Running`; `curl` via port-forward returns HTTP 200 with pod identity.
+
 ---
 
 ## Transcript — 10-Minute Lesson
@@ -221,3 +227,15 @@ Clean up:
 ```
 
 Your local environment is now set up. In Part 2 we move into Kubernetes Concepts — understanding what is actually happening under the hood when you run `kubectl apply`.
+
+## Video close — fast validation
+
+```bash
+kubectl get ns dev-local
+kubectl get quota,limitrange -n dev-local
+kubectl get pods -n dev-local -o wide
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common namespace setup, quota, and rollout failures.

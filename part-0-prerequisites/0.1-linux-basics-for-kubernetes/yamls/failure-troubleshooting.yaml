@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linux-basics-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Permission denied when writing a file or cd into a directory"
+      check: "ls -la; whoami"
+      fix: "Use chmod only on files you own; use sudo only when you understand the command; fix ownership with chown if appropriate"
+    - symptom: "Command not found for docker, kubectl, or a script"
+      check: "echo \$PATH; command -v <name>"
+      fix: "Install the binary or add its directory to PATH; use ./script.sh for scripts in the current directory"
+    - symptom: "grep finds nothing but the text is in the file"
+      check: "Case sensitivity; special characters; file encoding"
+      fix: "Try grep -i; cat -A file to see hidden characters; quote patterns"
+    - symptom: "WSL: files in /mnt/c/... have weird permissions or slow I/O"
+      check: "Are you editing under Windows mount vs \$HOME inside Linux?"
+      fix: "Keep lab workspaces under Linux filesystem (e.g. ~/projects) for sane permissions and speed"
+    - symptom: "Script exits early with set -e"
+      check: "Which command returned non-zero?"
+      fix: "Run commands one by one; add || true only when you intend to ignore a failure"

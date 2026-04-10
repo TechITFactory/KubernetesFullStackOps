@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: field-selectors-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "field-selector unsupported or BadRequest"
+      check: "kubectl explain <kind>.metadata; which fields are indexed for that resource"
+      fix: "Use supported paths (often status.phase for Pods); fall back to jsonpath/grep client-side"
+    - symptom: "Empty list but objects clearly match"
+      check: "Server version; CRDs may not support same field selectors as core types"
+      fix: "Use labels or client-side filter; check API server docs for the kind"
+    - symptom: "Events field-selector returns nothing"
+      check: "Warning events may be rare; time skew"
+      fix: "Broaden query; use kubectl get events --sort-by=.lastTimestamp"

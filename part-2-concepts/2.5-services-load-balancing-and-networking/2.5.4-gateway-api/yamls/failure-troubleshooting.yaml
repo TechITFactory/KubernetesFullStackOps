@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-api-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Gateway API types not found"
+      check: "kubectl api-resources | grep -i gateway"
+      fix: "Install Gateway API CRDs and a conformant implementation (e.g. contour, cilium, istio gateway)"
+    - symptom: "HTTPRoute accepted but no traffic"
+      check: "kubectl describe gateway httproute; parentRefs namespace and sectionName"
+      fix: "Fix listener port/protocol; ensure Gateway controller status shows programmed addresses"
+    - symptom: "Policy attachment or reference grant denied"
+      check: "ReferenceGrant resources; cross-namespace parentRefs"
+      fix: "Add ReferenceGrant in target namespace or colocate resources"

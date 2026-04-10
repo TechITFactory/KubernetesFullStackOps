@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: managing-workloads-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl rollout status hangs"
+      check: "kubectl get rs; kubectl describe deploy; new pods not Ready"
+      fix: "Fix failing pods (image, probes); kubectl rollout undo; adjust maxUnavailable/surge"
+    - symptom: "Scaled deployment but pods not added"
+      check: "kubectl describe deploy; HPA ownership; quota"
+      fix: "If HPA present, change HPA min/max; check namespace limits"
+    - symptom: "Rollback did not restore expected image"
+      check: "kubectl rollout history deploy <name>; revision annotations"
+      fix: "Use kubectl rollout undo --to-revision=<n>; verify change-cause annotations"

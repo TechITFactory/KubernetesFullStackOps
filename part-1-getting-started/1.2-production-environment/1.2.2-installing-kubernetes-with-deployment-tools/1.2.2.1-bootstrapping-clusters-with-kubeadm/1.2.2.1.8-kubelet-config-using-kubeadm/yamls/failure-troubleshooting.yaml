@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubelet-config-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubelet fails after config update"
+      check: "sudo journalctl -u kubelet -xe"
+      fix: "Rollback invalid config and restart kubelet"
+    - symptom: "node pressure conditions true"
+      check: "kubectl describe node <node>"
+      fix: "Tune eviction thresholds and resource reservations"
+    - symptom: "configz mismatch"
+      check: "curl .../proxy/configz"
+      fix: "Ensure rendered kubelet config matches intended values"

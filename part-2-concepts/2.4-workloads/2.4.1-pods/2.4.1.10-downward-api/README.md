@@ -7,3 +7,27 @@
 ## Assets
 
 - `yamls/downward-api-demo.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+kubectl apply -f yamls/downward-api-demo.yaml
+kubectl wait --for=condition=Ready pod/downward-api-demo --timeout=120s
+kubectl exec pod/downward-api-demo -c app -- printenv | grep -E '^POD_NAME=' || true
+```
+
+## Expected output
+
+- Downward-injected metadata appears in env or volumes as defined in the manifest.
+
+## Video close - fast validation
+
+```bash
+kubectl get pod downward-api-demo -o wide
+kubectl describe pod downward-api-demo | sed -n '/Environment:/,/Mounts:/p'
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common fieldRef mistakes and missing metadata in projections.

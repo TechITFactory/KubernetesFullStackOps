@@ -1,8 +1,14 @@
 # 3.10 Access Applications in a Cluster
 
-- Objective: [Add objective]
-- Outcomes: [Add outcomes]
-- Notes: [Add notes]
+- Objective: Access and debug applications reliably across local and cloud clusters.
+- Outcomes:
+  - Use dashboard, contexts, services, port-forwarding, and DNS access patterns.
+  - Validate in-cluster and external access paths.
+  - Troubleshoot common connectivity failures fast.
+- Notes:
+  - Practical-only command flows.
+  - Linux-focused examples.
+  - EKS mapping included in lesson notes where relevant.
 
 ## Children
 
@@ -17,3 +23,11 @@
 - 3.10.9 Communicate Between Containers in the Same Pod Using a Shared Volume
 - 3.10.10 Configure DNS for a Cluster
 - 3.10.11 Access Services Running on Clusters
+
+## Access Baseline Checks
+
+```bash
+kubectl config current-context
+kubectl get nodes
+kubectl get svc -A
+```

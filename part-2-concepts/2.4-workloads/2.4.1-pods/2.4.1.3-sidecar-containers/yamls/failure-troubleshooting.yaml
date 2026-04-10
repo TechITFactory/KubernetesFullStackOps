@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sidecar-containers-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Main container starts before sidecar is ready"
+      check: "kubectl logs <pod-name> -c <sidecar>; kubectl describe pod <pod-name>"
+      fix: "Use startup/readiness probes on sidecar; shared volume permissions; init for ordering if needed"
+    - symptom: "Permission denied on shared volume"
+      check: "kubectl exec <pod-name> -c <container> -- id; ls -la <mount-path>"
+      fix: "Align runAsUser/fsGroup/securityContext; emptyDir vs PVC ownership"
+    - symptom: "One container OOMKilled, whole pod unstable"
+      check: "kubectl describe pod <pod-name> | grep -i oom"
+      fix: "Set memory requests/limits per container; tune sidecar footprint"

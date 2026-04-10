@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: container-environment-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "expected env var missing"
+      check: "kubectl exec <pod> -c <container> -- printenv"
+      fix: "Confirm env/envFrom blocks and fieldRef paths in the Pod spec"
+    - symptom: "downward API value is empty"
+      check: "kubectl get pod <pod-name> -o yaml"
+      fix: "Ensure the referenced field exists for that API version and object"
+    - symptom: "command/args do not run as intended"
+      check: "kubectl logs <pod-name> -c <container>"
+      fix: "Align command, args, and image ENTRYPOINT expectations"

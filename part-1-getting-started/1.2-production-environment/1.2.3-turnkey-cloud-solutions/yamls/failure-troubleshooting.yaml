@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: turnkey-cloud-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "cannot access managed cluster"
+      check: "kubectl config current-context && kubectl get nodes"
+      fix: "Refresh kubeconfig and cloud identity session"
+    - symptom: "cluster provisioned but nodes absent"
+      check: "cloud provider nodegroup status"
+      fix: "Validate IAM permissions, subnet routing, and bootstrap logs"
+    - symptom: "LoadBalancer service stuck pending"
+      check: "kubectl describe svc <name>"
+      fix: "Confirm cloud LB permissions and subnet tags"

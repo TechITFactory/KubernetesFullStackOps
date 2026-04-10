@@ -172,6 +172,10 @@ Do you have dedicated infrastructure/SRE capacity to operate etcd separately?
 
 Record your decision in `ha-topology-options.yaml` with the reason. When you revisit this cluster in 18 months, you want to know why you chose what you chose.
 
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common HA topology mismatch, quorum, and endpoint design failures.
+
 **Most teams choose stacked.** External etcd is a meaningful operational investment — only make it if you have the capacity to maintain a separately operated etcd cluster.
 
 ---
@@ -185,3 +189,10 @@ Record your decision in `ha-topology-options.yaml` with the reason. When you rev
 - **Quorum** = always odd numbers. 3 nodes = tolerate 1 failure. 5 nodes = tolerate 2.
 
 Next: 1.2.2.1.6 — Creating Highly Available Clusters with kubeadm, where we run the stacked HA init and join additional control-plane nodes.
+
+## Video close — fast validation
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -o wide | head
+```

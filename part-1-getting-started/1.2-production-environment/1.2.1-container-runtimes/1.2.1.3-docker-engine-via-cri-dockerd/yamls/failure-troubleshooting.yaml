@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cri-dockerd-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "cri-dockerd socket unavailable"
+      check: "sudo systemctl status cri-docker"
+      fix: "Start/enable cri-docker and verify socket path"
+    - symptom: "kubelet runtime endpoint mismatch"
+      check: "sudo journalctl -u kubelet -xe"
+      fix: "Set kubelet runtime endpoint to /run/cri-dockerd.sock"
+    - symptom: "Docker daemon issues"
+      check: "sudo systemctl status docker"
+      fix: "Recover Docker daemon before kubelet retry"

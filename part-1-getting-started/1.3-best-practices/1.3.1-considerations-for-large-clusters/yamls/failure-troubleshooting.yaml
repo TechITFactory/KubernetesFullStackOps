@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: large-cluster-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Pods packed onto few nodes"
+      check: "kubectl get pods -o wide"
+      fix: "Apply topology spread and anti-affinity rules"
+    - symptom: "API server latency spikes"
+      check: "kubectl get --raw /metrics"
+      fix: "Reduce watch/list pressure and tune controllers"
+    - symptom: "Frequent scheduling delays"
+      check: "kubectl get events --sort-by=.lastTimestamp"
+      fix: "Increase node capacity or rebalance requests/limits"

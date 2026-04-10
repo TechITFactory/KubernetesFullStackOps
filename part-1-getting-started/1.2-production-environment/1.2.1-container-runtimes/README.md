@@ -20,3 +20,14 @@ Purpose-built for Kubernetes — no daemon overhead beyond what CRI requires. Pr
 
 ### 1.2.1.3 Docker Engine (via cri-dockerd)
 Docker Engine was removed as a native Kubernetes runtime in v1.24. `cri-dockerd` is a shim that bridges Docker back into CRI. Use this only for nodes with an existing Docker dependency — not recommended for new clusters.
+
+## Module wrap — quick validation
+
+You installed **one** runtime per node. Confirm the daemon is active and the CRI endpoint answers (socket paths are in your lesson — **1.2.1.1** containerd shown here):
+
+```bash
+sudo systemctl is-active containerd
+sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock info
+```
+
+If you followed **CRI-O** or **cri-dockerd**, use that lesson’s `systemctl` unit names and `crictl --runtime-endpoint` socket instead. Before **1.2.2**, you want `active` and `crictl info` JSON without connection errors.

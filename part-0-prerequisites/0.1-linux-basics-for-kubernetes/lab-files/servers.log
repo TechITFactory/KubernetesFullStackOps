@@ -1,0 +1,5 @@
+2025-04-01T10:00:01Z INFO  kubelet started on node worker-1
+2025-04-01T10:00:02Z ERROR cni plugin timeout on pod net-test
+2025-04-01T10:00:03Z INFO  sync loop complete
+2025-04-01T10:00:04Z ERROR image pull failed for registry/app:v2
+2025-04-01T10:00:05Z WARN  disk usage above 80 percent on /var

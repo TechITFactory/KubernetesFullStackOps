@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: controllers-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "replicas do not reconcile after pod deletion"
+      check: "kubectl describe deployment <name>"
+      fix: "Verify selector/template labels and deployment controller events"
+    - symptom: "controller loops with repeated errors"
+      check: "kubectl logs -n kube-system <controller-pod>"
+      fix: "Fix invalid object spec or missing dependent resources"
+    - symptom: "rollout stuck progressing"
+      check: "kubectl rollout status deployment/<name>"
+      fix: "Inspect pod scheduling/probe failures and image pull errors"

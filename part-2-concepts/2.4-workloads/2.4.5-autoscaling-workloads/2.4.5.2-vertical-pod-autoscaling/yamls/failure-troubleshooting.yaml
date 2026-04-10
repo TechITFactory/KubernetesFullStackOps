@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vpa-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "error: resource mapping not found for VerticalPodAutoscaler"
+      check: "kubectl api-resources | grep -i verticalpodautoscaler"
+      fix: "Install VPA CRDs and recommender/updater/admission components in cluster"
+    - symptom: "VPA Admission webhook blocks pod creation"
+      check: "kubectl get validatingwebhookconfiguration | grep vpa; describe pod"
+      fix: "Fix webhook CA bundle; ensure vpa-webhook pods healthy; bypass with Off mode for testing"
+    - symptom: "Recommendations empty or not updating"
+      check: "kubectl describe vpa <name>; metrics-server; recommender logs"
+      fix: "Run workload under load; wait observation window; ensure targetRef matches Deployment"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubectl-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl command hangs or fails to connect"
+      check: "kubectl config current-context"
+      fix: "Switch to valid context and verify cluster/API endpoint reachability"
+    - symptom: "forbidden errors on get/apply/delete"
+      check: "kubectl auth can-i <verb> <resource> -n <namespace>"
+      fix: "Request/assign RBAC role bindings for the required operations"
+    - symptom: "unexpected output in scripts"
+      check: "kubectl version --client"
+      fix: "Pin kubectl version and use stable output formats (json/yaml/jsonpath)"

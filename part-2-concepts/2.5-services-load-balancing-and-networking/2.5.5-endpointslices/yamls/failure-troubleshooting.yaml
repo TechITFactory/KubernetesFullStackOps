@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: endpointslices-lesson-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "EndpointSlice exists but endpoints empty"
+      check: "kubectl get pods -l <selector>; readiness; terminating state"
+      fix: "Fix readiness probes; wait for endpoints controller; check dual-stack addressType vs pod IPs"
+    - symptom: "Traffic to subset of pods only"
+      check: "Hints/zone skew; internalTrafficPolicy Local"
+      fix: "Review topology hints and Service traffic policies; verify kube-proxy version"
+    - symptom: "Legacy Endpoints vs EndpointSlice mismatch in tooling"
+      check: "kubectl get endpoints vs endpointslices for same Service"
+      fix: "Prefer EndpointSlices; update dashboards to slice-based metrics"

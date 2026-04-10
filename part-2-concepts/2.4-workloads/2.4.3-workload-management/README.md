@@ -14,3 +14,10 @@
 - `2.4.3.6 Automatic Cleanup for Finished Jobs`
 - `2.4.3.7 CronJob`
 - `2.4.3.8 ReplicationController`
+
+## Module wrap - quick validation
+
+```bash
+kubectl get deploy,sts,ds,job,cronjob,rc -A 2>/dev/null | head -n 40
+kubectl get pods -A | head -n 25
+```

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hpa-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl top pods fails / HPA shows unknown metrics"
+      check: "kubectl get apiservice | grep metrics; kubectl get deployment metrics-server -n kube-system"
+      fix: "Install or repair metrics-server; on Minikube: minikube addons enable metrics-server"
+    - symptom: "HPA scaleTargetRef points to missing workload"
+      check: "kubectl get hpa <name> -o yaml; kubectl get deploy <target>"
+      fix: "Align apiVersion/kind/name with existing object in same namespace"
+    - symptom: "HPA never scales despite high CPU"
+      check: "kubectl describe hpa; metrics window; minReplicas"
+      fix: "Ensure requests.cpu set on pods; check targetAverageUtilization math; not at maxReplicas"

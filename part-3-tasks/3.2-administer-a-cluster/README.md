@@ -1,8 +1,14 @@
 # 3.2 Administer a Cluster
 
-- Objective: [Add objective]
-- Outcomes: [Add outcomes]
-- Notes: [Add notes]
+- Objective: Operate Kubernetes clusters safely across lifecycle, security, and performance tasks.
+- Outcomes:
+  - Perform core admin workflows: upgrade, DNS, storage, quotas, node policies.
+  - Apply operational hardening and reliability controls.
+  - Validate cluster health after each administrative change.
+- Notes:
+  - Use change-then-verify loop for every operation.
+  - Prefer one change per step to reduce blast radius.
+  - Local-first with EKS production mapping.
 
 ## Children
 
@@ -51,3 +57,11 @@
 - 3.2.43 Using NodeLocal DNSCache in Kubernetes Clusters
 - 3.2.44 Using sysctls in a Kubernetes Cluster
 - 3.2.45 Verify Signed Kubernetes Artifacts
+
+## Cluster Admin Baseline
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods -n kube-system
+kubectl get events -A --sort-by=.lastTimestamp | tail -n 40
+```

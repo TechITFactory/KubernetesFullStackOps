@@ -23,6 +23,12 @@ minikube service hello-nginx -n minikube-lab
 ./scripts/teardown.sh
 ```
 
+## Expected output
+
+- `kubectl get nodes` shows one node in `Ready`.
+- Pods in namespace `minikube-lab` reach `Running` after `kubectl apply`.
+- Service is reachable (browser or `curl` via `minikube service` / port-forward as in the lab).
+
 ---
 
 ## Transcript — 10-Minute Lesson
@@ -202,3 +208,15 @@ Clean up:
 ```
 
 Next: 1.1.2 — Kind (Kubernetes in Docker), which is better suited for multi-node simulation and CI pipelines.
+
+## Video close — fast validation
+
+```bash
+kubectl get nodes
+kubectl get pods -n minikube-lab -o wide
+kubectl get svc -n minikube-lab
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common Minikube setup/runtime failures, checks, and fixes.

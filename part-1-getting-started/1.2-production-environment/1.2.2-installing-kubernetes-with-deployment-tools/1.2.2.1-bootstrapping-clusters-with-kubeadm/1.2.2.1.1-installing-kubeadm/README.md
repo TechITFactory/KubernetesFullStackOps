@@ -173,3 +173,15 @@ At companies running hundreds of nodes, **version drift** is a real operational 
 - Script is **idempotent** — keyring, repo, and each package are checked before acting.
 
 Next: 1.2.2.1.2 — Troubleshooting kubeadm, covering diagnostic collection before you touch a failing node.
+
+## Video close — fast validation
+
+```bash
+kubeadm version
+kubelet --version
+kubectl version --client
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common kubeadm package/repo/version-hold failures and fixes.

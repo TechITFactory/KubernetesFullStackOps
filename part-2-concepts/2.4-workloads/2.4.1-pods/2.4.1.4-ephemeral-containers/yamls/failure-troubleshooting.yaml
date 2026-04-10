@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ephemeral-containers-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl debug / ephemeral container rejected"
+      check: "kubectl version; cluster admin policy (PSA, admission); API feature availability"
+      fix: "Enable EphemeralContainers feature where required; use correct kubectl subcommand and profile"
+    - symptom: "Cannot copy files or attach to debug container"
+      check: "kubectl auth can-i create pods/ephemeralcontainers"
+      fix: "Grant RBAC for ephemeralcontainers subresource; verify namespace and pod name"
+    - symptom: "Debug container exits immediately"
+      check: "kubectl get pod <pod-name> -o yaml | grep -A30 ephemeralContainers"
+      fix: "Use an image with a shell (e.g. busybox) and a command that keeps running if needed"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: downward-api-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Empty file or missing env from Downward API"
+      check: "kubectl get pod <pod> -o yaml | grep -A40 downwardAPI"
+      fix: "fieldRef path must exist (e.g. metadata.labels); use correct fieldPath for API version"
+    - symptom: "fieldRef for resourceFieldRef wrong units or path"
+      check: "Describe pod for mount errors; verify divisor for CPU"
+      fix: "Use resourceFieldRef for limits/requests keys that are set on the container"
+    - symptom: "Projection updates not visible in container"
+      check: "Whether field is mutable at runtime; remount behavior"
+      fix: "Some downward API values update; app may need reload; use watch on kube API if needed"

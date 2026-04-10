@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cronjob-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "CronJob never creates Jobs"
+      check: "kubectl describe cronjob <name>; suspend; schedule syntax"
+      fix: "Validate cron schedule; timezone is UTC unless using CronJob time zone field (version-dependent)"
+    - symptom: "Too many or overlapping Jobs"
+      check: "spec.concurrencyPolicy; startingDeadlineSeconds"
+      fix: "Use Forbid or Replace; fix long-running job template"
+    - symptom: "Missed schedule warnings"
+      check: "kubectl get events --field-selector involvedObject.name=<cronjob>"
+      fix: "Controller backlog; clock skew; raise startingDeadlineSeconds carefully"

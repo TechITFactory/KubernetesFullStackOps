@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeadm-init-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubeadm init preflight errors"
+      check: "sudo kubeadm init --config yamls/kubeadm-init-config.yaml --dry-run"
+      fix: "Resolve swap, ports, runtime socket, and kubelet prereqs"
+    - symptom: "nodes stay NotReady"
+      check: "kubectl get nodes && kubectl get pods -n kube-system"
+      fix: "Install/validate CNI plugin and kube-proxy health"
+    - symptom: "worker join token expired"
+      check: "kubeadm token list"
+      fix: "Generate fresh join command and retry join"

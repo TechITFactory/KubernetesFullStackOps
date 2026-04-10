@@ -15,3 +15,12 @@
 - 2.2.7 Kubernetes Self-Healing
 - 2.2.8 Garbage Collection
 - 2.2.9 Mixed Version Proxy
+
+## Module wrap - quick validation
+
+```bash
+kubectl get nodes -o wide
+kubectl get lease -n kube-node-lease
+kubectl get pods -n kube-system -o wide
+kubectl get events -A --sort-by=.lastTimestamp | tail -n 30
+```

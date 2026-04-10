@@ -8,3 +8,25 @@
 
 - `scripts/inspect-2-5-6-network-policies.sh`
 - `yamls/2-5-6-network-policies-notes.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+kubectl apply -f yamls/2-5-6-network-policies-notes.yaml
+bash scripts/inspect-2-5-6-network-policies.sh
+```
+
+## Expected output
+
+- ConfigMap `2-5-6-network-policies-notes` in `kube-system`; NetworkPolicy list (may be empty) and Service list succeed.
+
+## Video close - fast validation
+
+```bash
+bash scripts/inspect-2-5-6-network-policies.sh
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common default-allow assumptions, DNS egress blocks, and CNI support gaps.

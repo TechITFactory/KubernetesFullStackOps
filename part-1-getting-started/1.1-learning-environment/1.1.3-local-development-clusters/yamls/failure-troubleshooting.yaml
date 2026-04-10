@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-dev-cluster-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "namespace bootstrap partially applied"
+      check: "kubectl get ns,resourcequota,limitrange"
+      fix: "Re-run bootstrap script and inspect failed manifest"
+    - symptom: "quota blocks deployment"
+      check: "kubectl describe resourcequota -n dev-local"
+      fix: "Adjust requests/limits or increase namespace quota"
+    - symptom: "pod not scheduled in dev-local"
+      check: "kubectl describe pod <pod> -n dev-local"
+      fix: "Fix resource requests or node capacity constraints"

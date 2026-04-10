@@ -1,5 +1,5 @@
 apiVersion: kubeadm.k8s.io/v1beta4
-kind: JoinConfiguration
+kind: InitConfiguration
 nodeRegistration:
   criSocket: unix:///var/run/crio/crio.sock
 ---

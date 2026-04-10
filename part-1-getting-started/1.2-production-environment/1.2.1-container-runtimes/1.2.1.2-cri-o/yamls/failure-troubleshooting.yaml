@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crio-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "CRI-O service not healthy"
+      check: "sudo systemctl status crio"
+      fix: "Validate package install, config syntax, and restart service"
+    - symptom: "kubelet cannot use CRI socket"
+      check: "sudo journalctl -u kubelet -xe"
+      fix: "Point kubelet to /var/run/crio/crio.sock"
+    - symptom: "cgroup mismatch"
+      check: "crictl info | grep cgroupDriver"
+      fix: "Align CRI-O cgroup manager with kubelet settings"

@@ -16,3 +16,28 @@
 - `2.1.2.8 Owners and Dependents`
 - `2.1.2.9 Recommended Labels`
 - `2.1.2.10 Storage Versions`
+
+## Quick Start
+
+```bash
+kubectl apply -f 2.1.2.3-labels-and-selectors/yamls/labels-and-selectors-demo.yaml
+kubectl get pods --show-labels
+kubectl delete -f 2.1.2.3-labels-and-selectors/yamls/labels-and-selectors-demo.yaml --ignore-not-found
+```
+
+## Expected output
+
+- Sample objects are created and can be queried with labels/selectors.
+- Metadata fields (labels/annotations/owner refs/finalizers) become inspectable with `kubectl get -o yaml`.
+
+## Module wrap - quick validation
+
+```bash
+kubectl api-resources | grep -E "^configmaps|^pods|^deployments" || true
+kubectl get ns
+kubectl get all -A | head -n 20
+```
+
+## Failure Troubleshooting Asset
+
+- Each lesson `2.1.2.*` includes `yamls/failure-troubleshooting.yaml` with topic-specific symptoms (apply, selectors, namespaces, finalizers, ownership, and API version drift).

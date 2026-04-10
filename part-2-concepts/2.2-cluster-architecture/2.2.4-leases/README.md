@@ -8,3 +8,29 @@
 
 - `scripts/inspect-leases.sh`
 - `yamls/lease-notes.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+./scripts/inspect-leases.sh
+kubectl get lease -A
+kubectl describe lease -n kube-node-lease "$(kubectl get lease -n kube-node-lease -o jsonpath='{.items[0].metadata.name}')"
+```
+
+## Expected output
+
+- Lease objects appear for nodes (and leader-election participants where used).
+- `renewTime` changes over time, reflecting heartbeat/leadership refresh.
+
+## Video close - fast validation
+
+```bash
+kubectl get lease -n kube-node-lease
+kubectl get lease -A | head -n 20
+kubectl get nodes
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common missing-lease, stale-renewTime, and node-heartbeat issues.

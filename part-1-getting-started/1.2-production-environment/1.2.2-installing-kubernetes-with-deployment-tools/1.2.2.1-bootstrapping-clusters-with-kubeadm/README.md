@@ -38,3 +38,20 @@ Apply a consistent `KubeletConfiguration` across all nodes through the kubeadm-m
 
 ### 1.2.2.1.9 Dual-stack Support with kubeadm
 Design and initialise a cluster with both IPv4 and IPv6 pod and service CIDRs — decisions that must be made before `kubeadm init`, not after.
+
+## Module wrap — quick validation
+
+End-to-end kubeadm health after the lessons you actually ran (skip HA/etcd/dual-stack checks if you did not build those topologies):
+
+```bash
+kubectl cluster-info
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -o wide | head -n 25
+kubectl get svc kubernetes -o wide
+```
+
+Optional dual-stack spot-check:
+
+```bash
+kubectl get svc kubernetes -o jsonpath='{.spec.clusterIPs}{"\n"}'
+```

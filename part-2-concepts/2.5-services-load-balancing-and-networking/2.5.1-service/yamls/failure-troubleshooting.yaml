@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: core-service-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Service has no Endpoints / EndpointSlices show no ready addresses"
+      check: "kubectl get endpointslices -l kubernetes.io/service-name=<svc> -n <ns>; pod labels vs selector"
+      fix: "Align pod template labels with Service spec.selector; ensure pods are Running and Ready"
+    - symptom: "Works via pod IP but not ClusterIP"
+      check: "kube-proxy mode and health; iptables/nft or IPVS rules on node"
+      fix: "Restart kube-proxy pods; verify CNI; check for NetworkPolicy blocking Service CIDR"
+    - symptom: "NodePort not reachable from outside"
+      check: "Node firewall; cloud SG; correct node IP and port"
+      fix: "Open host port; use LoadBalancer or Ingress for production ingress patterns"

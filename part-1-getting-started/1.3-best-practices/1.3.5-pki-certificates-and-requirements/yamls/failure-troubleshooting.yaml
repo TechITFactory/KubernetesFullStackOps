@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pki-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Certificate near expiry"
+      check: "sudo kubeadm certs check-expiration"
+      fix: "Run renewal and controlled component restart"
+    - symptom: "TLS handshake error"
+      check: "kubectl logs -n kube-system <control-plane-pod>"
+      fix: "Validate CA chain and server cert SAN entries"
+    - symptom: "Client auth failures"
+      check: "kubectl get csr"
+      fix: "Reissue/approve client certs with correct CN/O"

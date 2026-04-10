@@ -7,3 +7,26 @@
 ## Assets
 
 - `yamls/2-5-10-networking-on-windows-notes.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Quick Start
+
+```bash
+kubectl apply -f yamls/2-5-10-networking-on-windows-notes.yaml
+kubectl get cm -n kube-system 2-5-10-networking-on-windows-notes -o name
+kubectl get nodes -o wide 2>/dev/null | head -n 20
+```
+
+## Expected output
+
+- ConfigMap `2-5-10-networking-on-windows-notes` in `kube-system`; Windows nodes appear with `OS-IMAGE` containing Windows when present.
+
+## Video close - fast validation
+
+```bash
+kubectl get nodes -l kubernetes.io/os=windows 2>/dev/null || kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.nodeInfo.operatingSystem}{"\n"}{end}'
+```
+
+## Failure Troubleshooting Asset
+
+- `yamls/failure-troubleshooting.yaml` - common Windows kube-proxy/CNI version skew, host-gw/VXLAN mismatches, and Service datapath differences vs Linux.

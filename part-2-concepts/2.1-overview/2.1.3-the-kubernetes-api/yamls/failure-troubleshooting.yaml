@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-discovery-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "kubectl get --raw returns unauthorized/forbidden"
+      check: "kubectl auth can-i get --raw /api"
+      fix: "Use correct identity/context and grant required RBAC permissions"
+    - symptom: "API discovery times out"
+      check: "kubectl cluster-info"
+      fix: "Verify API server endpoint/network path and node/control-plane health"
+    - symptom: "expected group/version not present"
+      check: "kubectl api-versions"
+      fix: "Confirm feature/CRD installation and Kubernetes version compatibility"

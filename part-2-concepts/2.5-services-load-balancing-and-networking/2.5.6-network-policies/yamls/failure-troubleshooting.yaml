@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-policy-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Policy applied but nothing changes"
+      check: "CNI supports NetworkPolicy; kubectl get pods -n kube-system | grep -i calico|cilium|weave"
+      fix: "Enable a enforcing CNI; kind/minikube profiles that support policy"
+    - symptom: "DNS breaks after tightening egress"
+      check: "Allow UDP/TCP 53 to kube-dns/CoreDNS Service or namespace"
+      fix: "Add egress rule to kube-system DNS pods or cluster DNS IP per CNI docs"
+    - symptom: "Allowed in policy but connection refused"
+      check: "Target pod listens on correct interface; hostNetwork; port match"
+      fix: "Policy matches port/protocol; app binds 0.0.0.0 not localhost only"

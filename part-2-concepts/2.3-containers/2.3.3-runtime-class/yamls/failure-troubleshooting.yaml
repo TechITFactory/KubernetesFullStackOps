@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runtime-class-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "pod stays Pending with RuntimeClass errors"
+      check: "kubectl describe pod <pod-name>"
+      fix: "Ensure nodes advertise the RuntimeClass handler and runtime is installed"
+    - symptom: "RuntimeClass not found"
+      check: "kubectl get runtimeclass"
+      fix: "Apply the RuntimeClass manifest and match runtimeClassName exactly"
+    - symptom: "sandboxed workload fails to start"
+      check: "kubectl get events --field-selector involvedObject.name=<pod-name>"
+      fix: "Validate node OS, kernel features, and runtime shim configuration"

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: docker-basics-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Cannot connect to the Docker daemon"
+      check: "docker info; systemctl status docker (Linux); Docker Desktop running (Windows/Mac)"
+      fix: "Start the daemon; add your user to docker group on Linux (then re-login); fix DOCKER_HOST if mis-set"
+    - symptom: "permission denied while trying to connect to the Docker socket"
+      check: "groups; ls -la /var/run/docker.sock"
+      fix: "sudo usermod -aG docker \$USER and re-login, or use rootless Docker per distro docs"
+    - symptom: "pull access denied / unauthorized"
+      check: "Image name; docker login to private registry"
+      fix: "Correct repo path; authenticate with registry credentials or IAM helper"
+    - symptom: "port is already allocated"
+      check: "docker ps; ss -tlnp | grep <port>"
+      fix: "Stop the conflicting container or pick another host port with -p"
+    - symptom: "no space left on device during pull or build"
+      check: "docker system df; df -h"
+      fix: "docker system prune (careful); expand disk; move data-root if needed"

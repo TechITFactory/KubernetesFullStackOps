@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: advanced-pod-config-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Pod denied by Pod Security / admission"
+      check: "kubectl describe pod; audit logs; PSA labels on namespace"
+      fix: "Relax forbidden capabilities/hostPath/privileged or move to privileged namespace with approval"
+    - symptom: "Sysctl not allowed"
+      check: "allowedUnsafeSysctls on kubelet or PodSecurity baseline/restricted"
+      fix: "Use only safe sysctls or configure kubelet allowlist per admin policy"
+    - symptom: "Scheduling impossible with topologySpread / affinity"
+      check: "kubectl describe pod | grep -i affinity; get nodes -l"
+      fix: "Soften constraints; add nodes; fix label topology"

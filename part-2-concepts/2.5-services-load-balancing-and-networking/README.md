@@ -18,3 +18,12 @@
 - 2.5.10 Networking on Windows
 - 2.5.11 Service ClusterIP Allocation
 - 2.5.12 Service Internal Traffic Policy
+
+## Module wrap - quick validation
+
+```bash
+kubectl get svc,ing -A 2>/dev/null | head -n 40
+kubectl get endpointslices -A 2>/dev/null | head -n 20
+kubectl get networkpolicy -A 2>/dev/null | head -n 20 || true
+kubectl get pods -n kube-system -l k8s-app=kube-dns 2>/dev/null || kubectl get pods -n kube-system | grep -i coredns || true
+```

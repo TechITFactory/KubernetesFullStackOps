@@ -9,3 +9,33 @@
 - `scripts/check-k8s-pki.sh`
 - `yamls/pki-inventory.yaml`
 - `yamls/certificate-renewal-runbook.yaml`
+- `yamls/failure-troubleshooting.yaml`
+
+## Lab Steps (Linux)
+
+```bash
+./scripts/check-k8s-pki.sh
+kubectl apply -f yamls/pki-inventory.yaml
+kubectl apply -f yamls/certificate-renewal-runbook.yaml
+```
+
+## Expected Output
+
+- Certificate inventory lists key files and expiry windows.
+- SAN and validity checks pass for active control-plane endpoint.
+
+## Transcript
+
+[0:00–0:30] You will validate cluster PKI before certificate failures hit production.  
+[0:30–2:00] PKI issues are silent until expiry day, then they become outages.  
+[2:00–7:00] Run PKI check script, review inventory, verify SAN and expiry.  
+[7:00–9:00] Use troubleshooting YAML for expiry, SAN mismatch, and trust chain issues.  
+[9:00–10:00] Treat certificate health checks as recurring operations work.
+
+## Video close — fast validation
+
+```bash
+./scripts/check-k8s-pki.sh
+kubectl get cm -n kube-system kubeadm-config -o yaml | sed -n '1,60p'
+kubectl get nodes -o wide
+```

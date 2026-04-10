@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cri-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "crictl cannot connect to runtime"
+      check: "sudo crictl --runtime-endpoint <socket> info"
+      fix: "Start the runtime service and verify the correct CRI socket path"
+    - symptom: "kubelet reports CRI errors"
+      check: "journalctl -u kubelet -n 120"
+      fix: "Match kubelet cgroup driver with runtime and fix socket configuration"
+    - symptom: "pods stuck in ContainerCreating on a node"
+      check: "kubectl describe pod <pod-name>"
+      fix: "Inspect sandbox/image pull errors via crictl and runtime logs"

@@ -1,8 +1,14 @@
 # 3.3 Configure Pods and Containers
 
-- Objective: [Add objective]
-- Outcomes: [Add outcomes]
-- Notes: [Add notes]
+- Objective: Configure pod/container runtime behavior for security, reliability, and scheduling.
+- Outcomes:
+  - Set resources, probes, security contexts, and placement constraints.
+  - Use storage, config, and service account patterns correctly.
+  - Diagnose runtime issues with pod-level signals.
+- Notes:
+  - Practical-focused with command and validation for each pattern.
+  - Keep security defaults strong by default.
+  - Use Linux-only examples for consistency.
 
 ## Children
 
@@ -37,3 +43,11 @@
 - 3.3.29 Enforce Pod Security Standards by Configuring the Built-in Admission Controller
 - 3.3.30 Enforce Pod Security Standards with Namespace Labels
 - 3.3.31 Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller
+
+## Module Validation
+
+```bash
+kubectl get pods -A
+kubectl describe pod <pod-name> -n <namespace>
+kubectl get events -A --sort-by=.lastTimestamp | tail -n 30
+```

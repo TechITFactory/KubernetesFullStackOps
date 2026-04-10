@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-lifecycle-failure-troubleshooting
+data:
+  common_failures: |
+    - symptom: "Pod stays Pending"
+      check: "kubectl describe pod <pod-name>; kubectl get events --field-selector involvedObject.name=<pod-name>"
+      fix: "Fix scheduling: requests vs capacity, node selectors/affinity, taints/tolerations, PVC binding"
+    - symptom: "CrashLoopBackOff or repeated restarts"
+      check: "kubectl logs <pod-name> --previous; kubectl describe pod <pod-name>"
+      fix: "Fix app exit code, command/args, env, probes (too aggressive), or resource limits"
+    - symptom: "Readiness never becomes Ready"
+      check: "kubectl get pod <pod-name> -o yaml | grep -A20 readinessProbe"
+      fix: "Align probe path/port with app listen address; increase initialDelaySeconds/failureThreshold as needed"
