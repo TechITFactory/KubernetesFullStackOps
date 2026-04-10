@@ -2,18 +2,14 @@
 
 Complete this phase **before** [Part 1: Getting Started](../part-1-getting-started/README.md). Kubernetes assumes you are comfortable on the Linux command line and understand what containers are and how images run.
 
-## Teaching vs self-study (how README + transcript work)
+## Modules
 
-- **Teach-as-you-go script** (inside **0.1** and **0.2**): **You say** → **You run** → **You should see** in one linear flow — closest to “I am teaching you live with talk and commands.” Start there if you want one document to read from while typing.
-- **Lab / Quick Start**: same commands, **commands-only** layout for copy-paste and search.
-- **Transcript** at the bottom of each module: **short spoken recap** of the same story (good for timing labels on a video, not a full second lab).
+Each lesson is a **teaching transcript**: numbered steps with **Say → Run → Expected** (same style as **0.1** and **0.2**).
 
-## Modules (same lesson shape as Kubernetes parts)
-
-| Module | README | What you ship |
-|--------|--------|----------------|
-| **0.1** | [Linux basics for Kubernetes](0.1-linux-basics-for-kubernetes/README.md) | Metadata, lab steps, Quick Start, Expected output, Video close, troubleshooting, assessment, transcript |
-| **0.2** | [Docker basics for Kubernetes](0.2-docker-basics-for-kubernetes/README.md) | Same structure + `docker build` / `docker run` / port lab + `verify-docker-basics.sh` |
+| Module | README | Assets |
+|--------|--------|--------|
+| **0.1** | [Linux basics](0.1-linux-basics-for-kubernetes/README.md) | `lab-files/`, `scripts/`, `yamls/failure-troubleshooting.yaml` |
+| **0.2** | [Docker basics](0.2-docker-basics-for-kubernetes/README.md) | `docker/Dockerfile`, `scripts/verify-docker-basics.sh`, `yamls/failure-troubleshooting.yaml` |
 
 Each module includes:
 
