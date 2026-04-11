@@ -1,23 +1,39 @@
-# 2.4.3 Workload Management
+# 2.4.3 Workload Management — teaching transcript
 
-Controllers turn **desired state** into **running Pods**. Each controller optimizes for different guarantees: stateless scale-out, stable identity, per-node daemons, or batch completion.
+## Intro
+
+Controllers turn **desired state** in the API into **running Pods**. A **Deployment** is the usual choice for **stateless** apps: it performs **rolling updates**, keeps **ReplicaSets** under the hood, and preserves **revision history** for rollback. The **ReplicaSet** is the mechanism that matches a **label selector** to a replica count; you normally let the Deployment own it. A **StatefulSet** adds **ordered** creation, **stable network identity**, and often **per-pod storage** via **volumeClaimTemplates**. A **DaemonSet** runs **one pod per eligible node**—think log agents, node exporters, or CNI components. **Jobs** run pods **to completion**; **CronJobs** create Jobs on a **schedule**. Together these are the workload management toolkit you will see in every cluster.
 
 **Prerequisites:** [2.4.1.1 Pod Lifecycle](../2.4.1-pods/2.4.1.1-pod-lifecycle/README.md) recommended so Pod phases and conditions are fresh.
 
-## Controller choice (diagram)
+## Flow of this lesson
 
-```mermaid
-flowchart TD
-  Q{Stateful identity or stable network name?}
-  Q -->|No| D[Deployment + Service]
-  Q -->|Yes| S[StatefulSet]
-  N{One pod per node?}
-  N -->|Yes| DS[DaemonSet]
-  N -->|No| D
-  B{Batch / schedule?}
-  B -->|One-shot| J[Job]
-  B -->|Cron| C[CronJob]
 ```
+  Need stable identity + ordered pods + PVCs each?
+        │ yes                          │ no
+        ▼                                ▼
+   StatefulSet                    One pod per node?
+                                      │ yes → DaemonSet
+                                      │ no
+                                      ▼
+                              Batch / schedule?
+                                 │ one-shot → Job
+                                 │ recurring → CronJob
+                                 │ long-running stateless → Deployment
+```
+
+**Say:**
+
+This is a decision flow for **which controller**, not a mandate to skip reading Pod specs. StatefulSet without headless Service and storage is incomplete; DaemonSet without **tolerations** often misses control-plane nodes.
+
+## Learning objective
+
+- Match **Deployment**, **ReplicaSet**, **StatefulSet**, **DaemonSet**, **Job**, and **CronJob** to their primary use cases.
+- Follow the numbered children in order for the **core path** with verify scripts.
+
+## Why this matters
+
+Choosing the wrong controller shows up months later as painful migrations—especially mistaking StatefulSet ordering for “just another Deployment.”
 
 ## Children (suggested order)
 
@@ -32,10 +48,22 @@ flowchart TD
 
 ## Module wrap — quick validation
 
+**Say:**
+
+After any DaemonSet or Job lab, this confirms nothing surprising is left Pending cluster-wide.
+
 ```bash
 kubectl get deploy,sts,ds,job,cronjob,rc -A 2>/dev/null | head -n 40
 kubectl get pods -A | head -n 25
 ```
+
+## Troubleshooting
+
+- **Empty `sts`/`ds` rows** → expected before you apply those lessons
+- **`rc` visible from old tutorials** → see [2.4.3.8](2.4.3.8-replicationcontroller/README.md) for migration guidance
+- **Many pods `Evicted` or `OOMKilled`** → revisit requests/limits ([2.4.1.7](../2.4.1-pods/2.4.1.7-pod-quality-of-service-classes/README.md))
+- **Verify script fails mid-path** → delete partial objects with lesson cleanup blocks, then rerun from Deployments forward
+- **Wrong namespace** → export `NS=...` if your verify scripts support it (see individual lessons)
 
 ## Next
 

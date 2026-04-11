@@ -1,56 +1,63 @@
 # 2.4.1.1 Pod Lifecycle — teaching transcript
 
-## Metadata
+## Intro
 
-- Duration: ~15 min
-- Difficulty: Beginner
-- Practical/Theory: 70/30
-- Lab OS: Linux / macOS / WSL (kubectl + cluster)
+A Pod’s **phase** (`Pending`, `Running`, `Succeeded`, `Failed`, `Unknown`) is a coarse summary of lifecycle: **Pending** usually means not yet scheduled or images/volumes not ready; **Running** means at least one container has started (you can still be not **Ready**); **Succeeded** / **Failed** apply when all containers stop and **restartPolicy** allows termination. **Container states** add detail: **Waiting** (reason like `ContainerCreating`), **Running**, **Terminated** (exit code, signal). **`restartPolicy`** tells kubelet what to do when a container exits: **`Always`** (default) restarts except on successful completion of pods that terminate; **`OnFailure`** restarts only on failure; **`Never`** never restarts. **Readiness**, **liveness**, and **startup** probes are different: **readiness** controls whether the Pod receives Service traffic; **liveness** can restart a container kubelet thinks is dead; **startup** protects slow-boot apps from liveness killing them too early. This lesson focuses on **status fields** and events; probes are configured in YAML but interpreted through **conditions** like `Ready`.
 
-## Learning objective
-
-By the end of this lesson you will be able to:
-
-- Read **`.status.phase`** and **Pod conditions** and relate them to scheduling and container startup.
-- Distinguish **Kubernetes-level readiness** from **application health** (probes build the bridge; this lesson focuses on status fields).
-- Use `kubectl describe` and **events** to explain why a Pod is not `Ready`.
-
-## Why this matters in real jobs
-
-Incidents often start as “pod not ready.” On-call engineers read phase, conditions, and the event stream before touching the app. Confusing **CrashLoopBackOff** with a **scheduling** problem wastes minutes.
-
-## Prerequisites
+**Prerequisites**
 
 - [Part 2 prerequisites](../../../README.md#prerequisites-met-read-this-before-21)
 - Optional: [1.1.3 dev-local workspace](../../../../part-1-getting-started/1.1-learning-environment/1.1.3-local-development-clusters/README.md) if you use a dedicated namespace (`NS=dev-local` works with the verify script)
 
-## Concepts (short theory)
+## Learning objective
 
-- **Phase** (`Pending`, `Running`, `Succeeded`, `Failed`, `Unknown`) is a high-level summary; it can mislead if a container is running but not ready.
-- **Conditions** such as `PodScheduled`, `Initialized`, `ContainersReady`, and `Ready` carry the detailed truth; `Ready=True` is what Services use for endpoints.
-- **restartPolicy** (`Always`, `OnFailure`, `Never`) defines kubelet behavior when containers exit; it interacts with probe failures in real apps (demo uses a simple sleep loop).
+- Read **`.status.phase`** and **Pod conditions** and relate them to scheduling and container startup.
+- Map **container states** and **`restartPolicy`** to kubelet behavior.
+- Distinguish **readiness** from **liveness** from **startup** probes by effect on traffic and restarts.
+- Use `kubectl describe` and **events** to explain why a Pod is not `Ready`.
 
-## Visual — lifecycle and signals
+## Why this matters
 
-```mermaid
-flowchart TD
-  subgraph API[API server]
-    SPEC[Pod spec stored in etcd]
-  end
-  subgraph Node[Worker node]
-    SCH[Assigned to node]
-    RUN[Containers start]
-    RDY[Ready condition]
-  end
-  SPEC --> SCH
-  SCH --> RUN
-  RUN --> RDY
+Incidents often start as “pod not ready.” On-call engineers read phase, conditions, and the event stream before touching the app. Confusing **CrashLoopBackOff** with a **scheduling** problem wastes minutes.
+
+## Flow of this lesson
+
+```
+  Pod created (Pending)
+        │
+        ▼
+  Scheduled → Initialized → containers start
+        │
+        ▼
+  Running (phase)  ──may still be──► Ready=False (readiness / startup)
+        │
+        ▼
+  Succeeded or Failed (terminal phases for batch-style pods)
 ```
 
-## Lab — Quick Start
+**Say:**
 
-**What happens when you run this:**  
-`apply` creates a Pod in `default` (or your current namespace). The scheduler places it; kubelet pulls `busybox:1.36`, starts `sleep 3600`, then the kubelet sets **Ready** once the container is running and any probes pass (none configured here — readiness follows container running).
+Phase is the headline; **Conditions** are the paragraphs. Probes bridge application health into those conditions—without probes, “Running” often implies ready for simple demos only.
+
+## Concepts (short theory)
+
+- **Phase** can mislead: `Running` + `Ready=False` is common when readiness fails.
+- **Conditions** such as `PodScheduled`, `Initialized`, `ContainersReady`, and `Ready` carry the detailed truth; `Ready=True` is what Services use for endpoints.
+- **`restartPolicy`** interacts with probe failures and exit codes in real apps; the demo uses a simple sleep loop without probes.
+
+---
+
+## Step 1 — Apply the demo Pod and wait for Ready
+
+**What happens when you run this:**
+
+`kubectl apply` creates a Pod in `default` (or your current namespace). The scheduler places it; kubelet pulls `busybox:1.36`, starts `sleep 3600`. With **no readiness probe**, kubelet sets **Ready** once the container is running.
+
+**Say:**
+
+I narrate that **Pending** might flash while the image pulls—watch Events if it sticks.
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/pod-lifecycle-demo.yaml
@@ -60,7 +67,19 @@ kubectl get pod pod-lifecycle-demo -o wide
 
 **Expected:** `PHASE=Running`, `READY=1/1`, node name populated.
 
-**Verify (after lab):**
+---
+
+## Step 2 — Run the verify script (optional namespace)
+
+**What happens when you run this:**
+
+The script asserts the Pod exists and `Ready=True`—automated check for CI or self-study.
+
+**Say:**
+
+I mention `NS=dev-local` so viewers with a dev namespace do not fight the default.
+
+**Run:**
 
 ```bash
 chmod +x scripts/verify-pod-lifecycle-lesson.sh
@@ -68,30 +87,28 @@ chmod +x scripts/verify-pod-lifecycle-lesson.sh
 # Other namespace: NS=dev-local ./scripts/verify-pod-lifecycle-lesson.sh
 ```
 
-## Transcript — 10-minute narrative
+**Expected:** Script exits successfully.
 
-### Hook
+---
 
-You already know how to create a cluster. Now you watch one object go from **intent** in YAML to **signals** in status. Those signals are what Grafana alerts and `kubectl` share.
+## Troubleshooting
 
-### Phase vs conditions
-
-**Say:** Phase is the headline; conditions are the paragraphs. A Pod can be `Running` while `Ready=False` if readiness probes fail — you will see that pattern once probes are introduced in your apps.
-
-### Reading describe
-
-**Say:** Events at the bottom of `describe` are append-only clues: image pull failures, scheduling denials, volume mount errors. Start there before you grep application logs.
-
-### Cleanup (optional)
-
-```bash
-kubectl delete -f yamls/pod-lifecycle-demo.yaml --ignore-not-found
-```
+- **`Pending` forever** → describe pod; check **Events** for scheduling, image pull, or volume errors
+- **`Running` but `READY 0/1`** → readiness probe failing or not all containers ready; this demo has one container—check **Conditions**
+- **`CrashLoopBackOff`** → container exits; read **Last State** in `describe`; contrast with **ImagePullBackOff**
+- **`Unknown` phase** → node lost contact; investigate **node** and **kubelet** health
+- **`restartPolicy: Never` pod stays Failed** → expected after failure; delete or fix spec
+- **Verify script fails** → wrong namespace; set `NS` or apply demo into `default`
 
 ## Video close — fast validation
 
-**What happens when you run this:**  
+**What happens when you run this:**
+
 Wide columns show node placement; the `sed` slice shows the **Conditions** block for teaching review.
+
+**Say:**
+
+I use this as the closing board shot so the audience reads **Ready** alongside **phase**.
 
 ```bash
 kubectl get pod pod-lifecycle-demo -o wide
@@ -106,9 +123,13 @@ kubectl describe pod pod-lifecycle-demo | sed -n '/Conditions:/,/Events:/p'
 | `yamls/failure-troubleshooting.yaml` | Common failure patterns for drills |
 | `scripts/verify-pod-lifecycle-lesson.sh` | Confirms Pod exists and `Ready=True` |
 
-## Failure troubleshooting asset
+## Cleanup
 
-- `yamls/failure-troubleshooting.yaml` — pod phase, probe, and scheduling failures.
+**Run:**
+
+```bash
+kubectl delete -f yamls/pod-lifecycle-demo.yaml --ignore-not-found 2>/dev/null || true
+```
 
 ## Next
 

@@ -1,53 +1,61 @@
 # 2.5.1 Service — teaching transcript
 
-## Metadata
+## Intro
 
-- Duration: ~18 min
-- Difficulty: Beginner
-- Practical/Theory: 65/35
+A **ClusterIP Service** exposes a **stable virtual IP** inside the cluster and a **DNS name** of the form **`my-svc.my-ns.svc.cluster.local`**. The **Service `selector`** chooses Pods by labels; the control plane publishes **Endpoints** and **EndpointSlices** listing the **Pod IPs** that are **Ready**. The data path—**kube-proxy** on each node, or a CNI/eBPF implementation—forwards traffic destined to the ClusterIP to one of those backends. The Service **`port`** is what clients dial; **`targetPort`** is the **container port** (or name) on the Pod. **Readiness** matters: not-ready Pods are omitted from typical Service load balancing. **Headless** Services (`clusterIP: None`) skip the VIP and return Pod A records—covered with StatefulSets in [2.4.3.3 StatefulSet](../../2.4-workloads/2.4.3-workload-management/2.4.3.3-statefulsets/README.md); this lesson uses a **normal** ClusterIP.
 
-## Learning objective
-
-By the end of this lesson you will be able to:
-
-- Explain **ClusterIP**: a **virtual IP** and **stable DNS name** that **kube-proxy** (or equivalent datapath) load-balances to **ready** pod IPs.
-- Connect **Service `selector` → Endpoints / EndpointSlices → Pod IPs** using `kubectl get`.
-- Distinguish **Service port** from **container `targetPort`**.
-
-## Why this matters in real jobs
-
-“Service has no endpoints” is a top incident pattern: selector mismatch, pods not **Ready**, or wrong **namespace**. This lesson makes those checks **muscle memory**.
-
-## Prerequisites
+**Prerequisites**
 
 - [Part 2 prerequisites](../../README.md#prerequisites-met-read-this-before-21)
 - [2.4.3.1 Deployments](../../2.4-workloads/2.4.3-workload-management/2.4.3.1-deployments/README.md) (pod template + labels)
 
-## Concepts (short theory)
+## Learning objective
 
-- **ClusterIP** is only reachable **inside the cluster** (unless you add port-forward, Ingress, or Gateway).
-- **Readiness** gates endpoints: not-ready pods are not included in load balancing for typical Services.
-- **Headless** Services (`clusterIP: None`) behave differently — see [2.4.3.3 StatefulSet](../../2.4-workloads/2.4.3-workload-management/2.4.3.3-statefulsets/README.md); this lesson uses a **normal** ClusterIP.
+- Explain **ClusterIP** as a virtual IP and DNS name load-balanced to **ready** Pod IPs.
+- Connect **Service `selector` → Endpoints / EndpointSlices → Pod IPs** with `kubectl get`.
+- Distinguish **Service `port`** from **container `targetPort`**.
 
-## Visual — Service to pods
+## Why this matters
 
-```mermaid
-flowchart TB
-  CLI[Client pod in cluster]
-  SVC[Service echo:80 ClusterIP]
-  EP[Endpoints / EndpointSlices]
-  P1[Pod echo-*]
-  P2[Pod echo-*]
-  CLI --> SVC
-  SVC --> EP
-  EP --> P1
-  EP --> P2
+“Service has no endpoints” is a top incident pattern: selector mismatch, pods not **Ready**, or wrong **namespace**. This lesson makes those checks **muscle memory**.
+
+## Flow of this lesson
+
+```
+  Client Pod
+      │
+      ▼
+  DNS: echo.svc-demo.svc.cluster.local → ClusterIP
+      │
+      ▼
+  kube-proxy / datapath → EndpointSlice backends
+      │
+      ▼
+  Ready Pod IPs : targetPort
 ```
 
-## Lab — Quick Start
+**Say:**
 
-**What happens when you run this:**  
-`service-clusterip-demo.yaml` creates **`svc-demo`**, a **2-replica** Deployment, and a **ClusterIP** Service selecting `app=echo`. The control plane programs **Endpoints** (and **EndpointSlices**) with the pod IPs once they are **Ready**.
+If **Endpoints** is empty, I do not touch kube-proxy first—I fix **labels** or **readiness**.
+
+## Concepts (short theory)
+
+- **ClusterIP** is only reachable **inside** the cluster unless you add port-forward, Ingress, or Gateway.
+- **NodePort** opens a high node port; **LoadBalancer** requests a cloud VIP—same selector model, different front door.
+
+---
+
+## Step 1 — Apply demo and confirm backends
+
+**What happens when you run this:**
+
+`service-clusterip-demo.yaml` creates **`svc-demo`**, a **2-replica** Deployment, and a **ClusterIP** Service selecting `app=echo`. **Endpoints** and **EndpointSlices** populate when Pods are **Ready**.
+
+**Say:**
+
+I read **`kubectl -n svc-demo get … endpoints echo`** aloud—**addresses** should list two pod IPs.
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/service-clusterip-demo.yaml
@@ -55,46 +63,70 @@ kubectl -n svc-demo rollout status deployment/echo --timeout=180s
 kubectl -n svc-demo get svc,deploy,pods,endpoints echo
 ```
 
-**Optional — hit the Service from a throwaway pod:**
+**Expected:** Service **CLUSTER-IP** assigned; Deployment available; two Pods **Running**/**Ready**; Endpoints show subset addresses.
+
+---
+
+## Step 2 — Optional curl from an in-cluster client
+
+**What happens when you run this:**
+
+A throwaway Pod resolves **FQDN** DNS and HTTP GETs the Service; exits after one request.
+
+**Say:**
+
+This proves **DNS + ClusterIP + routing** together—not just YAML on disk.
+
+**Run:**
 
 ```bash
 kubectl run curl-once -n svc-demo --rm -i --restart=Never --image=curlimages/curl:8.5.0 -- \
   curl -sS -o /dev/null -w "%{http_code}\n" http://echo.svc-demo.svc.cluster.local/
-# Expect: 200 (then pod exits)
 ```
 
-**Verify:**
+**Expected:** `200` (then the client pod exits).
+
+---
+
+## Step 3 — Verify script
+
+**What happens when you run this:**
+
+Automated checks for ClusterIP presence and backend count.
+
+**Run:**
 
 ```bash
 chmod +x scripts/verify-2-5-1-service-lesson.sh
 ./scripts/verify-2-5-1-service-lesson.sh
 ```
 
-## Optional asset (RBAC)
+**Expected:** Script exits successfully.
 
-`yamls/2-5-1-service-notes.yaml` installs a **ConfigMap** in **`kube-system`** — only apply if your user may write that namespace (often **denied** on managed clusters). The runnable lab uses **`svc-demo`** only.
+## Troubleshooting
 
-## Transcript — short narrative
-
-### Hook
-
-Pods come and go; IPs change. Services give **stable discovery** so ConfigMaps are not full of pod IPs.
-
-### Three kubectl gets
-
-**Say:** `get svc` for the VIP, `get endpoints` (or EndpointSlices) for **real backends**, `get pods` for **why** endpoints might be empty.
-
-### NodePort / LoadBalancer
-
-**Say:** Same selector model; **NodePort** opens a high port on nodes; **LoadBalancer** asks a cloud controller for an external VIP — covered in advanced cloud labs.
+- **Endpoints empty** → `kubectl -n svc-demo get pods --show-labels`; match **Service spec.selector**
+- **Pods not Ready** → `describe pod` for probes or crash reasons
+- **Wrong HTTP code from curl** → check **targetPort** vs container **containerPort**
+- **DNS NXDOMAIN** → wrong namespace in FQDN or CoreDNS down ([2.5.7](../2.5.7-dns-for-services-and-pods/README.md))
+- **`Forbidden` applying demo** → RBAC; use namespace your user owns
+- **Verify script fails** → partial apply; delete namespace and re-apply
 
 ## Video close — fast validation
+
+**Say:**
+
+I show **EndpointSlices** beside **Endpoints** so viewers see the modern API.
 
 ```bash
 kubectl -n svc-demo get svc echo -o wide
 kubectl -n svc-demo get endpoints echo -o yaml | head -n 40
 kubectl get endpointslices -n svc-demo -l kubernetes.io/service-name=echo -o wide 2>/dev/null || true
 ```
+
+## Optional asset (RBAC)
+
+`yamls/2-5-1-service-notes.yaml` installs a **ConfigMap** in **`kube-system`** — only apply if your user may write that namespace (often **denied** on managed clusters). The runnable lab uses **`svc-demo`** only.
 
 ## Repo files (reference)
 
@@ -106,9 +138,12 @@ kubectl get endpointslices -n svc-demo -l kubernetes.io/service-name=echo -o wid
 | `yamls/2-5-1-service-notes.yaml` | Optional kube-system notes (RBAC) |
 | `yamls/failure-troubleshooting.yaml` | Empty endpoints, wrong types |
 
-## Failure troubleshooting asset
+## Cleanup
 
-- `yamls/failure-troubleshooting.yaml` — ClusterIP vs NodePort vs LB, empty endpoints.
+```bash
+kubectl delete -f yamls/service-clusterip-demo.yaml --ignore-not-found 2>/dev/null || true
+kubectl delete configmap 2-5-1-service-notes -n kube-system --ignore-not-found 2>/dev/null || true
+```
 
 ## Next
 

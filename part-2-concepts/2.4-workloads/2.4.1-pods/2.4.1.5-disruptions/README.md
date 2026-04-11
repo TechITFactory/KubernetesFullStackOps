@@ -1,15 +1,57 @@
-# 2.4.1.5 Disruptions
+# 2.4.1.5 Disruptions — teaching transcript
 
-- Summary: Disruptions are workload interruptions caused by voluntary or involuntary events, and they must be planned for.
-- Content: Tie disruptions to PodDisruptionBudgets, draining, and controller expectations.
-- Lab: Review the disruption notes and simulate a safe drain strategy.
+## Intro
 
-## Assets
+**Disruptions** are anything that terminates or evicts Pods. **Voluntary** disruptions are **planned**: cluster upgrades, **`kubectl drain`**, rolling updates, human scale-down. **Involuntary** disruptions are **unplanned**: **node crash**, **kernel panic**, **OOM kill**, zone outage. **PodDisruptionBudget** (PDB) limits how many **voluntary** evictions may happen at once via **`minAvailable`** or **`maxUnavailable`** on a **label-selected** set of Pods. It does **not** stop involuntary failures. Always run **`kubectl drain`** with **`--dry-run=server`** (or client) **first** to see what would happen; if **ALLOWED DISRUPTIONS** is **0** on the PDB, drain **blocks** or waits because the eviction API respects the budget.
 
-- `yamls/disruption-notes.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [2.4.1.4 Ephemeral Containers](../2.4.1.4-ephemeral-containers/README.md) recommended.
 
-## Quick Start
+## Flow of this lesson
+
+```
+  Voluntary: drain / rollout / delete
+            │
+            ├─► PDB allows? ──yes──► pods evicted/replaced
+            │        │
+            │        no (ALLOWED DISRUPTIONS 0)
+            │              └──► drain blocks / eviction denied
+
+  Involuntary: node loss / OOM
+            │
+            └──► PDB does not prevent loss; controllers recreate pods
+```
+
+**Say:**
+
+PDB is a **safety rail for maintenance**, not HA against fire.
+
+## Learning objective
+
+- Contrast **voluntary** and **involuntary** disruptions.
+- Read **PodDisruptionBudget** status including **allowed disruptions**.
+- Use **`kubectl drain --dry-run`** before real drain operations.
+
+## Why this matters
+
+A PDB set too strictly freezes node upgrades; one set too loosely takes out an entire stateful quorum during maintenance.
+
+## One-time setup
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/2.4.1-pods/2.4.1.5-disruptions" 2>/dev/null || cd .
+```
+
+## Step 1 — Apply PDB demo and describe
+
+**What happens when you run this:**
+
+The PDB is admitted; **status** may show **0** allowed until matching Pods exist.
+
+**Say:**
+
+I explain **`minAvailable: 1`** means “never voluntarily go to zero healthy pods matching this selector.”
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/disruption-notes.yaml
@@ -17,17 +59,58 @@ kubectl get poddisruptionbudget.policy disruption-demo
 kubectl describe poddisruptionbudget disruption-demo
 ```
 
-## Expected output
+**Expected:** PDB is admitted; status reflects current matching pods (may show `0` until you create pods with `app: disruption-demo`).
 
-- PDB is admitted; status reflects current matching pods (may show `0` until you create pods with `app: disruption-demo`).
+---
 
-## Video close - fast validation
+## Step 2 — Dry-run drain on a node (read-only rehearsal)
+
+**What happens when you run this:**
+
+**`--dry-run=server`** asks the API server to validate eviction without doing it—shows PDB conflicts early.
+
+**Say:**
+
+I pick **`NODE`** from `kubectl get nodes`; on single-node labs drain may still teach the **message** when PDB blocks.
+
+**Run:**
+
+```bash
+NODE="$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')"
+kubectl drain "$NODE" --dry-run=server --ignore-daemonsets 2>&1 | head -n 40 || true
+```
+
+**Expected:** Output lists what would be evicted or errors if PDB / unsafe parameters; no actual drain.
+
+## Video close — fast validation
 
 ```bash
 kubectl get pdb
 kubectl get pods -l app=disruption-demo 2>/dev/null || true
 ```
 
-## Failure Troubleshooting Asset
+## Troubleshooting
 
-- `yamls/failure-troubleshooting.yaml` - common PDB selector mismatch and eviction/drain failures.
+- **Drain stuck with PDB** → check **`kubectl describe pdb`** for **ALLOWED DISRUPTIONS 0**; relax budget temporarily or add replicas
+- **PDB never matches pods** → fix **selector** labels on Pods
+- **Involuntary outage took quorum** → PDB would not help; fix HA topology and storage
+- **`Forbidden` on eviction** → RBAC for **`pods/eviction`**
+- **DaemonSet pods block drain** → use **`--ignore-daemonsets`** consciously; know what stays on the node
+- **Dry-run differs from real drain** → race conditions still possible; re-check PDB before production drain
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/disruption-notes.yaml` | PDB demo manifest |
+| `yamls/failure-troubleshooting.yaml` | Selector mismatch and eviction drills |
+
+## Cleanup
+
+```bash
+kubectl delete -f yamls/disruption-notes.yaml --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[2.4.1.6 Pod Hostname](../2.4.1.6-pod-hostname/README.md)

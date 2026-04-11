@@ -1,18 +1,38 @@
-# 2.4.1 Pods
+# 2.4.1 Pods — teaching transcript
 
-A **Pod** is the smallest deployable unit on Kubernetes: one or more containers that share network and storage namespaces on a node. Everything “higher level” (Deployments, Jobs, …) ultimately creates or replaces Pods.
+## Intro
+
+A **Pod** is the smallest deployable unit on Kubernetes: one or more containers that **share a network namespace** (one IP, shared `localhost` policy between containers) and **mount the same volumes** on a single node. Everything higher level—**Deployments**, **StatefulSets**, **Jobs**, and so on—**creates or replaces Pods**; it does not run containers by magic outside that contract. The **Pod spec** is the **contract between the scheduler and kubelet**: scheduling decisions use the spec’s resources, affinity, and tolerations; kubelet uses the same spec to start containers and run probes. When you debug “why is this not running,” you still end at the Pod object even when a controller owns it.
 
 **Prerequisites:** [2.4 module](../README.md); working cluster.
 
-## How this subsection fits (diagram)
+## Flow of this lesson
 
-```mermaid
-flowchart LR
-  API[kubectl / API] --> RS[Controllers]
-  RS --> POD[Pod spec on node]
-  POD --> C1[Containers]
-  POD --> VOL[Volumes]
 ```
+  kubectl / CI applies workload API object
+              │
+              ▼
+        Controller reconciles
+              │
+              ▼
+        Pod spec bound to a node
+              │
+              ▼
+        Containers + volumes on that node
+```
+
+**Say:**
+
+The diagram is the same for a hand-written Pod or a Deployment: the Pod is where network and storage namespaces meet; controllers are just automated authors of Pod specs.
+
+## Learning objective
+
+- Describe how Pods **share** network and storage namespaces on one node.
+- State that **higher-level workload resources** ultimately manage Pod lifecycle, not a separate runtime primitive.
+
+## Why this matters
+
+Misconfigured **affinity**, **volumes**, or **probes** show up as Pod status; blaming the Deployment without reading the Pod spec wastes time in incidents.
 
 ## Children (suggested order)
 
@@ -30,11 +50,23 @@ flowchart LR
 
 ## Module wrap — quick validation
 
+**Say:**
+
+This read-only slice catches stuck pods and PDBs before you dive into a single lesson.
+
 ```bash
 kubectl get pods -A | head -n 30
 kubectl get pdb -A 2>/dev/null || true
 kubectl get events -A --sort-by=.lastTimestamp | tail -n 20
 ```
+
+## Troubleshooting
+
+- **No PDBs listed** → normal if you have not applied disruption demos; `|| true` suppresses errors on empty API
+- **Many pods `Pending`** → cluster capacity or scheduling constraints; continue with [2.4.1.11](2.4.1.11-advanced-pod-configuration/README.md) topics
+- **Events truncated** → raise `tail -n` or filter with `--field-selector`
+- **`kubectl get pods -A` slow** → large clusters; add `-l` or `-n` for teaching
+- **Permission errors** → use namespace your kubeconfig can read
 
 ## Next subsection
 

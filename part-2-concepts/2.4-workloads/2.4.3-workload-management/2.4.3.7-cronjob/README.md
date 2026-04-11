@@ -1,93 +1,114 @@
 # 2.4.3.7 CronJob — teaching transcript
 
-## Metadata
+## Intro
 
-- Duration: ~15 min
-- Difficulty: Intermediate
-- Practical/Theory: 60/40
+A **CronJob** creates **Job** objects on a **cron schedule** using five fields: **minute hour day-of-month month day-of-week**. Since Kubernetes **1.27**, you can set **`spec.timeZone`** so schedules are evaluated in a **named timezone** (IANA) instead of assuming **UTC**—still confirm your **control plane** version supports it. **`concurrencyPolicy`**: **`Allow`** overlaps runs; **`Forbid`** skips a new Job if the previous is still running; **`Replace`** cancels the still-running Job to start a new one—pick based on whether overlaps are safe. **`startingDeadlineSeconds`** bounds how late a missed tick may still start—prevents huge backlogs after downtime. **`successfulJobsHistoryLimit`** and **`failedJobsHistoryLimit`** cap how many **finished Jobs** remain—pair with per-Job **TTL** from [2.4.3.6](../2.4.3.6-automatic-cleanup-for-finished-jobs/README.md) when you want API objects gone entirely.
+
+**Prerequisites:** [2.4.3.6 Automatic cleanup for finished Jobs](../2.4.3.6-automatic-cleanup-for-finished-jobs/README.md).
 
 ## Learning objective
 
-By the end of this lesson you will be able to:
+- Read **cron** schedule fields and relate them to controller firing behavior.
+- Explain **`concurrencyPolicy`** values and **`startingDeadlineSeconds`**.
+- Create a **one-off Job** from a CronJob with **`kubectl create job --from=cronjob/...`**.
+- Mention **`spec.timeZone`** (1.27+) versus historical UTC defaults.
 
-- Read a **cron schedule** in Kubernetes (`min hour dom mon dow`) and relate it to **controller time** (usually **kube-controller-manager** timezone: **UTC** unless configured otherwise).
-- Explain **`concurrencyPolicy`**: `Allow`, `Forbid`, or `Replace` when the previous Job is still running.
-- Create a **one-off Job** from a CronJob with **`kubectl create job ... --from=cronjob/...`** to test the template without waiting for the schedule.
+## Why this matters
 
-## Why this matters in real jobs
+CronJobs power backups and reports. Incidents appear as **missed schedules**, **overlapping runs**, or **unbounded Job lists**.
 
-CronJobs power backups, reports, and sync jobs. Incidents show up as **missed schedules** (`startingDeadlineSeconds`), **overlapping runs** (wrong concurrency policy), or **zombie Job lists** (history limits too high).
+## Flow of this lesson
 
-## Prerequisites
+```
+  CronJob
+     │
+     ├── schedule tick (timezone-aware if spec.timeZone set)
+     │
+     ▼
+  Job object created
+     │
+     ▼
+  Pod runs template
+```
 
-- [2.4.3.6 Automatic cleanup for finished Jobs](../2.4.3.6-automatic-cleanup-for-finished-jobs/README.md)
+**Say:**
+
+Always state **which clock** the cluster uses before blaming “cron drift.”
 
 ## Concepts (short theory)
 
-- The **schedule** field uses the same five fields as standard cron; the controller creates a **Job** object for each firing.
-- **`suspend: true`** stops new Jobs — useful for maintenance without deleting the CronJob.
-- **`successfulJobsHistoryLimit` / `failedJobsHistoryLimit`** trim how many finished Jobs remain listed (distinct from **TTL** on individual Jobs).
+- **`suspend: true`** stops future Jobs without deleting the CronJob—maintenance switch.
 
-## Visual — CronJob → Job → Pod
+---
 
-```mermaid
-flowchart TB
-  CJ[CronJob cronjob-demo]
-  SCH[Schedule tick]
-  JB[Job created]
-  PD[Pod runs template]
-  CJ --> SCH
-  SCH --> JB
-  JB --> PD
-```
+## Step 1 — Apply CronJob and inspect
 
-## Lab — Quick Start
+**What happens when you run this:**
 
-**What happens when you run this:**  
-The CronJob is installed with **`*/1 * * * *`** (every minute) and **`concurrencyPolicy: Forbid`** so a slow previous run blocks a second one. Within a minute you should see new Jobs appear; use **watch** to learn the rhythm.
+**`*/1 * * * *`** fires every minute with **`concurrencyPolicy: Forbid`**—slow runs block the next.
+
+**Say:**
+
+Open a second terminal with **`kubectl get jobs -w`** for rhythm during recording.
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/cronjob-demo.yaml
 kubectl get cronjob cronjob-demo
 kubectl describe cronjob cronjob-demo | sed -n '1,45p'
-# In another terminal (optional):
-# kubectl get jobs -w
 ```
 
-**Instant template check (no schedule wait):**
+**Expected:** CronJob listed; describe shows schedule and policy fields.
+
+---
+
+## Step 2 — Manual Job from CronJob template
+
+**What happens when you run this:**
+
+**`--from=cronjob/...`** clones the pod template without waiting for the schedule.
+
+**Say:**
+
+This is how SREs smoke-test **command** and **image** before the next midnight run.
+
+**Run:**
 
 ```bash
 kubectl create job cj-manual-test --from=cronjob/cronjob-demo
 kubectl wait --for=condition=complete job/cj-manual-test --timeout=120s
 kubectl logs job/cj-manual-test
-kubectl delete job cj-manual-test --ignore-not-found
+kubectl delete job cj-manual-test --ignore-not-found 2>/dev/null || true
 ```
 
-**Verify (creates and deletes a short-lived Job automatically):**
+**Expected:** Manual Job completes; logs match template; delete is idempotent.
+
+---
+
+## Step 3 — Verify script
+
+**What happens when you run this:**
+
+Creates and deletes a short-lived Job automatically.
+
+**Run:**
 
 ```bash
 chmod +x scripts/verify-cronjob-lesson.sh
 ./scripts/verify-cronjob-lesson.sh
 ```
 
-## Transcript — short narrative
+**Expected:** Script succeeds.
 
-### Hook
+## Troubleshooting
 
-Humans think in local time; the cluster often thinks in **UTC**. Always confirm **where** the control plane runs and whether your platform overrides CM timezone — wrong assumption equals “it never fired.”
-
-### Forbid vs Allow
-
-**Say:** **Forbid** is safest for jobs that must not overlap (single-writer migrations). **Allow** stacks runs — can overload downstream systems.
-
-### Cleanup (optional)
-
-```bash
-kubectl delete -f yamls/cronjob-demo.yaml --ignore-not-found
-kubectl delete job cj-manual-test --ignore-not-found
-```
-
-Delete any leftover **`cj-verify-*`** Jobs if you interrupted `verify-cronjob-lesson.sh` before it finished.
+- **Missed schedules** → check **`startingDeadlineSeconds`**, **suspend**, and **timezone** assumptions
+- **Overlapping dangerous jobs** → switch from **Allow** to **Forbid**
+- **Too many Jobs listed** → lower **history** limits or add **TTL** on Job template
+- **Cron syntax error** → API rejects on apply; validate with dry-run
+- **Wrong local time** → set **`spec.timeZone`** on supported clusters or convert to UTC explicitly
+- **Leftover `cj-verify-*` Jobs** → delete if verify script interrupted
 
 ## Video close — fast validation
 
@@ -104,9 +125,12 @@ kubectl get jobs --sort-by=.metadata.creationTimestamp | tail -n 8
 | `yamls/failure-troubleshooting.yaml` | Schedule, timezone, concurrency issues |
 | `scripts/verify-cronjob-lesson.sh` | `--from=cronjob` one-shot Job + log sanity |
 
-## Failure troubleshooting asset
+## Cleanup
 
-- `yamls/failure-troubleshooting.yaml` — schedule syntax, deadline, concurrency.
+```bash
+kubectl delete -f yamls/cronjob-demo.yaml --ignore-not-found 2>/dev/null || true
+kubectl delete job cj-manual-test --ignore-not-found 2>/dev/null || true
+```
 
 ## Next
 

@@ -1,50 +1,56 @@
 # 2.4.3.1 Deployments — teaching transcript
 
-## Metadata
+## Intro
 
-- Duration: ~15 min
-- Difficulty: Beginner
-- Practical/Theory: 70/30
+A **Deployment** declares **desired replicas** and a **Pod template**. The **Deployment controller** creates or updates a **ReplicaSet** whose **selector** and **template** match; the ReplicaSet then creates Pods. When you change the **pod template** (image, env, labels inside the template), the Deployment starts a **rolling update**: it brings up Pods under a **new ReplicaSet** and scales down the old one according to **`strategy.rollingUpdate`**: **`maxSurge`** (extra pods above desired during rollout) and **`maxUnavailable`** (how many may be down). **`kubectl rollout status`** waits until **available** minimums are met; **`kubectl rollout history`** lists **revisions**; **`kubectl rollout undo`** rolls back to a previous revision. Old ReplicaSets are **retained** for rollback up to **`revisionHistoryLimit`**. This is the default pattern for **stateless** apps.
+
+**Prerequisites:** [2.4.1.1 Pod Lifecycle](../../2.4.1-pods/2.4.1.1-pod-lifecycle/README.md) recommended.
 
 ## Learning objective
 
-By the end of this lesson you will be able to:
+- Create a **Deployment**, watch **rollout** to available, and list **ReplicaSets** owned by it.
+- Use **`kubectl rollout history`** before discussing rollback.
+- Explain why **template changes** create a **new ReplicaSet** instead of patching running Pods in place.
+- Interpret **`maxSurge`** / **`maxUnavailable`** at a high level.
 
-- Create a **Deployment**, watch a **rollout** reach available state, and list **ReplicaSets** owned by that Deployment.
-- Use **`kubectl rollout history`** as a first step before rollback discussions.
-- Explain why **changing the pod template** creates a new ReplicaSet instead of patching old pods in place.
+## Why this matters
 
-## Why this matters in real jobs
+Most stateless services run behind Deployments. Rollouts, image bumps, and “replicas stuck at 0” surface through Deployment and ReplicaSet status.
 
-Most stateless services run behind Deployments. Rollouts, image bumps, and “replicas stuck at 0” tickets all show up through Deployment and ReplicaSet status. This is the default mental model for **Kubernetes-native** apps.
+## Flow of this lesson
 
-## Prerequisites
+```
+  Deployment spec (replicas + template)
+              │
+              ▼
+  ReplicaSet (current revision)
+              │
+              ├──► Pods v1  (scale down during rollout)
+              └──► Pods v2  (scale up, new template)
+```
 
-- [2.4.1.1 Pod Lifecycle](../../2.4.1-pods/2.4.1.1-pod-lifecycle/README.md) recommended
+**Say:**
+
+You never “mutate a running container’s image” in place—the controller **replaces** Pods using the new template.
 
 ## Concepts (short theory)
 
-- A **Deployment** declares desired replicas and a **pod template**; the **Deployment controller** creates/updates a **ReplicaSet** whose job is to keep matching Pods running.
-- Template changes roll forward through a **new ReplicaSet** (usually) while scaling events adjust replica counts — you see multiple ReplicaSets during rolling updates.
-- **Available** means ready pods meet minimum availability rules configured on the Deployment (defaults allow your pods to become endpoints).
+- **Available** means ready pods meet minimum availability rules on the Deployment (defaults allow endpoints once readiness passes).
+- **Changing the pod template** increments revision metadata and shifts traffic-capable pods as readiness allows.
 
-## Visual — Deployment → ReplicaSet → Pods
+---
 
-```mermaid
-flowchart TB
-  D[Deployment deployment-demo]
-  RS[ReplicaSet owned by Deployment]
-  P1[Pod]
-  P2[Pod]
-  D --> RS
-  RS --> P1
-  RS --> P2
-```
+## Step 1 — Apply Deployment and wait for rollout
 
-## Lab — Quick Start
+**What happens when you run this:**
 
-**What happens when you run this:**  
-The Deployment controller creates a ReplicaSet, which creates two Pods from the template (`nginx:1.27`). `rollout status` blocks until the Deployment’s **availableReplicas** match **spec.replicas**.
+The controller creates a ReplicaSet and two **nginx:1.27** Pods; **`rollout status`** blocks until the Deployment reports success.
+
+**Say:**
+
+I watch **`kubectl get rs`** in a second terminal during teaching to see **desired** shift between generations after an image change (homework).
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/deployment-demo.yaml
@@ -55,37 +61,45 @@ kubectl get rs -l app=deployment-demo
 
 **Expected:** `AVAILABLE` equals desired (2), two pods `Running` and `READY`, one primary ReplicaSet with desired=2.
 
-**Verify:**
+---
+
+## Step 2 — Run verify script
+
+**What happens when you run this:**
+
+Script waits for **Available** and asserts replica counts.
+
+**Say:**
+
+CI uses the same script so regressions in demo YAML are caught early.
+
+**Run:**
 
 ```bash
 chmod +x scripts/verify-deployments-lesson.sh
 ./scripts/verify-deployments-lesson.sh
 ```
 
-## Transcript — short narrative
+**Expected:** Script exits successfully.
 
-### Hook
+## Troubleshooting
 
-You stopped hand-crafting single Pods. A Deployment says: “keep N copies of this template.” Kubernetes does the churn when nodes die or images change.
-
-### ReplicaSet is implementation detail
-
-**Say:** You rarely edit ReplicaSets directly in production; you change the Deployment. For debugging, `kubectl describe deploy` links you to the active ReplicaSet and its events.
-
-### History
-
-**Say:** `rollout history` records revision metadata. Real rollbacks use `kubectl rollout undo` (covered when you change images in a later exercise); history is the audit trail.
-
-### Cleanup (optional)
-
-```bash
-kubectl delete -f yamls/deployment-demo.yaml --ignore-not-found
-```
+- **`ProgressDeadlineExceeded`** → stuck rollout; check **image pull**, **probes**, and **Events** on ReplicaSet and Pods
+- **Two ReplicaSets both non-zero** → normal mid-rollout; use **`kubectl rollout status`**
+- **`ImagePullBackOff`** → registry auth or typo in template image
+- **No endpoints during rollout** → **`maxUnavailable`** too aggressive with single replica—raise replicas or tune strategy
+- **`rollout history` empty** → **`revisionHistoryLimit`** may be 0; not recommended for rollback practice
+- **Verify script fails** → wrong namespace or leftover objects from partial cleanup
 
 ## Video close — fast validation
 
-**What happens when you run this:**  
-Deployment-wide view plus revision list — read-only confirmation after changes.
+**What happens when you run this:**
+
+Deployment-wide view plus revision list—read-only after changes.
+
+**Say:**
+
+I read the **REVISION** column aloud so rollback vocabulary lands.
 
 ```bash
 kubectl get deploy deployment-demo -o wide
@@ -100,9 +114,11 @@ kubectl rollout history deployment/deployment-demo
 | `yamls/failure-troubleshooting.yaml` | Rollout and image failures |
 | `scripts/verify-deployments-lesson.sh` | Waits for Available; checks replica counts |
 
-## Failure troubleshooting asset
+## Cleanup
 
-- `yamls/failure-troubleshooting.yaml` — rollout, image pull, selector mismatches.
+```bash
+kubectl delete -f yamls/deployment-demo.yaml --ignore-not-found 2>/dev/null || true
+```
 
 ## Next
 

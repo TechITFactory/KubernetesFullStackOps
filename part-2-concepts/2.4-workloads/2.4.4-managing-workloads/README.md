@@ -1,84 +1,111 @@
 # 2.4.4 Managing Workloads — teaching transcript
 
-## Metadata
+## Intro
 
-- Duration: ~20 min
-- Difficulty: Beginner
-- Practical/Theory: 80/20
+Day-2 operations are mostly **imperative** verbs backed by the same controllers you already studied. **`kubectl scale`** changes **replicas** on a Deployment (or other scalable resource). **`kubectl rollout status`**, **`pause`**, **`resume`**, and **`undo`** manipulate **Deployment** progress and revision pointers. **`kubectl set image`** updates the **pod template**’s image, which creates a **new ReplicaSet** and performs a **rolling update** under default strategy. After emergency fixes, **backport the manifest** in Git so **desired state** matches the cluster. **Multi-workload namespaces** benefit from consistent **labels** and **`kubectl get all -l`** style filtering—know that **`get all`** does not literally mean every resource type.
+
+**Prerequisites:** [2.4.3.1 Deployments](../2.4.3-workload-management/2.4.3.1-deployments/README.md).
 
 ## Learning objective
 
-By the end of this lesson you will be able to:
-
 - **Scale** a Deployment, **watch** rollout status, and read **`kubectl rollout history`**.
-- Trigger a **new revision** with **`kubectl set image`** and **undo** with **`kubectl rollout undo`**.
-- Relate each step to **ReplicaSets** underneath (from [2.4.3.1](../2.4.3-workload-management/2.4.3.1-deployments/README.md)).
+- Use **`kubectl set image`** and **`kubectl rollout undo`** safely.
+- Relate each operation to **ReplicaSets** underneath.
+- Mention **`rollout pause` / `resume`** for change freezes.
 
-## Why this matters in real jobs
+## Why this matters
 
-Day-2 work is rarely “write YAML once.” It is **image bumps**, **emergency rollback**, **scale for traffic**, and **paused rollouts** during freezes. This lesson wires those verbs to **observable** cluster state.
+Day-2 work is image bumps, emergency rollback, scale for traffic, and paused rollouts during freezes—this lesson wires verbs to observable state.
 
-## Prerequisites
+## Flow of this lesson
 
-- [2.4.3.1 Deployments](../2.4.3-workload-management/2.4.3.1-deployments/README.md)
+```
+  kubectl scale / set image
+              │
+              ▼
+  Deployment spec changes
+              │
+              ▼
+  New ReplicaSet + rolling pod replacement
+              │
+              ▼
+  rollout history records revision
+```
+
+**Say:**
+
+**History** is not a full audit trail—pair kubectl with **Git** and **registry** metadata.
 
 ## Concepts (short theory)
 
-- **`kubectl rollout status`** blocks until the Deployment controller reports success for the current change — not the same as “all pods healthy forever.”
-- **`kubectl set image`** updates the **pod template** → new **ReplicaSet** → rolling replacement of Pods (default strategy).
-- **`kubectl rollout undo`** moves the Deployment back to the **previous** template revision — know your **history** before relying on it in production.
+- **`kubectl rollout status`** waits for the **current** change—not a permanent health guarantee.
 
-## Visual — change → new RS → rollback
+---
 
-```mermaid
-flowchart LR
-  D[Deployment template v1]
-  D2[Template v2 set image]
-  RS1[ReplicaSet A]
-  RS2[ReplicaSet B]
-  D --> RS1
-  D2 --> RS2
-  UNDO[rollout undo]
-  RS2 --> UNDO
-  UNDO --> RS1
-```
+## Step 1 — Run manage demo script
 
-## Lab — Quick Start
+**What happens when you run this:**
 
-**What happens when you run this:**  
-`manage-workloads-demo.sh` applies a **2-replica** nginx Deployment, **scales to 3**, bumps the image **1.27 → 1.26** (intentional drift for teaching), prints **history**, then **undoes** so you end on **nginx:1.27** again with **3** replicas.
+**`manage-workloads-demo.sh`** applies a **2-replica** nginx Deployment, **scales to 3**, bumps image **1.27 → 1.26**, prints **history**, then **undoes** to return to **nginx:1.27** with **3** replicas.
+
+**Say:**
+
+I narrate that **undo** jumps the Deployment’s template pointer—watch **ReplicaSet** ages in another terminal.
+
+**Run:**
 
 ```bash
 chmod +x scripts/manage-workloads-demo.sh scripts/verify-manage-workloads-lesson.sh
 ./scripts/manage-workloads-demo.sh
 ```
 
-**Verify:**
+**Expected:** Script completes without errors; Deployment ends at **3** replicas, **nginx:1.27**.
+
+---
+
+## Step 2 — Verify script
+
+**What happens when you run this:**
+
+Asserts post-conditions expected by **module verify** with **`--labs`**.
+
+**Run:**
 
 ```bash
 ./scripts/verify-manage-workloads-lesson.sh
 ```
 
-**Repeat from scratch (optional):**
+**Expected:** Script succeeds.
+
+---
+
+## Step 3 — Repeat from scratch (optional)
+
+**What happens when you run this:**
+
+Deletes the Deployment and reruns the demo for a clean recording.
+
+**Say:**
+
+Use **`--ignore-not-found`** so a second take does not fail.
+
+**Run:**
 
 ```bash
-kubectl delete deployment manage-workloads-demo --ignore-not-found
+kubectl delete deployment manage-workloads-demo --ignore-not-found 2>/dev/null || true
 ./scripts/manage-workloads-demo.sh
 ```
 
-## Transcript — short narrative
+**Expected:** Fresh demo run.
 
-### Hook
+## Troubleshooting
 
-YAML checked in to Git is static; the cluster is **live**. Operators use imperative commands when speed matters — then backport the manifest so Git matches reality.
-
-### History is not infinite audit
-
-**Say:** `rollout history` keeps **revision** metadata; for deep audits use **Git**, **image registry**, and **change tickets** — not kubectl alone.
-
-### Pause (homework)
-
-**Say:** `kubectl rollout pause deployment/...` freezes ReplicaSet churn during risky windows; pair with **canary** patterns in advanced courses.
+- **`rollout status` hangs** → image pull or probes—`describe deploy` and **ReplicaSet** **Events**
+- **`undo` surprises** → only knows **revision** stack—verify **history** first
+- **Scale resets in GitOps** → declarative sync overwrites replicas—fix Helm values or Kustomize
+- **`set image` typo** → new **ImagePullBackOff** rollout—undo quickly
+- **`rollout pause` forgotten** → Deployment stuck mid-rollout—`resume` after fix
+- **Verify script fails** → ensure demo script finished; check **labels** `app=manage-workloads-demo`
 
 ## Video close — fast validation
 
@@ -98,9 +125,11 @@ kubectl get pods -l app=manage-workloads-demo -o wide
 | `scripts/verify-manage-workloads-lesson.sh` | Post-demo assertions |
 | `yamls/failure-troubleshooting.yaml` | Rollout pause, scaling, rollback drills |
 
-## Failure troubleshooting asset
+## Cleanup
 
-- `yamls/failure-troubleshooting.yaml` — rollout pause, scaling, rollback failures.
+```bash
+kubectl delete deployment manage-workloads-demo --ignore-not-found 2>/dev/null || true
+```
 
 ## Next
 

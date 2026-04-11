@@ -1,50 +1,55 @@
 # 2.4.3.5 Jobs — teaching transcript
 
-## Metadata
+## Intro
 
-- Duration: ~12 min
-- Difficulty: Beginner
-- Practical/Theory: 75/25
+A **Job** runs one or more Pods **to completion**. **`completions`** is how many **successful** finishes you need; **`parallelism`** is how many Pods may run at once—together they control **batch throughput**. If pods fail, the Job retries until **`backoffLimit`** is exceeded, then the Job is **Failed**. **`activeDeadlineSeconds`** caps total runtime—safety valve for runaway jobs. **`restartPolicy`** on the Pod template must be **`OnFailure`** or **`Never`** (never **`Always`**—a completing container would restart forever). **`kubectl wait --for=condition=complete`** blocks until success; **`kubectl logs job/...`** follows the primary pod’s logs when one pod represents the Job.
+
+**Prerequisites:** [2.4.3.4 DaemonSet](../2.4.3.4-daemonset/README.md).
 
 ## Learning objective
 
-By the end of this lesson you will be able to:
+- Contrast **Jobs** with long-running **Deployment** / **DaemonSet** workloads.
+- Use **`kubectl wait --for=condition=complete`** and Job **conditions** in `describe`.
+- Explain **`completions`**, **`parallelism`**, **`backoffLimit`**, and **`activeDeadlineSeconds`**.
+- Choose valid **`restartPolicy`** values for batch pods.
 
-- Contrast **run-to-completion** Jobs with long-running controllers (Deployment, DaemonSet).
-- Use **`kubectl wait --for=condition=complete`** and Job **conditions** in `describe` output.
-- Choose a sensible **`restartPolicy`** for batch pods (`Never` or `OnFailure` — not `Always`).
+## Why this matters
 
-## Why this matters in real jobs
+Migrations, ETL, CI tasks, and admin scripts are often Jobs. Wrong **`backoffLimit`** or **`restartPolicy`** causes silent retries or stuck pods.
 
-Migrations, ETL, CI runners on Kubernetes, and one-off admin tasks are often **Jobs**. Misconfigured **`backoffLimit`** or wrong **restartPolicy** produces silent retries or stuck pods — the Job status fields are where you debug first.
+## Flow of this lesson
 
-## Prerequisites
+```
+  Job creates Pod(s)
+        │
+        ├── success → toward completions
+        └── failure → retry until backoffLimit
+        │
+        ▼
+  Complete=True  or  Failed=True
+```
 
-- [2.4.3.4 DaemonSet](../2.4.3.4-daemonset/README.md)
+**Say:**
+
+Debug Jobs by **exit codes** first, then **Events**—not readiness probes.
 
 ## Concepts (short theory)
 
-- A **Job** creates one or more Pods until **completions** succeed (default `completions: 1`, `parallelism: 1`).
-- **`activeDeadlineSeconds`**, **`backoffLimit`**, and **Pod failure** interact: read `kubectl describe job` when a Job never reaches `Complete`.
-- **`ttlSecondsAfterFinished`** (optional) cleans up finished Job objects — not set in this demo, so the Job remains for inspection.
+- **`ttlSecondsAfterFinished`** is covered in [2.4.3.6](../2.4.3.6-automatic-cleanup-for-finished-jobs/README.md)—this demo leaves the Job for inspection.
 
-## Visual — Job to completion
+---
 
-```mermaid
-flowchart LR
-  J[Job job-demo]
-  P[Pod runs once]
-  OK[Exit 0]
-  CMP[Complete=True]
-  J --> P
-  P --> OK
-  OK --> CMP
-```
+## Step 1 — Run Job to completion
 
-## Lab — Quick Start
+**What happens when you run this:**
 
-**What happens when you run this:**  
-The Job creates a Pod running `echo hello from job` with **`restartPolicy: Never`**. When the container exits successfully, the Job controller sets **`Complete=True`** and retains the Job object (until you delete it or TTL elapses).
+Single Pod runs **`echo hello from job`** with **`restartPolicy: Never`**; on exit 0 the Job sets **Complete**.
+
+**Say:**
+
+Parallel Jobs are the same object with bigger **parallelism**—draw the completions bar on a whiteboard.
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/job-demo.yaml
@@ -52,30 +57,33 @@ kubectl wait --for=condition=complete job/job-demo --timeout=120s
 kubectl logs job/job-demo
 ```
 
-**Expected:** Log line contains `hello from job`; `kubectl get job job-demo` shows `COMPLETIONS 1/1`.
+**Expected:** Log contains `hello from job`; `kubectl get job job-demo` shows `COMPLETIONS 1/1`.
 
-**Verify:**
+---
+
+## Step 2 — Verify script
+
+**What happens when you run this:**
+
+Waits for **Complete** and checks logs when available.
+
+**Run:**
 
 ```bash
 chmod +x scripts/verify-jobs-lesson.sh
 ./scripts/verify-jobs-lesson.sh
 ```
 
-## Transcript — short narrative
+**Expected:** Script succeeds.
 
-### Hook
+## Troubleshooting
 
-Everything so far assumed “keep running.” Jobs ask “**did the work finish?**” That flips debugging from readiness probes to **exit codes and backoff**.
-
-### Parallelism (mention only)
-
-**Say:** Increase **`parallelism`** for worker pools; **`completions`** counts how many successful finishes you need. This single-pod demo is the mental model before parallel batch patterns.
-
-### Cleanup (optional)
-
-```bash
-kubectl delete -f yamls/job-demo.yaml --ignore-not-found
-```
+- **Job never completes** → `describe job` for **BackoffLimitExceeded** or stuck **Active**
+- **`activeDeadlineSeconds` exceeded** → Job **Failed** with deadline reason—increase or fix workload
+- **Wrong restartPolicy** → API reject or endless restarts—use **Never** / **OnFailure**
+- **Indexed Job confusion** → completions >1 requires **completionMode** and template behavior per docs
+- **Logs empty** → select pod with **`kubectl logs job/name`** vs **`kubectl logs pod`**
+- **Parallelism overloads downstream** → lower **parallelism** or add client-side throttling
 
 ## Video close — fast validation
 
@@ -92,9 +100,11 @@ kubectl describe job job-demo | sed -n '/Conditions:/,/Events:/p'
 | `yamls/failure-troubleshooting.yaml` | Backoff and restart policy drills |
 | `scripts/verify-jobs-lesson.sh` | Waits for Complete; checks logs when available |
 
-## Failure troubleshooting asset
+## Cleanup
 
-- `yamls/failure-troubleshooting.yaml` — backoffLimit, restartPolicy, parallel Job pitfalls.
+```bash
+kubectl delete -f yamls/job-demo.yaml --ignore-not-found 2>/dev/null || true
+```
 
 ## Next
 

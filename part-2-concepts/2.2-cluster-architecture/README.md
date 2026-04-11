@@ -2,24 +2,35 @@
 
 ## Intro
 
-Connect **nodes**, **control-plane** paths, **controllers**, **leases**, **cloud integration**, **cgroups**, **self-healing**, and **garbage collection** to what you can observe with `kubectl` (and one host check for cgroups).
+Every action you take with `kubectl` flows through a defined architecture: the API server receives it, etcd persists it, controllers reconcile toward it, and kubelets on nodes execute it. Understanding this flow means you can trace any failure — from a stuck pod to a node going `Unknown` — back to the component responsible.
+
+This module walks each architectural piece in order: nodes and their agents, the communication paths between nodes and the control plane, the controller reconcile loop, the Lease heartbeat mechanism, cloud provider integration, cgroup resource isolation, self-healing behavior, and garbage collection.
 
 **Prerequisites:** [Part 1](../../part-1-getting-started/README.md); finish [2.1 Overview](../2.1-overview/README.md) first if you want the vocabulary fresh.
 
-**Teaching tip:** Lessons **2.2.1–2.2.8** include **What happens** + script headers where scripts exist.
+---
 
-## Reconciliation and node boundary
+## Flow of this module
 
-```mermaid
-flowchart LR
-  API[API server] --> CTRL[Controllers]
-  CTRL -->|desired state| API
-  API --> KL[kubelet]
-  KL -->|status| API
-  KL --> CRI[Runtime CRI]
-  KL -->|heartbeats| LEASE[Leases]
-  LEASE --> API
 ```
+  You (kubectl)
+       │
+       ▼
+  API server ◀────────────────────────────────────┐
+       │                                           │
+       ├──▶ etcd (persists state)                  │
+       │                                           │
+       ├──▶ Controllers (reconcile loop)           │
+       │         └──▶ API server (write actions)   │
+       │                                           │
+       └──▶ kubelet (on each node)                 │
+                 ├──▶ CRI runtime (run containers) │
+                 └──▶ Lease (heartbeat) ───────────┘
+```
+
+**Say:** "Everything goes through the API server. Controllers read desired state from it and write back actual state. kubelets read their pod assignments from it and write node status back. Leases are the heartbeat that tells the control plane a node is still alive. When you understand this loop, you understand why almost every Kubernetes failure leaves evidence in `kubectl describe` or `kubectl get events`."
+
+---
 
 ## Children (work in order)
 
@@ -33,10 +44,14 @@ flowchart LR
 - [2.2.8 Garbage collection](2.2.8-garbage-collection/README.md)
 - [2.2.9 Mixed version proxy](2.2.9-mixed-version-proxy/README.md)
 
+---
+
 ## Module wrap — quick validation
 
-**What happens when you run this:**  
-Nodes; node heartbeats (`kube-node-lease`); `kube-system` pods; recent events — read-only triage.
+**What happens when you run this:**
+Nodes; node heartbeat Leases; kube-system pods; recent events — read-only triage of the full architectural picture.
+
+**Say:** "These four commands give me a complete architectural snapshot: which nodes are ready, when they last sent a heartbeat, which control-plane pods are running, and what events have fired recently. If anything in the module left the cluster in a bad state, it shows up here."
 
 ```bash
 kubectl get nodes -o wide
@@ -44,6 +59,8 @@ kubectl get lease -n kube-node-lease
 kubectl get pods -n kube-system -o wide
 kubectl get events -A --sort-by=.lastTimestamp | tail -n 30
 ```
+
+---
 
 ## Next module
 

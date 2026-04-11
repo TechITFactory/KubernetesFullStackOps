@@ -1,53 +1,52 @@
 # 2.4.3.4 DaemonSet — teaching transcript
 
-## Metadata
+## Intro
 
-- Duration: ~15 min
-- Difficulty: Beginner
-- Practical/Theory: 70/30
+A **DaemonSet** runs **one pod per eligible node** (matching **nodeSelector**, **affinity**, and **tolerations**), not a fixed **`replicas:`** count like a Deployment. **Platform agents**—log collectors, **node exporters**, **CNI** helpers, even **kube-proxy** historically—are classic DaemonSets. **Control-plane nodes** are often **tainted**; DaemonSets that must run there need explicit **tolerations**. **`updateStrategy`** is **`RollingUpdate`** (default on supported versions) or **`OnDelete`** (replace pods only when node deletes pod or you delete manually)—choose based on how tightly you must control blast radius during upgrades.
+
+**Prerequisites:** [2.4.3.3 StatefulSet](../2.4.3.3-statefulsets/README.md).
 
 ## Learning objective
 
-By the end of this lesson you will be able to:
+- Explain **one pod per schedulable node** vs replica count.
+- Name **node agent** use cases and **toleration** needs for control-plane nodes.
+- Use **`kubectl rollout status`** and DaemonSet **status counters**.
 
-- Explain why a DaemonSet runs **one matching pod per schedulable node** (and how that differs from “replicas: N”).
-- Relate DaemonSets to **node agents**: log shippers, monitoring exporters, CNI plugins, device plugins.
-- Use `kubectl rollout status` and DaemonSet **status counters** to confirm cluster-wide placement.
+## Why this matters
 
-## Why this matters in real jobs
+Platform teams ship many add-ons as DaemonSets. When a node taints or goes **NotReady**, DaemonSet pods are often the first signal that the node is unhealthy for workloads.
 
-Platform teams ship many cluster add-ons as DaemonSets. When a node **taints** or goes **NotReady**, DaemonSet pods are the canary for “can this node run workloads?”
+## Flow of this lesson
 
-## Prerequisites
+```
+  DaemonSet
+      │
+      ├── Node A → Pod
+      ├── Node B → Pod
+      └── Node C → Pod   (if schedulable + matches policy)
+```
 
-- [2.4.3.3 StatefulSet](../2.4.3.3-statefulsets/README.md)
+**Say:**
+
+On **Minikube**, expect **one** pod—**desiredNumberScheduled** follows your node list, not your gut.
 
 ## Concepts (short theory)
 
-- The DaemonSet controller **targets nodes**, not a fixed replica count: `desiredNumberScheduled` follows the set of nodes that match affinity, tolerations, and scheduling rules.
-- **Updates** roll pod-by-pod (maxUnavailable / maxSurge depend on API version and feature gates); `kubectl rollout status` tracks that progression.
-- **Taints and tolerations** commonly block DaemonSet pods on control-plane nodes unless the chart adds the right toleration — compare your pod list to `kubectl get nodes`.
+- **maxUnavailable** / **maxSurge** for DaemonSet rolling updates depend on API version—consult `kubectl explain daemonset.spec.updateStrategy`.
 
-## Visual — one pod per node
+---
 
-```mermaid
-flowchart TB
-  DS[DaemonSet daemonset-demo]
-  N1[Node 1]
-  N2[Node 2]
-  N3[Node 3]
-  DS --> P1[Pod on N1]
-  DS --> P2[Pod on N2]
-  DS --> P3[Pod on N3]
-  N1 --- P1
-  N2 --- P2
-  N3 --- P3
-```
+## Step 1 — Apply DaemonSet and wait
 
-## Lab — Quick Start
+**What happens when you run this:**
 
-**What happens when you run this:**  
-DaemonSet creates a `busybox` sleep pod on **each node that accepts the pod**. On Minikube or single-node Kind you will see **one** pod; on three worker nodes you expect **three**.
+**busybox** sleep pod on **each node** that accepts the pod; single-node labs show **one** pod.
+
+**Say:**
+
+I compare **`kubectl get ds`** **DESIRED** to **`kubectl get nodes`** count.
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/daemonset-demo.yaml
@@ -55,32 +54,39 @@ kubectl rollout status daemonset/daemonset-demo --timeout=180s
 kubectl get pods -l app=daemonset-demo -o wide
 ```
 
-**Expected:** Pod count equals **schedulable** nodes in your cluster (often 1 in local labs).
+**Expected:** Pod count equals **schedulable** nodes matching policy (often 1 locally).
 
-**Verify:**
+---
+
+## Step 2 — Verify script
+
+**What happens when you run this:**
+
+Asserts **desired**, **current**, and **ready** match—portable across cluster sizes.
+
+**Run:**
 
 ```bash
 chmod +x scripts/verify-daemonset-lesson.sh
 ./scripts/verify-daemonset-lesson.sh
 ```
 
-## Transcript — short narrative
+**Expected:** Script succeeds.
 
-### Hook
+## Troubleshooting
 
-Deployments ask “how many copies?” DaemonSets ask “on **which** machines should this agent run?” The answer is usually **all of them** that match policy.
-
-### Single-node labs
-
-**Say:** Do not expect three pods on Minikube — expect **desiredNumberScheduled == 1**. The verify script checks that **desired, current, and ready** match, not a magic number.
-
-### Cleanup (optional)
-
-```bash
-kubectl delete -f yamls/daemonset-demo.yaml --ignore-not-found
-```
+- **Fewer pods than nodes** → **taints/tolerations**, **nodeSelector**, or **Pod topology** constraints
+- **DaemonSet not updating** → **`OnDelete`** strategy—delete pods to pick up new template
+- **CrashLoop on every node** → bad **hostPath** or **privilege**—affects whole fleet instantly
+- **Control-plane missing agent** → add **tolerations** for **control-plane** / **master** taints
+- **Rollout stuck** → describe DaemonSet; check **maxUnavailable** and pod **Events**
+- **Verify script “wrong count”** → reread script—it compares **counters**, not “must be 3”
 
 ## Video close — fast validation
+
+**Say:**
+
+I show **nodes** beside **pods** so the “one per node” story clicks.
 
 ```bash
 kubectl get ds daemonset-demo
@@ -96,9 +102,11 @@ kubectl get nodes -o wide
 | `yamls/failure-troubleshooting.yaml` | Taints, selectors, placement |
 | `scripts/verify-daemonset-lesson.sh` | Rollout + desired/current/ready equality |
 
-## Failure troubleshooting asset
+## Cleanup
 
-- `yamls/failure-troubleshooting.yaml` — taint/toleration and node selector mismatches.
+```bash
+kubectl delete -f yamls/daemonset-demo.yaml --ignore-not-found 2>/dev/null || true
+```
 
 ## Next
 

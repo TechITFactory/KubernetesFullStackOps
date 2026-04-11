@@ -1,32 +1,102 @@
-# 2.5.11 Service ClusterIP Allocation
+# 2.5.11 Service ClusterIP Allocation — teaching transcript
 
-- Summary: Service ClusterIP Allocation is a core Kubernetes concept that needs to be understood both declaratively and operationally.
-- Content: This section explains service clusterip allocation in practical Kubernetes terms and ties it back to observable cluster behavior.
-- Lab: Review the assets here, apply the sample manifest if provided, and inspect the resulting state with kubectl.
+## Intro
 
-## Assets
+Each **ClusterIP** address is allocated from a **cluster IP range** configured for the **API server** (flags like **`--service-cluster-ip-range`**) and tracked to avoid collisions. **Services** of type **ClusterIP** (and the internal parts of **NodePort** / **LoadBalancer**) consume addresses from that range. **Exhaustion** looks like **Service create failures** with messages about **no available cluster IP**. Some clusters use **automatic** allocation only; advanced setups may discuss **IPAM** components or **dual-stack** secondary ranges. **Headless** Services (`clusterIP: None`) **do not** consume a routable ClusterIP—important when counting address usage.
 
-- `scripts/inspect-2-5-11-service-clusterip-allocation.sh`
-- `yamls/2-5-11-service-clusterip-allocation-notes.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [2.5.1 Service](../2.5.1-service/README.md).
 
-## Quick Start
+## Flow of this lesson
+
+```
+  API server service CIDR
+              │
+              ▼
+  Allocator assigns free ClusterIP per Service
+              │
+              ▼
+  kube-proxy / CNI maps VIP → endpoints
+```
+
+**Say:**
+
+When **thousands** of Services exist, IPAM and **EndpointSlice** cardinality—not raw YAML—become the bottleneck.
+
+## Learning objective
+
+- Explain where **ClusterIP** addresses come from at a high level.
+- Relate **headless** Services to **no ClusterIP consumption**.
+- Use inspect output to correlate **Services** and **EndpointSlices** for address planning discussions.
+
+## Why this matters
+
+“Cannot allocate ClusterIP” during a hot migration is a **platform** incident—expanding CIDRs is painful.
+
+## One-time setup
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/2.5.11-service-clusterip-allocation" 2>/dev/null || cd .
+```
+
+## Step 1 — Apply notes ConfigMap
+
+**What happens when you run this:**
+
+Allocation teaching notes.
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/2-5-11-service-clusterip-allocation-notes.yaml
-bash scripts/inspect-2-5-11-service-clusterip-allocation.sh
 ```
 
-## Expected output
+**Expected:** ConfigMap `2-5-11-service-clusterip-allocation-notes` in `kube-system` when allowed.
 
-- ConfigMap `2-5-11-service-clusterip-allocation-notes` in `kube-system`; Service and EndpointSlice listing succeeds.
+---
 
-## Video close - fast validation
+## Step 2 — Run inspect script
+
+**What happens when you run this:**
+
+Lists **Services** and **EndpointSlices** to ground allocation discussion in live data.
+
+**Run:**
 
 ```bash
 bash scripts/inspect-2-5-11-service-clusterip-allocation.sh
 ```
 
-## Failure Troubleshooting Asset
+**Expected:** Script completes; Service and EndpointSlice listing succeeds.
 
-- `yamls/failure-troubleshooting.yaml` - common ClusterIP range exhaustion, IP allocation conflicts, and Service REST mapping errors.
+## Video close — fast validation
+
+```bash
+bash scripts/inspect-2-5-11-service-clusterip-allocation.sh
+```
+
+## Troubleshooting
+
+- **`range is full` errors** → grow **service-cluster-ip-range** (major change) or delete stale Services
+- **Duplicate IP panic** → rare corruption—platform vendor runbook
+- **Headless counted wrong** → `clusterIP: None`—verify with **`kubectl get svc -o wide`**
+- **Dual-stack needs two ranges** → IPv4 and IPv6 CIDR both sized for growth
+- **Static ClusterIP conflicts** → manual **`clusterIP`** field clashes with allocator
+- **`Forbidden` notes** → offline only
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `scripts/inspect-2-5-11-service-clusterip-allocation.sh` | Service + EndpointSlice listing |
+| `yamls/2-5-11-service-clusterip-allocation-notes.yaml` | Notes ConfigMap |
+| `yamls/failure-troubleshooting.yaml` | Exhaustion, conflicts, REST mapping |
+
+## Cleanup
+
+```bash
+kubectl delete configmap 2-5-11-service-clusterip-allocation-notes -n kube-system --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[2.5.12 Service Internal Traffic Policy](2.5.12-service-internal-traffic-policy/README.md)

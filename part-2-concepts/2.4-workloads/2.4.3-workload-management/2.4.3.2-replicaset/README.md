@@ -1,46 +1,51 @@
 # 2.4.3.2 ReplicaSet — teaching transcript
 
-## Metadata
+## Intro
 
-- Duration: ~12 min
-- Difficulty: Beginner
-- Practical/Theory: 65/35
+A **ReplicaSet** ensures a number of Pods exist whose **labels match** its **selector**. It creates or deletes Pods to reconcile **current** vs **desired** count. **Deployments** manage ReplicaSets for you and implement **rolling updates** and **history**; a **standalone** ReplicaSet has **no rollout strategy**—changing the template is awkward (often delete/recreate the RS or run a one-off migration). The **selector is immutable** after creation in normal workflows; if Pod labels drift from the selector, you get **orphans** or **duplicate controllers** fighting the same labels. **Never edit a Deployment-owned ReplicaSet’s template directly**—the Deployment controller reconciles it back or you create inconsistent state.
+
+**Prerequisites:** [2.4.3.1 Deployments](../2.4.3.1-deployments/README.md).
 
 ## Learning objective
 
-By the end of this lesson you will be able to:
-
 - Create a **ReplicaSet** directly and see it **own** Pods via labels.
-- Contrast that with a **Deployment-owned** ReplicaSet (from 2.4.3.1): who writes the ReplicaSet, and who is allowed to change pod templates.
-- Read **`.spec.selector`** and understand why selector immutability matters when labels drift.
+- Contrast standalone ReplicaSet with **Deployment-owned** ReplicaSets.
+- Explain **selector immutability** and orphan risks.
 
-## Why this matters in real jobs
+## Why this matters
 
-You almost always use Deployments, but incidents surface **ReplicaSet** objects: orphaned ReplicaSets after bad rollouts, selector clashes, or manual `kubectl delete pod` churn. Knowing the controller’s job separates platform issues from app issues.
+Incidents surface ReplicaSet objects: orphaned RS after bad rollouts, selector clashes, or manual pod delete churn. Knowing the controller’s job separates platform from app issues.
 
-## Prerequisites
+## Flow of this lesson
 
-- [2.4.3.1 Deployments](../2.4.3.1-deployments/README.md)
+```
+  ReplicaSet (selector + replicas + template)
+              │
+              ▼
+  Pods with matching labels only
+```
+
+**Say:**
+
+ReplicaSet is the **engine**; Deployment is the **product** most developers should drive.
 
 ## Concepts (short theory)
 
-- A **ReplicaSet** ensures **n** Pods exist matching its **label selector**; it creates/deletes Pods to match.
-- **Deployments** manage ReplicaSets for you and handle rolling updates; a standalone ReplicaSet has **no rollout** — template changes are awkward (often delete/recreate).
-- **Selector** is effectively immutable in normal workflows; changing labels on running Pods without updating the selector causes **orphans** or **surprise duplicates**.
+- Template updates on a standalone RS do not “roll” like a Deployment—you must understand pod recreation behavior.
 
-## Visual — direct ownership
+---
 
-```mermaid
-flowchart LR
-  RS[ReplicaSet replicaset-demo]
-  RS --> PA[Pod A]
-  RS --> PB[Pod B]
-```
+## Step 1 — Apply ReplicaSet and inspect
 
-## Lab — Quick Start
+**What happens when you run this:**
 
-**What happens when you run this:**  
-You apply a ReplicaSet with `replicas: 2`. The controller creates two Pods labeled `app=replicaset-demo`. There is **no** Deployment in this manifest — you are exercising the lower layer.
+ReplicaSet **`replicaset-demo`** creates two nginx Pods labeled **`app=replicaset-demo`**. No Deployment object is in this manifest.
+
+**Say:**
+
+I emphasize **DESIRED/CURRENT/READY** columns on **`kubectl get rs`** as the health summary.
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/replicaset-demo.yaml
@@ -51,32 +56,41 @@ kubectl describe rs replicaset-demo | sed -n '/Replicas:/,/Events:/p'
 
 **Expected:** `DESIRED` = `CURRENT` = `READY` = 2; two pods on nodes (placement varies).
 
-**Verify:**
+---
+
+## Step 2 — Verify script
+
+**What happens when you run this:**
+
+Automated check for replica and ready counts.
+
+**Say:**
+
+If **deployment-demo** still exists from the prior lesson, both can coexist—different label values.
+
+**Run:**
 
 ```bash
 chmod +x scripts/verify-replicaset-lesson.sh
 ./scripts/verify-replicaset-lesson.sh
 ```
 
-## Transcript — short narrative
+**Expected:** Script succeeds.
 
-### Hook
+## Troubleshooting
 
-Last lesson used a Deployment. Underneath, Kubernetes still used a ReplicaSet. This time you drive the ReplicaSet yourself to feel what the Deployment automates away.
-
-### When standalone ReplicaSets appear
-
-**Say:** Legacy migrations, demos, or operators sometimes create ReplicaSets. Production microservices should default to Deployments so you get rollouts and history.
-
-### Cleanup (optional)
-
-```bash
-kubectl delete -f yamls/replicaset-demo.yaml --ignore-not-found
-```
-
-**Note:** If you still have **deployment-demo** from the previous lesson, it is unrelated — different label keys/values. Both can coexist in `default`.
+- **`ReplicaFailure` or low READY** → describe RS; follow to **Events** and failing Pods
+- **Too many pods** → overlapping selectors with another workload—label collision
+- **Changing selector fails** → immutability; recreate RS and migrate pods carefully
+- **Edited RS under Deployment** → Deployment immediately reconciles—use **`kubectl set`** / edit **Deployment**
+- **Pod `Pending`** → cluster capacity—not ReplicaSet-specific
+- **Verify fails** → wrong labels or partial delete
 
 ## Video close — fast validation
+
+**Say:**
+
+Slice stops at **Pod Status** so you do not drown in event noise.
 
 ```bash
 kubectl describe rs replicaset-demo | sed -n '/Replicas:/,/Pod Status:/p'
@@ -91,9 +105,11 @@ kubectl get pods -l app=replicaset-demo -o wide
 | `yamls/failure-troubleshooting.yaml` | Selector and orphan scenarios |
 | `scripts/verify-replicaset-lesson.sh` | Checks replica and ready counts |
 
-## Failure troubleshooting asset
+## Cleanup
 
-- `yamls/failure-troubleshooting.yaml` — selector overlap and orphan pods.
+```bash
+kubectl delete -f yamls/replicaset-demo.yaml --ignore-not-found 2>/dev/null || true
+```
 
 ## Next
 
