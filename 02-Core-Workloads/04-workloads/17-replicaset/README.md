@@ -1,10 +1,10 @@
-# 2.4.3.2 ReplicaSet — teaching transcript
+﻿# 2.4.3.2 ReplicaSet â€” teaching transcript
 
 ## Intro
 
-A **ReplicaSet** ensures a number of Pods exist whose **labels match** its **selector**. It creates or deletes Pods to reconcile **current** vs **desired** count. **Deployments** manage ReplicaSets for you and implement **rolling updates** and **history**; a **standalone** ReplicaSet has **no rollout strategy**—changing the template is awkward (often delete/recreate the RS or run a one-off migration). The **selector is immutable** after creation in normal workflows; if Pod labels drift from the selector, you get **orphans** or **duplicate controllers** fighting the same labels. **Never edit a Deployment-owned ReplicaSet’s template directly**—the Deployment controller reconciles it back or you create inconsistent state.
+A **ReplicaSet** ensures a number of Pods exist whose **labels match** its **selector**. It creates or deletes Pods to reconcile **current** vs **desired** count. **Deployments** manage ReplicaSets for you and implement **rolling updates** and **history**; a **standalone** ReplicaSet has **no rollout strategy**â€”changing the template is awkward (often delete/recreate the RS or run a one-off migration). The **selector is immutable** after creation in normal workflows; if Pod labels drift from the selector, you get **orphans** or **duplicate controllers** fighting the same labels. **Never edit a Deployment-owned ReplicaSetâ€™s template directly**â€”the Deployment controller reconciles it back or you create inconsistent state.
 
-**Prerequisites:** [2.4.3.1 Deployments](../2.4.3.1-deployments/README.md).
+**Prerequisites:** [2.4.3.1 Deployments](../16-deployments/README.md).
 
 ## Learning objective
 
@@ -14,14 +14,14 @@ A **ReplicaSet** ensures a number of Pods exist whose **labels match** its **sel
 
 ## Why this matters
 
-Incidents surface ReplicaSet objects: orphaned RS after bad rollouts, selector clashes, or manual pod delete churn. Knowing the controller’s job separates platform from app issues.
+Incidents surface ReplicaSet objects: orphaned RS after bad rollouts, selector clashes, or manual pod delete churn. Knowing the controllerâ€™s job separates platform from app issues.
 
 ## Flow of this lesson
 
 ```
   ReplicaSet (selector + replicas + template)
-              │
-              ▼
+              â”‚
+              â–¼
   Pods with matching labels only
 ```
 
@@ -31,11 +31,11 @@ ReplicaSet is the **engine**; Deployment is the **product** most developers shou
 
 ## Concepts (short theory)
 
-- Template updates on a standalone RS do not “roll” like a Deployment—you must understand pod recreation behavior.
+- Template updates on a standalone RS do not â€œrollâ€ like a Deploymentâ€”you must understand pod recreation behavior.
 
 ---
 
-## Step 1 — Apply ReplicaSet and inspect
+## Step 1 â€” Apply ReplicaSet and inspect
 
 **What happens when you run this:**
 
@@ -58,7 +58,7 @@ kubectl describe rs replicaset-demo | sed -n '/Replicas:/,/Events:/p'
 
 ---
 
-## Step 2 — Verify script
+## Step 2 â€” Verify script
 
 **What happens when you run this:**
 
@@ -66,7 +66,7 @@ Automated check for replica and ready counts.
 
 **Say:**
 
-If **deployment-demo** still exists from the prior lesson, both can coexist—different label values.
+If **deployment-demo** still exists from the prior lesson, both can coexistâ€”different label values.
 
 **Run:**
 
@@ -79,14 +79,14 @@ chmod +x scripts/verify-replicaset-lesson.sh
 
 ## Troubleshooting
 
-- **`ReplicaFailure` or low READY** → describe RS; follow to **Events** and failing Pods
-- **Too many pods** → overlapping selectors with another workload—label collision
-- **Changing selector fails** → immutability; recreate RS and migrate pods carefully
-- **Edited RS under Deployment** → Deployment immediately reconciles—use **`kubectl set`** / edit **Deployment**
-- **Pod `Pending`** → cluster capacity—not ReplicaSet-specific
-- **Verify fails** → wrong labels or partial delete
+- **`ReplicaFailure` or low READY** â†’ describe RS; follow to **Events** and failing Pods
+- **Too many pods** â†’ overlapping selectors with another workloadâ€”label collision
+- **Changing selector fails** â†’ immutability; recreate RS and migrate pods carefully
+- **Edited RS under Deployment** â†’ Deployment immediately reconcilesâ€”use **`kubectl set`** / edit **Deployment**
+- **Pod `Pending`** â†’ cluster capacityâ€”not ReplicaSet-specific
+- **Verify fails** â†’ wrong labels or partial delete
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 **Say:**
 
@@ -113,4 +113,4 @@ kubectl delete -f yamls/replicaset-demo.yaml --ignore-not-found 2>/dev/null || t
 
 ## Next
 
-[2.4.3.3 StatefulSets](../2.4.3.3-statefulsets/README.md)
+[2.4.3.3 StatefulSets](../18-statefulsets/README.md)

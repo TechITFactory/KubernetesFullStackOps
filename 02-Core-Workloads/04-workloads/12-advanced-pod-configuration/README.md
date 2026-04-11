@@ -1,20 +1,20 @@
-# 2.4.1.11 Advanced Pod Configuration — teaching transcript
+﻿# 2.4.1.11 Advanced Pod Configuration â€” teaching transcript
 
 ## Intro
 
-Complex Pods are where **scheduling**, **security**, **storage**, **networking**, and **lifecycle** intersect in one object. This lesson names the heavy-hitter fields with a **one-line purpose** each: **`nodeSelector`** pins Pods to nodes with matching labels—use for simple “GPU only” or “zone A” cases. **`tolerations`** let Pods schedule onto **tainted** nodes (including control-plane nodes for system workloads). **Affinity / anti-affinity** express **soft or hard** rules about **co-locating** or **spreading** Pods across topology domains. **`priorityClassName`** influences **preemption** and queueing when the cluster is overcommitted. **`terminationGracePeriodSeconds`** sets how long kubelet waits between **SIGTERM** and **SIGKILL** during shutdown—pair with **preStop** hooks from [2.3.4](../../../2.3-containers/2.3.4-container-lifecycle-hooks/README.md).
+Complex Pods are where **scheduling**, **security**, **storage**, **networking**, and **lifecycle** intersect in one object. This lesson names the heavy-hitter fields with a **one-line purpose** each: **`nodeSelector`** pins Pods to nodes with matching labelsâ€”use for simple â€œGPU onlyâ€ or â€œzone Aâ€ cases. **`tolerations`** let Pods schedule onto **tainted** nodes (including control-plane nodes for system workloads). **Affinity / anti-affinity** express **soft or hard** rules about **co-locating** or **spreading** Pods across topology domains. **`priorityClassName`** influences **preemption** and queueing when the cluster is overcommitted. **`terminationGracePeriodSeconds`** sets how long kubelet waits between **SIGTERM** and **SIGKILL** during shutdownâ€”pair with **preStop** hooks from [2.3.4](../../../2.3-containers/2.3.4-container-lifecycle-hooks/README.md).
 
-**Prerequisites:** [2.4.1.10 Downward API](../2.4.1.10-downward-api/README.md) recommended.
+**Prerequisites:** [2.4.1.10 Downward API](../11-downward-api/README.md) recommended.
 
 ## Flow of this lesson
 
 ```
   advanced-pod-demo.yaml
-        │
-        ├── scheduling: nodeSelector / affinity / tolerations
-        ├── priorityClassName
-        ├── security contexts
-        └── terminationGracePeriodSeconds
+        â”‚
+        â”œâ”€â”€ scheduling: nodeSelector / affinity / tolerations
+        â”œâ”€â”€ priorityClassName
+        â”œâ”€â”€ security contexts
+        â””â”€â”€ terminationGracePeriodSeconds
 ```
 
 **Say:**
@@ -28,19 +28,19 @@ I walk the manifest top to bottom on camera and pause on anything that could mak
 
 ## Why this matters
 
-Half of “Kubernetes is slow” tickets are **Pending** Pods with a toleration typo or impossible anti-affinity.
+Half of â€œKubernetes is slowâ€ tickets are **Pending** Pods with a toleration typo or impossible anti-affinity.
 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/2.4.1-pods/2.4.1.11-advanced-pod-configuration" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/01-pods/12-advanced-pod-configuration" 2>/dev/null || cd .
 ```
 
-## Step 1 — Apply and wait
+## Step 1 â€” Apply and wait
 
 **What happens when you run this:**
 
-If constraints are unsatisfiable, the Pod stays **Pending**—teachable failure.
+If constraints are unsatisfiable, the Pod stays **Pending**â€”teachable failure.
 
 **Say:**
 
@@ -58,11 +58,11 @@ kubectl get pod advanced-pod-demo -o yaml | sed -n '1,50p'
 
 ---
 
-## Step 2 — Security and QoS slice
+## Step 2 â€” Security and QoS slice
 
 **What happens when you run this:**
 
-`describe` highlights **securityContext** and **QoS class** together—common interview slice.
+`describe` highlights **securityContext** and **QoS class** togetherâ€”common interview slice.
 
 **Say:**
 
@@ -77,7 +77,7 @@ kubectl get pod advanced-pod-demo -o wide
 
 **Expected:** Security context lines and QoS class printed; wide view shows scheduling result.
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 ```bash
 kubectl get pod advanced-pod-demo -o wide
@@ -86,12 +86,12 @@ kubectl describe pod advanced-pod-demo | sed -n '/Node-Selectors:/,/Tolerations:
 
 ## Troubleshooting
 
-- **`Pending` + FailedScheduling** → unsatisfiable **affinity** or missing **nodeSelector** labels
-- **Tolerations ignored** → wrong **operator** or **effect**; compare to `kubectl describe node`
-- **Preemption loops** → **priorityClass** too aggressive; check cluster quota
-- **Immediate SIGKILL on delete** → **terminationGracePeriodSeconds** too low for your app
-- **`Forbidden`** → Pod Security / SCC / OPA blocked fields in **securityContext**
-- **Image pull despite “advanced” title** → scheduling passed; debug registry separately
+- **`Pending` + FailedScheduling** â†’ unsatisfiable **affinity** or missing **nodeSelector** labels
+- **Tolerations ignored** â†’ wrong **operator** or **effect**; compare to `kubectl describe node`
+- **Preemption loops** â†’ **priorityClass** too aggressive; check cluster quota
+- **Immediate SIGKILL on delete** â†’ **terminationGracePeriodSeconds** too low for your app
+- **`Forbidden`** â†’ Pod Security / SCC / OPA blocked fields in **securityContext**
+- **Image pull despite â€œadvancedâ€ title** â†’ scheduling passed; debug registry separately
 
 ## Repo files (reference)
 
@@ -108,4 +108,4 @@ kubectl delete -f yamls/advanced-pod-demo.yaml --ignore-not-found 2>/dev/null ||
 
 ## Next
 
-[2.4.2 Workload API](../../2.4.2-workload-api/README.md)
+[2.4.2 Workload API](../../13-workload-api/README.md)

@@ -1,26 +1,26 @@
-# 2.4.2 Workload API — teaching transcript
+﻿# 2.4.2 Workload API â€” teaching transcript
 
 ## Intro
 
-The **workload API** is the family of Kubernetes resources that express **durable intent** about how Pods should be created and kept healthy. Each type—**Deployment**, **StatefulSet**, **DaemonSet**, **Job**, **CronJob**—wraps a **Pod template** plus **selector** rules and **strategy** fields that define rollout or completion semantics. Controllers compare **observed** Pod labels and counts to **spec** and reconcile continuously. Understanding **selector immutability**, **template updates**, and **revision history** (where applicable) is what separates “I applied YAML” from “I know what the controller will do next.”
+The **workload API** is the family of Kubernetes resources that express **durable intent** about how Pods should be created and kept healthy. Each typeâ€”**Deployment**, **StatefulSet**, **DaemonSet**, **Job**, **CronJob**â€”wraps a **Pod template** plus **selector** rules and **strategy** fields that define rollout or completion semantics. Controllers compare **observed** Pod labels and counts to **spec** and reconcile continuously. Understanding **selector immutability**, **template updates**, and **revision history** (where applicable) is what separates â€œI applied YAMLâ€ from â€œI know what the controller will do next.â€
 
-**Prerequisites:** [2.4.1 Pods](../2.4.1-pods/README.md); [2.4.3 Workload Management](../2.4.3-workload-management/README.md) optional preview.
+**Prerequisites:** [2.4.1 Pods](../01-pods/README.md); [2.4.3 Workload Management](../15-workload-management/README.md) optional preview.
 
 ## Flow of this lesson
 
 ```
   Workload object (template + selector + strategy)
-              │
-              ▼
+              â”‚
+              â–¼
   Controller creates/updates Pods
-              │
-              ▼
+              â”‚
+              â–¼
   Status (replicas, conditions, collisions)
 ```
 
 **Say:**
 
-The **template** is a Pod spec embedded in another object—debugging still ends at **Pod** events.
+The **template** is a Pod spec embedded in another objectâ€”debugging still ends at **Pod** events.
 
 ## Learning objective
 
@@ -29,13 +29,13 @@ The **template** is a Pod spec embedded in another object—debugging still ends
 
 ## Why this matters
 
-RBAC, GitOps validators, and policy engines all key off these API shapes—naming the wrong `apiVersion` breaks pipelines.
+RBAC, GitOps validators, and policy engines all key off these API shapesâ€”naming the wrong `apiVersion` breaks pipelines.
 
 ## Children
 
-- [2.4.2.1 Pod group policies](2.4.2.1-pod-group-policies/README.md) — **LimitRange**, **ResourceQuota**, and namespace defaults
+- [2.4.2.1 Pod group policies](14-pod-group-policies/README.md) â€” **LimitRange**, **ResourceQuota**, and namespace defaults
 
-## Module wrap — quick validation
+## Module wrap â€” quick validation
 
 **Say:**
 
@@ -48,12 +48,12 @@ kubectl get cm -n kube-system | grep -E 'pod-group|workload' || true
 
 ## Troubleshooting
 
-- **Empty grep** → run plain `kubectl api-resources`—feature gates or CRD-only clusters differ
-- **No ConfigMaps** → notes not applied yet; not an error
-- **Deprecated `extensions/v1beta1` in old docs** → always `kubectl explain` your live API
-- **Duplicate owners** → overlapping selectors between workloads—incident pattern
-- **Cannot explain resource** → check plural name and API group
+- **Empty grep** â†’ run plain `kubectl api-resources`â€”feature gates or CRD-only clusters differ
+- **No ConfigMaps** â†’ notes not applied yet; not an error
+- **Deprecated `extensions/v1beta1` in old docs** â†’ always `kubectl explain` your live API
+- **Duplicate owners** â†’ overlapping selectors between workloadsâ€”incident pattern
+- **Cannot explain resource** â†’ check plural name and API group
 
 ## Next
 
-[2.4.3 Workload Management](../2.4.3-workload-management/README.md)
+[2.4.3 Workload Management](../15-workload-management/README.md)

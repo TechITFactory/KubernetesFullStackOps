@@ -1,29 +1,29 @@
-# 2.4.5 Autoscaling Workloads — teaching transcript
+﻿# 2.4.5 Autoscaling Workloads â€” teaching transcript
 
 ## Intro
 
-Autoscaling in Kubernetes is **layered**. **Horizontal Pod Autoscaler (HPA)** changes **replica counts** on a scalable workload when **metrics** cross thresholds—it answers “need more pods?” **Vertical Pod Autoscaler (VPA)** adjusts **CPU/memory requests** (and can evict pods to apply changes)—it answers “each pod the wrong size?” **Cluster Autoscaler** (cluster add-on, not covered in depth here) adds or **removes nodes** when pods cannot schedule— it answers “need more capacity?” Each layer solves a **different** problem; they **compose** in real platforms but **conflict** if two controllers fight the same dimension—**HPA + VPA on CPU simultaneously** on the same workload is **unsupported** and causes thrash.
+Autoscaling in Kubernetes is **layered**. **Horizontal Pod Autoscaler (HPA)** changes **replica counts** on a scalable workload when **metrics** cross thresholdsâ€”it answers â€œneed more pods?â€ **Vertical Pod Autoscaler (VPA)** adjusts **CPU/memory requests** (and can evict pods to apply changes)â€”it answers â€œeach pod the wrong size?â€ **Cluster Autoscaler** (cluster add-on, not covered in depth here) adds or **removes nodes** when pods cannot scheduleâ€” it answers â€œneed more capacity?â€ Each layer solves a **different** problem; they **compose** in real platforms but **conflict** if two controllers fight the same dimensionâ€”**HPA + VPA on CPU simultaneously** on the same workload is **unsupported** and causes thrash.
 
-**Prerequisites:** [2.4.3.1 Deployments](../2.4.3-workload-management/2.4.3.1-deployments/README.md); [2.4.4 Managing Workloads](../2.4.4-managing-workloads/README.md) recommended.
+**Prerequisites:** [2.4.3.1 Deployments](../15-workload-management/16-deployments/README.md); [2.4.4 Managing Workloads](../24-managing-workloads/README.md) recommended.
 
 ## Flow of this lesson
 
 ```
   Metrics + requests correct?
-        │
-        ├── HPA ──► replica count
-        ├── VPA ──► per-pod requests (recommend or mutate)
-        └── Cluster Autoscaler ──► node count (when unschedulable)
+        â”‚
+        â”œâ”€â”€ HPA â”€â”€â–º replica count
+        â”œâ”€â”€ VPA â”€â”€â–º per-pod requests (recommend or mutate)
+        â””â”€â”€ Cluster Autoscaler â”€â”€â–º node count (when unschedulable)
 ```
 
 **Say:**
 
-If metrics are wrong, HPA is a random number generator—**metrics-server** (or vendor equivalent) is prerequisite homework.
+If metrics are wrong, HPA is a random number generatorâ€”**metrics-server** (or vendor equivalent) is prerequisite homework.
 
 ## Learning objective
 
 - Name the three autoscaling **layers** and what each adjusts.
-- Explain why **HPA + VPA** must not target the **same resource dimension** naïvely.
+- Explain why **HPA + VPA** must not target the **same resource dimension** naÃ¯vely.
 
 ## Why this matters
 
@@ -31,10 +31,10 @@ Teams enable every autoscaler in the marketplace and then spend weeks debugging 
 
 ## Children
 
-- [2.4.5.1 Horizontal Pod Autoscaling](2.4.5.1-horizontal-pod-autoscaling/README.md)
-- [2.4.5.2 Vertical Pod Autoscaling](2.4.5.2-vertical-pod-autoscaling/README.md)
+- [2.4.5.1 Horizontal Pod Autoscaling](26-horizontal-pod-autoscaling/README.md)
+- [2.4.5.2 Vertical Pod Autoscaling](27-vertical-pod-autoscaling/README.md)
 
-## Module wrap — quick validation
+## Module wrap â€” quick validation
 
 **Say:**
 
@@ -48,11 +48,11 @@ kubectl top pods -A 2>/dev/null | head -n 15 || true
 
 ## Troubleshooting
 
-- **No metrics** → install **metrics-server** (example: `minikube addons enable metrics-server`)
-- **HPA `unknown`** → check **metrics API** and **target** reference
-- **VPA CRD missing** → install VPA controller for your environment before demos
-- **Replicas fight** → ensure only one controller owns **replicas** field
-- **`kubectl top` forbidden** → RBAC to **metrics.k8s.io**
+- **No metrics** â†’ install **metrics-server** (example: `minikube addons enable metrics-server`)
+- **HPA `unknown`** â†’ check **metrics API** and **target** reference
+- **VPA CRD missing** â†’ install VPA controller for your environment before demos
+- **Replicas fight** â†’ ensure only one controller owns **replicas** field
+- **`kubectl top` forbidden** â†’ RBAC to **metrics.k8s.io**
 
 ## Next
 

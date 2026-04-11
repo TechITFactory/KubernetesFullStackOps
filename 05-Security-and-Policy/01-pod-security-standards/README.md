@@ -1,182 +1,68 @@
-﻿# Lesson Template (Practical-First)
-
-Use this template for every lesson README.
-
-## Title
-
-`# 01 pod security standards`
+# 01 Pod Security Standards
 
 ## Metadata
-
-- Duration: `<minutes>`
-- Difficulty: `<Beginner|Intermediate|Advanced>`
-- Practical/Theory: `70/30`
-- Tested on Kubernetes: `<latest stable version at authoring date>`
-- Also valid for: `<previous stable version>`
-- Lab OS: `Linux`
-- Platform: `<Local (kubeadm/kind/minikube) | EKS extension>`
+- Duration: `15 minutes`
+- Difficulty: `Beginner`
+- Practical/Theory: `60/40`
+- Tested on Kubernetes: `v1.30`
 
 ## Learning Objective
-
 By the end of this lesson, you will be able to:
-
-- `<actionable skill 1>`
-- `<actionable skill 2>`
-- `<actionable skill 3>`
+- Enforce cluster-wide restricted parameters to permanently reject vulnerable workloads.
+- Prove that privileged escalations are blocked structurally inside Kubernetes natively.
 
 ## Why This Matters in Real Jobs
-
-`<Explain where this appears in real teams and incidents.>`
-
-## Prerequisites
-
-- `<required tools>`
-- `<required previous lessons>`
-- `<minimum machine resources>`
+If a hacker exploits a frontend container, their next move is "Privilege Escalation"—trying to break out of the container to control the literal worker node. Pod Security Standards (PSS) act as an automated bouncer, refusing to schedule any Pod that requests dangerous Linux capabilities (like running as Root or capturing Host networks).
 
 ## Concepts (Short Theory)
-
-No fluff. Keep this section short and only include concepts needed for the lab.
-
-- `<concept 1 in simple words>`
-- `<concept 2 in simple words>`
-- `<concept 3 in simple words>`
-
-Rules:
-
-- Maximum 5 bullets.
-- Maximum 1-2 lines per bullet.
-- Each bullet must map to a concrete lab step.
-
-## Visual: architecture or workflow (required)
-
-Every lesson README must include **at least one** diagram so the page is not â€œwall of text.â€ Prefer **Mermaid** inside the same `README.md` (renders on GitHub, GitLab, and many Markdown previewers).
-
-**Placement:** Put the diagram **early**â€”right after **Intro** / **Concepts** and **before** the first **Lab** or **Quick Start**â€”so learners see structure before commands.
-
-**Choose one (or combine):**
-
-| Diagram type | When to use | Mermaid keyword |
-|--------------|-------------|-----------------|
-| **Course / lesson flow** | â€œWhat order do I do things?â€ | `flowchart LR` or `flowchart TB` |
-| **Architecture** | â€œWhat talks to what?â€ | `flowchart TB` with `subgraph` |
-| **Sequence / request path** | â€œWhat happens when I run kubectl apply?â€ | `sequenceDiagram` |
-| **State / decision** | â€œIf X fails, what do I check?â€ | `flowchart TD` with diamond nodes |
-
-**Rules:**
-
-- Keep **5â€“12 nodes** when possible; split into a second diagram if the lesson is huge.
-- **No secrets** or environment-specific hostnames in diagramsâ€”use generic labels (`API server`, `Worker node`).
-- Use **one code fence** per diagram: ` ```mermaid ` â€¦ ` ``` ` (blank line before the fence).
-
-**Minimal example (architecture):**
-
-```mermaid
-flowchart LR
-  U[You / kubectl] --> API[API server]
-  API --> ETCD[(etcd)]
-  API --> N[Nodes / kubelet]
-```
-
-**Minimal example (lab workflow):**
-
-```mermaid
-flowchart TD
-  A[Read What happens] --> B[Run commands]
-  B --> C[Check Expected]
-  C --> D[Video close / cleanup]
-```
+- **Privileged Pod:** A container running with nearly unlimited access to the host operating system. Extremely dangerous.
+- **Pod Security Standards (PSS):** Built-in Kubernetes profiles (`Privileged`, `Baseline`, `Restricted`).
+- **Enforce Mode:** The namespace label that strictly rejects any non-compliant pods during API submission.
 
 ## Lab: Step-by-Step Practical
 
-### Step 1 - Setup
-
+### Step 1 - Open directory
+**Run:**
 ```bash
-# commands
+cd "$COURSE_DIR/05-Security-and-Policy/01-pod-security-standards"
 ```
 
-Explain briefly what changed after this step.
+### Step 2 - Create the Hardened Environment
 
-### Step 2 - Deploy/Configure
+**What happens when you run this:**
+You apply a `Namespace` that has specific `pod-security.kubernetes.io/enforce: restricted` labels natively attached.
 
+**Run:**
 ```bash
-# commands
+kubectl apply -f yamls/secure-namespace.yaml
 ```
 
-Explain why this step is done in one simple sentence.
+### Step 3 - Attempt a Malicious Deployment
 
-### Step 3 - Verify
+**What happens when you run this:**
+You try to launch `bad-pod.yaml`. It requests `privileged: true` and `runAsUser: 0` (root).
 
+**Say:**
+Because the namespace is strictly restricted, the Kubernetes API Server physically refuses to allow this Pod into the system.
+
+**Run:**
 ```bash
-# commands
+kubectl apply -f yamls/bad-pod.yaml
 ```
 
-Add one success signal and one failure signal.
+### Step 4 - Validate Compliance
+
+**What happens when you run this:**
+You apply `good-pod.yaml`. This Pod explicitly drops ALL unused Linux capabilities and runs strictly as a non-root user. The API accepts it seamlessly.
+
+**Run:**
+```bash
+kubectl apply -f yamls/good-pod.yaml
+kubectl get pods -n hardened-env
+```
 
 ## Expected Output
-
-- `<what success looks like>`
-- `<sample key output line>`
-
-## Troubleshooting (Top 5)
-
-1. `<error pattern>` -> `<fix>`
-2. `<error pattern>` -> `<fix>`
-3. `<error pattern>` -> `<fix>`
-4. `<error pattern>` -> `<fix>`
-5. `<error pattern>` -> `<fix>`
-
-## Hands-On Challenge
-
-- `<small challenge to reinforce learning>`
-
-## Assessment
-
-- Quiz:
-  - `<question 1>`
-  - `<question 2>`
-- Practical check:
-  - `<state validation command>`
-
-## Version and Compatibility Notes
-
-- API changes:
-  - `<if any>`
-- Deprecated fields:
-  - `<if any>`
-- Migration tip from previous stable:
-  - `<tip>`
-
-## Summary
-
-- `<key command pattern 1>`
-- `<key troubleshooting rule>`
-- `<key production habit>`
+Applying the bad pod must result in a fatal `Error from server (Forbidden): violates PodSecurity "restricted:latest"`. Applying the good pod must yield `compliant-pod created`.
 
 ## Next Lesson
-
-`<next lesson path and why it follows logically>`
-
-## Transcript (Simple Spoken English)
-
-**Relationship to the Lab:** The transcript is **spoken narration** for the same steps as **Lab** and **Quick Start**â€”what you say on video or in class while those commands are on screen. It is not a separate lesson track. **Part 0** skips this block and uses a single **Read-through (Say â†’ Run â†’ See)** instead.
-
-**Optional: Read-through (merged format):** Use **Say** â†’ **Run** â†’ **See** in one linear section (spoken line, then bash block, then expected output). Part **0** uses this as the main lesson body instead of a separate timed transcript.
-
-**What happens before Run (instructor speed):** For each step that runs commands or a script, add **What happens when you run this** (short bullets) *before* **Run** so you can narrate without discovering side effects live. Match the top-of-file **WHAT THIS DOES WHEN YOU RUN IT** comment block in every `scripts/*.sh` helper (same story in two places: README for the camera, script for `cat`/`less` while teaching).
-
-`[0:00-0:30]`  
-`<Hook: what learner will achieve>`
-
-`[0:30-2:00]`  
-`<Explain concept with real-world analogy>`
-
-`[2:00-7:00]`  
-`<Walk through commands and expected behavior>`
-
-`[7:00-9:00]`  
-`<Troubleshooting and common mistakes>`
-
-`[9:00-10:00]`  
-`<Recap and next steps>`
-
+[02 RBAC Design Patterns](../02-rbac-design-patterns/README.md)

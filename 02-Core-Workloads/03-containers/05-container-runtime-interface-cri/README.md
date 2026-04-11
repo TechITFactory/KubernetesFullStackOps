@@ -1,18 +1,18 @@
-# 2.3.5 Container Runtime Interface (CRI) — teaching transcript
+﻿# 2.3.5 Container Runtime Interface (CRI) â€” teaching transcript
 
 ## Intro
 
-**CRI** (Container Runtime Interface) is the **gRPC API** kubelet uses to talk to a pluggable runtime. It exists so Kubernetes does not hard-code Docker or any single vendor: **containerd** and **CRI-O** are common **CRI implementations**; older paths used **cri-dockerd** as a shim. Kubelet sends “create sandbox,” “pull image,” “start container,” and status probes over CRI; the runtime does the OCI work underneath. When pods fail to start with **runtime** errors, operators often SSH to the node and use **`crictl`** against the same Unix socket kubelet uses — that is why Part 1 stressed socket paths and cgroup alignment. This lesson runs a local socket scan script when you are on a node, and drops a **ConfigMap** of notes into the cluster when RBAC allows.
+**CRI** (Container Runtime Interface) is the **gRPC API** kubelet uses to talk to a pluggable runtime. It exists so Kubernetes does not hard-code Docker or any single vendor: **containerd** and **CRI-O** are common **CRI implementations**; older paths used **cri-dockerd** as a shim. Kubelet sends â€œcreate sandbox,â€ â€œpull image,â€ â€œstart container,â€ and status probes over CRI; the runtime does the OCI work underneath. When pods fail to start with **runtime** errors, operators often SSH to the node and use **`crictl`** against the same Unix socket kubelet uses â€” that is why Part 1 stressed socket paths and cgroup alignment. This lesson runs a local socket scan script when you are on a node, and drops a **ConfigMap** of notes into the cluster when RBAC allows.
 
 **Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-**Teaching tip:** Run **`inspect-cri-endpoint.sh` on a cluster node** (SSH / cloud node session). From kubectl-only laptop it may print **no sockets** — that is expected.
+**Teaching tip:** Run **`inspect-cri-endpoint.sh` on a cluster node** (SSH / cloud node session). From kubectl-only laptop it may print **no sockets** â€” that is expected.
 
 ## One-time setup
 
 ```bash
 COURSE_DIR="$HOME/K8sOps"
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/03-containers/05-container-runtime-interface-cri"
+cd "$COURSE_DIR/02-Core-Workloads/03-containers/05-container-runtime-interface-cri"
 ```
 
 > If you set `COURSE_DIR` earlier, skip the export and just `cd`.
@@ -20,10 +20,10 @@ cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/03-containers/05-container-runti
 ## Flow of this lesson
 
 ```
-  chmod + inspect script (on node: finds socket + crictl)  →  apply CRI notes ConfigMap
-              │                                                    │
-              └────────────────────┬───────────────────────────────┘
-                                 ▼
+  chmod + inspect script (on node: finds socket + crictl)  â†’  apply CRI notes ConfigMap
+              â”‚                                                    â”‚
+              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                 â–¼
                         kubectl get nodes (API view)
 ```
 
@@ -33,27 +33,27 @@ On a real node the script proves which socket answers; from kubectl I show clust
 
 ---
 
-## Step 1 — Make the inspect script executable and run it
+## Step 1 â€” Make the inspect script executable and run it
 
 **What happens when you run this:**
 
-`chmod +x scripts/*.sh` sets execute bits. `./scripts/inspect-cri-endpoint.sh` searches common **Unix socket** paths; if `crictl` exists it may run **`crictl info`** against the first socket found — often requires **`sudo`** on the node. From a laptop without container sockets, output may be warnings only.
+`chmod +x scripts/*.sh` sets execute bits. `./scripts/inspect-cri-endpoint.sh` searches common **Unix socket** paths; if `crictl` exists it may run **`crictl info`** against the first socket found â€” often requires **`sudo`** on the node. From a laptop without container sockets, output may be warnings only.
 
 **Say:**
 
-CRI is **gRPC over a Unix socket** — containerd and CRI-O each document their default paths. **crictl** is the operator-facing CLI that speaks CRI for debugging pulls, sandboxes, and containers.
+CRI is **gRPC over a Unix socket** â€” containerd and CRI-O each document their default paths. **crictl** is the operator-facing CLI that speaks CRI for debugging pulls, sandboxes, and containers.
 
 **Run:**
 
 ```bash
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/03-containers/05-container-runtime-interface-cri"
+cd "$COURSE_DIR/02-Core-Workloads/03-containers/05-container-runtime-interface-cri"
 chmod +x scripts/*.sh
 ./scripts/inspect-cri-endpoint.sh
 ```
 
 **Expected:**
 
-On a Linux node with a runtime: a “Found CRI socket” style line and optional JSON from `crictl info`. On a dev laptop: clear message that no socket was found.
+On a Linux node with a runtime: a â€œFound CRI socketâ€ style line and optional JSON from `crictl info`. On a dev laptop: clear message that no socket was found.
 
 If you see `permission denied`, re-run with `sudo`:
 
@@ -63,15 +63,15 @@ sudo ./scripts/inspect-cri-endpoint.sh
 
 ---
 
-## Step 2 — Apply CRI notes ConfigMap (optional if RBAC allows)
+## Step 2 â€” Apply CRI notes ConfigMap (optional if RBAC allows)
 
 **What happens when you run this:**
 
-`kubectl apply -f yamls/cri-notes.yaml` creates or updates ConfigMap **`cri-notes`** in **`kube-system`** — documentation payload, not live runtime state.
+`kubectl apply -f yamls/cri-notes.yaml` creates or updates ConfigMap **`cri-notes`** in **`kube-system`** â€” documentation payload, not live runtime state.
 
 **Say:**
 
-On managed clusters, writes to **kube-system** often return **Forbidden**; skip this step or change the manifest namespace to one you own — the lesson content is the same.
+On managed clusters, writes to **kube-system** often return **Forbidden**; skip this step or change the manifest namespace to one you own â€” the lesson content is the same.
 
 **Run:**
 
@@ -85,11 +85,11 @@ ConfigMap created or unchanged, or `Forbidden` on restrictive clusters.
 
 ---
 
-## Step 3 — View cluster nodes from the API
+## Step 3 â€” View cluster nodes from the API
 
 **What happens when you run this:**
 
-`kubectl get nodes -o wide` lists nodes kubelet registers — read-only.
+`kubectl get nodes -o wide` lists nodes kubelet registers â€” read-only.
 
 **Say:**
 
@@ -109,12 +109,12 @@ Node list with versions and addresses as your cluster provides.
 
 ## Troubleshooting
 
-- **No socket found from laptop** → run the script on a **node** SSH session, not the kubectl workstation
-- **`crictl: cannot connect to endpoint`** → wrong `--runtime-endpoint`; compare with kubelet config and Part **1.2.1** runtime lesson
-- **`Forbidden` applying `cri-notes.yaml`** → edit namespace to `default` or skip apply; read YAML from git
-- **kubelet `NotReady` with runtime errors** → `journalctl -u kubelet` on the node; align cgroup driver between kubelet and runtime
-- **Docker-only mental model** → Kubernetes 1.24+ uses CRI, not dockershim; point debugging at containerd/CRI-O sockets
-- **`sudo` required for `crictl info`** → normal on locked-down nodes; use root or `sudo` per org policy
+- **No socket found from laptop** â†’ run the script on a **node** SSH session, not the kubectl workstation
+- **`crictl: cannot connect to endpoint`** â†’ wrong `--runtime-endpoint`; compare with kubelet config and Part **1.2.1** runtime lesson
+- **`Forbidden` applying `cri-notes.yaml`** â†’ edit namespace to `default` or skip apply; read YAML from git
+- **kubelet `NotReady` with runtime errors** â†’ `journalctl -u kubelet` on the node; align cgroup driver between kubelet and runtime
+- **Docker-only mental model** â†’ Kubernetes 1.24+ uses CRI, not dockershim; point debugging at containerd/CRI-O sockets
+- **`sudo` required for `crictl info`** â†’ normal on locked-down nodes; use root or `sudo` per org policy
 
 ---
 
@@ -126,13 +126,13 @@ Node list with versions and addresses as your cluster provides.
 
 ## Why this matters
 
-Half of “kubelet says runtime error” tickets clear once someone confirms the correct socket, cgroup driver, and a live `crictl info`. This lesson names that workflow explicitly.
+Half of â€œkubelet says runtime errorâ€ tickets clear once someone confirms the correct socket, cgroup driver, and a live `crictl info`. This lesson names that workflow explicitly.
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 **What happens when you run this:**
 
-Nodes wide and the first chunk of **kube-system** pods — read-only snapshot of control-plane add-ons that sit beside the runtime on nodes.
+Nodes wide and the first chunk of **kube-system** pods â€” read-only snapshot of control-plane add-ons that sit beside the runtime on nodes.
 
 **Say:**
 

@@ -1,10 +1,10 @@
-# 2.4.3.8 ReplicationController — teaching transcript
+﻿# 2.4.3.8 ReplicationController â€” teaching transcript
 
 ## Intro
 
-**ReplicationController** is the original **v1** API for “keep N pods with this label.” **ReplicaSet** (`apps/v1`) succeeded it with **set-based selectors** and tighter integration with **Deployment**. ReplicationController **lacks** first-class **rolling update** support—clients had to orchestrate replacements manually. **Always use Deployment (→ ReplicaSet)** for new work. This lesson is **historical**: recognize **`kind: ReplicationController`** in old clusters, tutorials, or vendor samples, then **migrate** to Deployment with equivalent labels and a proper **rollingUpdate** strategy.
+**ReplicationController** is the original **v1** API for â€œkeep N pods with this label.â€ **ReplicaSet** (`apps/v1`) succeeded it with **set-based selectors** and tighter integration with **Deployment**. ReplicationController **lacks** first-class **rolling update** supportâ€”clients had to orchestrate replacements manually. **Always use Deployment (â†’ ReplicaSet)** for new work. This lesson is **historical**: recognize **`kind: ReplicationController`** in old clusters, tutorials, or vendor samples, then **migrate** to Deployment with equivalent labels and a proper **rollingUpdate** strategy.
 
-**Prerequisites:** [2.4.3.2 ReplicaSet](../2.4.3.2-replicaset/README.md); [2.4.3.7 CronJob](../2.4.3.7-cronjob/README.md).
+**Prerequisites:** [2.4.3.2 ReplicaSet](../17-replicaset/README.md); [2.4.3.7 CronJob](../22-cronjob/README.md).
 
 ## Learning objective
 
@@ -14,18 +14,18 @@
 
 ## Why this matters
 
-Seeing `rc` in production signals **technical debt**—plan migration before you need modern rollout features.
+Seeing `rc` in production signals **technical debt**â€”plan migration before you need modern rollout features.
 
 ## Flow of this lesson
 
 ```
   ReplicationController (legacy v1)
-              │
-              ▼
+              â”‚
+              â–¼
   Pods (same idea as ReplicaSet, older API)
-              │
-              ▼
-  Prefer: Deployment → ReplicaSet → Pods
+              â”‚
+              â–¼
+  Prefer: Deployment â†’ ReplicaSet â†’ Pods
 ```
 
 **Say:**
@@ -38,15 +38,15 @@ Behavior feels like ReplicaSet; the **ecosystem** around RC is what aged out.
 
 ---
 
-## Step 1 — Apply ReplicationController
+## Step 1 â€” Apply ReplicationController
 
 **What happens when you run this:**
 
-**v1** ReplicationController runs two **nginx** pods with **`app=rc-demo`**—operationally similar to ReplicaSet lab.
+**v1** ReplicationController runs two **nginx** pods with **`app=rc-demo`**â€”operationally similar to ReplicaSet lab.
 
 **Say:**
 
-I compare mentally to [2.4.3.2](../2.4.3.2-replicaset/README.md) without re-filming that lesson.
+I compare mentally to [2.4.3.2](../17-replicaset/README.md) without re-filming that lesson.
 
 **Run:**
 
@@ -60,7 +60,7 @@ kubectl get pods -l app=rc-demo -o wide
 
 ---
 
-## Step 2 — Verify script
+## Step 2 â€” Verify script
 
 **What happens when you run this:**
 
@@ -77,14 +77,14 @@ chmod +x scripts/verify-replicationcontroller-lesson.sh
 
 ## Troubleshooting
 
-- **Why not edit RC in prod?** → No Deployment-style rollout—use **Deployment** migration
-- **Selector overlap with Deployment** → accidental double ownership—unique labels
-- **`rc` not found** → API disabled or never created—lesson still valid historically
-- **Migration cutover** → create **Deployment** with same template, scale RC down, then delete
-- **Rolling update expectation** → RC will disappoint—set expectations with leadership
-- **Verify fails** → stale pods from partial apply
+- **Why not edit RC in prod?** â†’ No Deployment-style rolloutâ€”use **Deployment** migration
+- **Selector overlap with Deployment** â†’ accidental double ownershipâ€”unique labels
+- **`rc` not found** â†’ API disabled or never createdâ€”lesson still valid historically
+- **Migration cutover** â†’ create **Deployment** with same template, scale RC down, then delete
+- **Rolling update expectation** â†’ RC will disappointâ€”set expectations with leadership
+- **Verify fails** â†’ stale pods from partial apply
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 ```bash
 kubectl describe rc rc-demo | sed -n '/Replicas:/,/Pod Status:/p'
@@ -107,4 +107,4 @@ kubectl delete -f yamls/replicationcontroller-demo.yaml --ignore-not-found 2>/de
 
 ## Next
 
-[2.4.4 Managing Workloads](../../2.4.4-managing-workloads/README.md)
+[2.4.4 Managing Workloads](../../24-managing-workloads/README.md)

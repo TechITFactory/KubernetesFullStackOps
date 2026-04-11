@@ -1,182 +1,158 @@
-﻿# Lesson Template (Practical-First)
+# 3.4 Promotion and rollbacks — teaching transcript
 
-Use this template for every lesson README.
+## Intro
 
-## Title
+**Helm** **tracks** **each** **`helm upgrade`** **as** **a** **new** **revision**. **`helm history`** **lists** **those** **revisions**; **`helm rollback`** **recreates** **prior** **manifest** **state** **while** **appending** **another** **history** **entry** **(rollback** **does** **not** **erase** **the** **mistake** **from** **the** **log)**. **This** **lesson** **promotes** **a** **release** **with** **a** **new** **values** **file** **then** **rolls** **back** **to** **revision** **1**.
 
-`# 04 promotion and rollbacks`
+**Prerequisites:** [3.3 Environment separation](../03-environment-separation/README.md); [3.2 Helm charting strategies](../02-helm-charting-strategies/README.md); **Helm** **v3**.
 
-## Metadata
+## Flow of this lesson
 
-- Duration: `<minutes>`
-- Difficulty: `<Beginner|Intermediate|Advanced>`
-- Practical/Theory: `70/30`
-- Tested on Kubernetes: `<latest stable version at authoring date>`
-- Also valid for: `<previous stable version>`
-- Lab OS: `Linux`
-- Platform: `<Local (kubeadm/kind/minikube) | EKS extension>`
-
-## Learning Objective
-
-By the end of this lesson, you will be able to:
-
-- `<actionable skill 1>`
-- `<actionable skill 2>`
-- `<actionable skill 3>`
-
-## Why This Matters in Real Jobs
-
-`<Explain where this appears in real teams and incidents.>`
-
-## Prerequisites
-
-- `<required tools>`
-- `<required previous lessons>`
-- `<minimum machine resources>`
-
-## Concepts (Short Theory)
-
-No fluff. Keep this section short and only include concepts needed for the lab.
-
-- `<concept 1 in simple words>`
-- `<concept 2 in simple words>`
-- `<concept 3 in simple words>`
-
-Rules:
-
-- Maximum 5 bullets.
-- Maximum 1-2 lines per bullet.
-- Each bullet must map to a concrete lab step.
-
-## Visual: architecture or workflow (required)
-
-Every lesson README must include **at least one** diagram so the page is not â€œwall of text.â€ Prefer **Mermaid** inside the same `README.md` (renders on GitHub, GitLab, and many Markdown previewers).
-
-**Placement:** Put the diagram **early**â€”right after **Intro** / **Concepts** and **before** the first **Lab** or **Quick Start**â€”so learners see structure before commands.
-
-**Choose one (or combine):**
-
-| Diagram type | When to use | Mermaid keyword |
-|--------------|-------------|-----------------|
-| **Course / lesson flow** | â€œWhat order do I do things?â€ | `flowchart LR` or `flowchart TB` |
-| **Architecture** | â€œWhat talks to what?â€ | `flowchart TB` with `subgraph` |
-| **Sequence / request path** | â€œWhat happens when I run kubectl apply?â€ | `sequenceDiagram` |
-| **State / decision** | â€œIf X fails, what do I check?â€ | `flowchart TD` with diamond nodes |
-
-**Rules:**
-
-- Keep **5â€“12 nodes** when possible; split into a second diagram if the lesson is huge.
-- **No secrets** or environment-specific hostnames in diagramsâ€”use generic labels (`API server`, `Worker node`).
-- Use **one code fence** per diagram: ` ```mermaid ` â€¦ ` ``` ` (blank line before the fence).
-
-**Minimal example (architecture):**
-
-```mermaid
-flowchart LR
-  U[You / kubectl] --> API[API server]
-  API --> ETCD[(etcd)]
-  API --> N[Nodes / kubelet]
+```
+  helm install (baseline revision 1)
+              │
+              ▼
+  helm upgrade -f values-v2.yaml (revision 2)
+              │
+              ▼
+  helm rollback <release> 1 → new revision 3 pointing at rev 1 manifest
 ```
 
-**Minimal example (lab workflow):**
+**Say:**
 
-```mermaid
-flowchart TD
-  A[Read What happens] --> B[Run commands]
-  B --> C[Check Expected]
-  C --> D[Video close / cleanup]
-```
+**Revision** **3** **after** **rollback** **surprises** **people**—**history** **is** **append-only**; **the** **cluster** **state** **matches** **rev** **1**, **not** **time** **travel** **deleting** **rev** **2**.
 
-## Lab: Step-by-Step Practical
+## Learning objective
 
-### Step 1 - Setup
+- **Drive** **`helm upgrade`** **with** **a** **values** **file** **and** **read** **`helm history`**.
+- **Execute** **`helm rollback`** **and** **re-verify** **history** **and** **workload** **image/tag**.
+
+## Why this matters
+
+**Fast** **rollback** **reduces** **MTTR** **when** **a** **bad** **image** **or** **config** **ships**—**if** **you** **practice** **it** **before** **the** **incident**.
+
+## One-time setup
 
 ```bash
-# commands
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/03-Packaging-and-Environments/04-promotion-and-rollbacks" 2>/dev/null || cd .
 ```
 
-Explain briefly what changed after this step.
+## Step 1 — Install baseline release
 
-### Step 2 - Deploy/Configure
+**What happens when you run this:**
+
+**Deploys** **`mission-critical`** **from** **the** **shared** **simple-app** **chart** **with** **defaults** **(nginx** **1.24)** **into** **the** **current** **namespace** **(typically** **`default`)**.
+
+**Run:**
 
 ```bash
-# commands
+helm install mission-critical ../02-helm-charting-strategies/yamls/simple-app
+helm ls
 ```
 
-Explain why this step is done in one simple sentence.
+**Expected:** **Release** **at** **revision** **1**; **Pods** **Running**.
 
-### Step 3 - Verify
+---
+
+## Step 2 — Promote with upgrade
+
+**What happens when you run this:**
+
+**Applies** **`values-v2.yaml`** **(higher** **replica** **count** **and** **`1.25` tag)** **as** **revision** **2**.
+
+**Run:**
 
 ```bash
-# commands
+cat yamls/values-v2.yaml
+helm upgrade mission-critical ../02-helm-charting-strategies/yamls/simple-app -f yamls/values-v2.yaml
 ```
 
-Add one success signal and one failure signal.
+**Expected:** **Upgrade** **success**; **history** **shows** **revision** **2**.
 
-## Expected Output
+---
 
-- `<what success looks like>`
-- `<sample key output line>`
+## Step 3 — Inspect history after upgrade
 
-## Troubleshooting (Top 5)
+**What happens when you run this:**
 
-1. `<error pattern>` -> `<fix>`
-2. `<error pattern>` -> `<fix>`
-3. `<error pattern>` -> `<fix>`
-4. `<error pattern>` -> `<fix>`
-5. `<error pattern>` -> `<fix>`
+**Prepares** **narrative** **for** **rollback** **(even** **if** **workload** **still** **healthy)**.
 
-## Hands-On Challenge
+**Run:**
 
-- `<small challenge to reinforce learning>`
+```bash
+helm history mission-critical
+kubectl get pods -o wide
+```
 
-## Assessment
+**Expected:** **At** **least** **revisions** **1** **and** **2**; **Pods** **reflect** **v2** **settings**.
 
-- Quiz:
-  - `<question 1>`
-  - `<question 2>`
-- Practical check:
-  - `<state validation command>`
+---
 
-## Version and Compatibility Notes
+## Step 4 — Roll back to revision 1
 
-- API changes:
-  - `<if any>`
-- Deprecated fields:
-  - `<if any>`
-- Migration tip from previous stable:
-  - `<tip>`
+**What happens when you run this:**
 
-## Summary
+**Restores** **manifests** **from** **revision** **1** **and** **records** **revision** **3** **as** **the** **rollback** **event**.
 
-- `<key command pattern 1>`
-- `<key troubleshooting rule>`
-- `<key production habit>`
+**Run:**
 
-## Next Lesson
+```bash
+helm rollback mission-critical 1
+helm history mission-critical
+```
 
-`<next lesson path and why it follows logically>`
+**Expected:** **Revision** **3** **with** **description** **indicating** **rollback** **to** **1**; **workload** **returns** **to** **baseline** **image/tag** **from** **rev** **1**.
 
-## Transcript (Simple Spoken English)
+---
 
-**Relationship to the Lab:** The transcript is **spoken narration** for the same steps as **Lab** and **Quick Start**â€”what you say on video or in class while those commands are on screen. It is not a separate lesson track. **Part 0** skips this block and uses a single **Read-through (Say â†’ Run â†’ See)** instead.
+## Step 5 — Verify workload state
 
-**Optional: Read-through (merged format):** Use **Say** â†’ **Run** â†’ **See** in one linear section (spoken line, then bash block, then expected output). Part **0** uses this as the main lesson body instead of a separate timed transcript.
+**What happens when you run this:**
 
-**What happens before Run (instructor speed):** For each step that runs commands or a script, add **What happens when you run this** (short bullets) *before* **Run** so you can narrate without discovering side effects live. Match the top-of-file **WHAT THIS DOES WHEN YOU RUN IT** comment block in every `scripts/*.sh` helper (same story in two places: README for the camera, script for `cat`/`less` while teaching).
+**Confirms** **the** **Deployment** **created** **by** **Helm** **(`<release>-<chart.name>`)** **matches** **post-rollback** **expectations**.
 
-`[0:00-0:30]`  
-`<Hook: what learner will achieve>`
+**Run:**
 
-`[0:30-2:00]`  
-`<Explain concept with real-world analogy>`
+```bash
+kubectl get deploy mission-critical-simple-app -o jsonpath='{.spec.replicas} replicas, image={.spec.template.spec.containers[0].image}{"\n"}' 2>/dev/null || kubectl get deploy
+```
 
-`[2:00-7:00]`  
-`<Walk through commands and expected behavior>`
+**Expected:** **`replicas`** **and** **`image`** **match** **revision** **1** **(defaults** **from** **chart** **`values.yaml`:** **`nginx:1.24`**, **`replicaCount: 1`)** **unless** **you** **overrode** **install** **values**.
 
-`[7:00-9:00]`  
-`<Troubleshooting and common mistakes>`
+## Video close — fast validation
 
-`[9:00-10:00]`  
-`<Recap and next steps>`
+**What happens when you run this:**
 
+**Uninstalls** **the** **release** **and** **removes** **managed** **resources** **for** **this** **lab**.
+
+**Run:**
+
+```bash
+helm uninstall mission-critical
+helm ls
+```
+
+**Expected:** **No** **`mission-critical`** **row** **in** **`helm ls`**.
+
+## Troubleshooting
+
+- **`has no deployed releases`** → **release** **was** **uninstalled** **already**—**re-run** **Step** **1**
+- **Upgrade** **leaves** **old** **ReplicaSets** → **normal**—**Kubernetes** **keeps** **history** **until** **GC**
+- **Deploy** **name** **differs** → **`helm get manifest mission-critical | grep kind: -A2`** **or** **`kubectl get deploy`**
+- **Wrong** **namespace** → **add** **`-n`** **consistently** **to** **all** **`helm`** **commands**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/values-v2.yaml` | **Promotion** **values** **(e.g.** **tag** **1.25**, **replicas** **3)** |
+
+## Cleanup
+
+```bash
+helm uninstall mission-critical 2>/dev/null || true
+```
+
+## Next
+
+[Track 4: CI/CD and GitOps — pipeline design](../../04-CICD-and-GitOps/01-pipeline-design/README.md)

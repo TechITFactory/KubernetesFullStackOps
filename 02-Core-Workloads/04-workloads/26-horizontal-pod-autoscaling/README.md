@@ -1,20 +1,20 @@
-# 2.4.5.1 Horizontal Pod Autoscaling — teaching transcript
+﻿# 2.4.5.1 Horizontal Pod Autoscaling â€” teaching transcript
 
 ## Intro
 
-**HPA** scales a **Deployment**, **StatefulSet**, **ReplicaSet**, or similar **scale subresource** by changing **`.spec.replicas`** when observed metrics exceed targets. **CPU percentage** targets need **metrics-server** (or equivalent) and **CPU requests** on the Pod template—without requests, utilization is undefined. HPA applies **stabilization windows** so scale-up and scale-down are not twitchy on brief spikes. If **HPA manages** a Deployment, **do not hard-code `replicas` in Git** to a fixed value and expect it to stick—HPA **overwrites** replicas unless you use server-side apply patterns that surrender that field. **Custom metrics** and **KEDA** extend the same idea to queue depth and external signals; this lab sticks to the bundled **`hpa-demo.yaml`**.
+**HPA** scales a **Deployment**, **StatefulSet**, **ReplicaSet**, or similar **scale subresource** by changing **`.spec.replicas`** when observed metrics exceed targets. **CPU percentage** targets need **metrics-server** (or equivalent) and **CPU requests** on the Pod templateâ€”without requests, utilization is undefined. HPA applies **stabilization windows** so scale-up and scale-down are not twitchy on brief spikes. If **HPA manages** a Deployment, **do not hard-code `replicas` in Git** to a fixed value and expect it to stickâ€”HPA **overwrites** replicas unless you use server-side apply patterns that surrender that field. **Custom metrics** and **KEDA** extend the same idea to queue depth and external signals; this lab sticks to the bundled **`hpa-demo.yaml`**.
 
-**Prerequisites:** [2.4.5 module](../README.md); [2.4.4 manage demo](../../2.4.4-managing-workloads/README.md) supplies `manage-workloads-demo`.
+**Prerequisites:** [2.4.5 module](../README.md); [2.4.4 manage demo](../24-managing-workloads/README.md) supplies `manage-workloads-demo`.
 
 ## Flow of this lesson
 
 ```
-  metrics-server (or vendor) ──► metrics API
-              │
-              ▼
+  metrics-server (or vendor) â”€â”€â–º metrics API
+              â”‚
+              â–¼
   HPA reads Deployment scale + CPU/memory/custom
-              │
-              ▼
+              â”‚
+              â–¼
   Writes spec.replicas on target workload
 ```
 
@@ -37,10 +37,10 @@ HPA is the default answer to traffic spikes; misconfigured targets cause either 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/2.4.5-autoscaling-workloads/2.4.5.1-horizontal-pod-autoscaling" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/25-autoscaling-workloads/26-horizontal-pod-autoscaling" 2>/dev/null || cd .
 ```
 
-## Step 1 — Ensure target Deployment exists
+## Step 1 â€” Ensure target Deployment exists
 
 **What happens when you run this:**
 
@@ -48,12 +48,12 @@ The HPA manifest references **`Deployment/manage-workloads-demo`**; the manage d
 
 **Say:**
 
-If you skipped [2.4.4](../../2.4.4-managing-workloads/README.md), this apply still works—the path points at the static manifest.
+If you skipped [2.4.4](../24-managing-workloads/README.md), this apply still worksâ€”the path points at the static manifest.
 
 **Run:**
 
 ```bash
-kubectl apply -f ../../2.4.4-managing-workloads/yamls/manage-workloads-demo.yaml
+kubectl apply -f ../24-managing-workloads/yamls/manage-workloads-demo.yaml
 kubectl rollout status deployment/manage-workloads-demo --timeout=120s
 ```
 
@@ -61,7 +61,7 @@ kubectl rollout status deployment/manage-workloads-demo --timeout=120s
 
 ---
 
-## Step 2 — Apply HPA and inspect
+## Step 2 â€” Apply HPA and inspect
 
 **What happens when you run this:**
 
@@ -82,11 +82,11 @@ kubectl get hpa hpa-demo
 
 ---
 
-## Step 3 — Metrics sanity (optional)
+## Step 3 â€” Metrics sanity (optional)
 
 **What happens when you run this:**
 
-`kubectl top` proves the metrics pipeline—often fails on fresh **Kind** without metrics-server.
+`kubectl top` proves the metrics pipelineâ€”often fails on fresh **Kind** without metrics-server.
 
 **Say:**
 
@@ -101,7 +101,7 @@ kubectl top pods 2>/dev/null || true
 
 **Expected:** Metrics section shows targets; `top` prints usage when metrics-server is healthy.
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 ```bash
 kubectl get hpa
@@ -111,12 +111,12 @@ kubectl top pods 2>/dev/null || true
 
 ## Troubleshooting
 
-- **`FailedGetResourceMetric`** → install **metrics-server**; verify **Pod has CPU request**
-- **Replicas snap back in GitOps** → remove static **replicas** from apply or use policy that ignores the field
-- **Slow scale down** → default **downscale stabilization**; tune HPA behavior per docs
-- **HPA ignores peak** → increase **behavior.scaleUp** or lower target; validate metric lag
-- **Wrong Deployment name** → edit `scaleTargetRef` in `yamls/hpa-demo.yaml`
-- **Custom metric needs** → evaluate **KEDA** instead of cramming logic into CPU-only HPA
+- **`FailedGetResourceMetric`** â†’ install **metrics-server**; verify **Pod has CPU request**
+- **Replicas snap back in GitOps** â†’ remove static **replicas** from apply or use policy that ignores the field
+- **Slow scale down** â†’ default **downscale stabilization**; tune HPA behavior per docs
+- **HPA ignores peak** â†’ increase **behavior.scaleUp** or lower target; validate metric lag
+- **Wrong Deployment name** â†’ edit `scaleTargetRef` in `yamls/hpa-demo.yaml`
+- **Custom metric needs** â†’ evaluate **KEDA** instead of cramming logic into CPU-only HPA
 
 ## Repo files (reference)
 
@@ -133,4 +133,4 @@ kubectl delete hpa hpa-demo --ignore-not-found 2>/dev/null || true
 
 ## Next
 
-[2.4.5.2 Vertical Pod Autoscaling](../2.4.5.2-vertical-pod-autoscaling/README.md)
+[2.4.5.2 Vertical Pod Autoscaling](../27-vertical-pod-autoscaling/README.md)

@@ -1,0 +1,19 @@
+﻿apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-labels
+spec:
+  validationFailureAction: Enforce
+  rules:
+  - name: check-for-env-label
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    validate:
+      message: "You must specify an 'env' label on all Pods."
+      pattern:
+        metadata:
+          labels:
+            env: "?*"

@@ -1,182 +1,157 @@
-﻿# Lesson Template (Practical-First)
+# 3.3 Environment separation — teaching transcript
 
-Use this template for every lesson README.
+## Intro
 
-## Title
+**Namespaces** **provide** **RBAC** **and** **object** **isolation** **boundaries** **inside** **one** **cluster**. **Pairing** **namespaces** **with** **different** **Helm** **values** **files** **lets** **you** **install** **the** **same** **chart** **twice** **with** **different** **replica** **counts**, **tags**, **and** **policies** **without** **forking** **the** **chart**. **This** **lesson** **uses** **`dev-env`** **and** **`prod-env`** **plus** **`values-dev.yaml`** **and** **`values-prod.yaml`** **against** **the** **chart** **from** **[3.2](../02-helm-charting-strategies/README.md)**.
 
-`# 03 environment separation`
+**Prerequisites:** [3.2 Helm charting strategies](../02-helm-charting-strategies/README.md) **(chart** **path** **`../02-helm-charting-strategies/yamls/simple-app`)**; [Track 3 module](../README.md).
 
-## Metadata
+## Flow of this lesson
 
-- Duration: `<minutes>`
-- Difficulty: `<Beginner|Intermediate|Advanced>`
-- Practical/Theory: `70/30`
-- Tested on Kubernetes: `<latest stable version at authoring date>`
-- Also valid for: `<previous stable version>`
-- Lab OS: `Linux`
-- Platform: `<Local (kubeadm/kind/minikube) | EKS extension>`
-
-## Learning Objective
-
-By the end of this lesson, you will be able to:
-
-- `<actionable skill 1>`
-- `<actionable skill 2>`
-- `<actionable skill 3>`
-
-## Why This Matters in Real Jobs
-
-`<Explain where this appears in real teams and incidents.>`
-
-## Prerequisites
-
-- `<required tools>`
-- `<required previous lessons>`
-- `<minimum machine resources>`
-
-## Concepts (Short Theory)
-
-No fluff. Keep this section short and only include concepts needed for the lab.
-
-- `<concept 1 in simple words>`
-- `<concept 2 in simple words>`
-- `<concept 3 in simple words>`
-
-Rules:
-
-- Maximum 5 bullets.
-- Maximum 1-2 lines per bullet.
-- Each bullet must map to a concrete lab step.
-
-## Visual: architecture or workflow (required)
-
-Every lesson README must include **at least one** diagram so the page is not â€œwall of text.â€ Prefer **Mermaid** inside the same `README.md` (renders on GitHub, GitLab, and many Markdown previewers).
-
-**Placement:** Put the diagram **early**â€”right after **Intro** / **Concepts** and **before** the first **Lab** or **Quick Start**â€”so learners see structure before commands.
-
-**Choose one (or combine):**
-
-| Diagram type | When to use | Mermaid keyword |
-|--------------|-------------|-----------------|
-| **Course / lesson flow** | â€œWhat order do I do things?â€ | `flowchart LR` or `flowchart TB` |
-| **Architecture** | â€œWhat talks to what?â€ | `flowchart TB` with `subgraph` |
-| **Sequence / request path** | â€œWhat happens when I run kubectl apply?â€ | `sequenceDiagram` |
-| **State / decision** | â€œIf X fails, what do I check?â€ | `flowchart TD` with diamond nodes |
-
-**Rules:**
-
-- Keep **5â€“12 nodes** when possible; split into a second diagram if the lesson is huge.
-- **No secrets** or environment-specific hostnames in diagramsâ€”use generic labels (`API server`, `Worker node`).
-- Use **one code fence** per diagram: ` ```mermaid ` â€¦ ` ``` ` (blank line before the fence).
-
-**Minimal example (architecture):**
-
-```mermaid
-flowchart LR
-  U[You / kubectl] --> API[API server]
-  API --> ETCD[(etcd)]
-  API --> N[Nodes / kubelet]
+```
+  namespaces.yaml → dev-env, prod-env
+              │
+              ▼
+  helm install -n <ns> -f values-<env>.yaml (same chart path)
+              │
+              ▼
+  kubectl get pods -n dev-env vs prod-env
 ```
 
-**Minimal example (lab workflow):**
+**Say:**
 
-```mermaid
-flowchart TD
-  A[Read What happens] --> B[Run commands]
-  B --> C[Check Expected]
-  C --> D[Video close / cleanup]
-```
+**Namespace** **is** **not** **security** **by** **itself**—**RBAC** **and** **NetworkPolicy** **still** **matter**—**but** **it** **stops** **accidental** **`kubectl get all`** **in** **the** **wrong** **place**.
 
-## Lab: Step-by-Step Practical
+## Learning objective
 
-### Step 1 - Setup
+- **Create** **isolated** **namespaces** **from** **repo** **YAML**.
+- **Install** **two** **releases** **of** **the** **same** **chart** **with** **different** **`-f`** **values** **into** **different** **namespaces**.
+
+## Why this matters
+
+**Shared** **clusters** **without** **namespace** **discipline** **mix** **secrets**, **Service** **DNS** **names**, **and** **quota** **accounting**.
+
+## One-time setup
 
 ```bash
-# commands
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/03-Packaging-and-Environments/03-environment-separation" 2>/dev/null || cd .
 ```
 
-Explain briefly what changed after this step.
+## Step 1 — Create namespaces
 
-### Step 2 - Deploy/Configure
+**What happens when you run this:**
+
+**Declares** **`dev-env`** **and** **`prod-env`**.
+
+**Run:**
 
 ```bash
-# commands
+kubectl apply -f yamls/namespaces.yaml
+kubectl get ns dev-env prod-env
 ```
 
-Explain why this step is done in one simple sentence.
+**Expected:** **Both** **namespaces** **exist**.
 
-### Step 3 - Verify
+---
+
+## Step 2 — Compare values files
+
+**What happens when you run this:**
+
+**Shows** **how** **dev** **and** **prod** **diverge** **(replicas**, **image**, **etc.)**.
+
+**Run:**
 
 ```bash
-# commands
+cat yamls/values-dev.yaml
+cat yamls/values-prod.yaml
 ```
 
-Add one success signal and one failure signal.
+**Expected:** **Different** **`replicaCount`** **and** **image** **settings** **per** **file**.
 
-## Expected Output
+---
 
-- `<what success looks like>`
-- `<sample key output line>`
+## Step 3 — Install the same chart into both namespaces
 
-## Troubleshooting (Top 5)
+**What happens when you run this:**
 
-1. `<error pattern>` -> `<fix>`
-2. `<error pattern>` -> `<fix>`
-3. `<error pattern>` -> `<fix>`
-4. `<error pattern>` -> `<fix>`
-5. `<error pattern>` -> `<fix>`
+**Two** **Helm** **releases** **named** **`core-app`** **in** **separate** **namespaces** **(Helm** **3** **scoping)**.
 
-## Hands-On Challenge
+**Say:**
 
-- `<small challenge to reinforce learning>`
+**The** **chart** **path** **points** **back** **to** **lesson** **3.2**—**no** **duplicate** **chart** **in** **this** **folder**.
 
-## Assessment
+**Run:**
 
-- Quiz:
-  - `<question 1>`
-  - `<question 2>`
-- Practical check:
-  - `<state validation command>`
+```bash
+helm install core-app ../02-helm-charting-strategies/yamls/simple-app -f yamls/values-dev.yaml -n dev-env
+helm install core-app ../02-helm-charting-strategies/yamls/simple-app -f yamls/values-prod.yaml -n prod-env
+```
 
-## Version and Compatibility Notes
+**Expected:** **Two** **successful** **installs**; **Pods** **schedule** **in** **each** **namespace**.
 
-- API changes:
-  - `<if any>`
-- Deprecated fields:
-  - `<if any>`
-- Migration tip from previous stable:
-  - `<tip>`
+---
 
-## Summary
+## Step 4 — Verify isolation
 
-- `<key command pattern 1>`
-- `<key troubleshooting rule>`
-- `<key production habit>`
+**What happens when you run this:**
 
-## Next Lesson
+**Confirms** **replica** **counts** **and** **namespaces** **do** **not** **bleed**.
 
-`<next lesson path and why it follows logically>`
+**Run:**
 
-## Transcript (Simple Spoken English)
+```bash
+kubectl get pods -n dev-env -o wide
+kubectl get pods -n prod-env -o wide
+helm ls -n dev-env
+helm ls -n prod-env
+```
 
-**Relationship to the Lab:** The transcript is **spoken narration** for the same steps as **Lab** and **Quick Start**â€”what you say on video or in class while those commands are on screen. It is not a separate lesson track. **Part 0** skips this block and uses a single **Read-through (Say â†’ Run â†’ See)** instead.
+**Expected:** **`dev-env`:** **one** **Pod**, **image** **tag** **`1.24`**; **`prod-env`:** **three** **Pods**, **image** **tag** **`1.24-alpine`** **(per** **`values-*.yaml`)**.
 
-**Optional: Read-through (merged format):** Use **Say** â†’ **Run** â†’ **See** in one linear section (spoken line, then bash block, then expected output). Part **0** uses this as the main lesson body instead of a separate timed transcript.
+## Video close — fast validation
 
-**What happens before Run (instructor speed):** For each step that runs commands or a script, add **What happens when you run this** (short bullets) *before* **Run** so you can narrate without discovering side effects live. Match the top-of-file **WHAT THIS DOES WHEN YOU RUN IT** comment block in every `scripts/*.sh` helper (same story in two places: README for the camera, script for `cat`/`less` while teaching).
+**What happens when you run this:**
 
-`[0:00-0:30]`  
-`<Hook: what learner will achieve>`
+**Removes** **namespaces** **and** **all** **namespaced** **objects** **(including** **Helm** **release** **secrets)**.
 
-`[0:30-2:00]`  
-`<Explain concept with real-world analogy>`
+**Say:**
 
-`[2:00-7:00]`  
-`<Walk through commands and expected behavior>`
+**For** **production** **clusters**, **prefer** **`helm uninstall`** **per** **namespace** **first** **if** **you** **need** **clean** **Helm** **history** **before** **namespace** **deletion**—**here** **we** **tear** **down** **the** **whole** **lab** **sandwich**.
 
-`[7:00-9:00]`  
-`<Troubleshooting and common mistakes>`
+**Run:**
 
-`[9:00-10:00]`  
-`<Recap and next steps>`
+```bash
+helm uninstall core-app -n dev-env 2>/dev/null || true
+helm uninstall core-app -n prod-env 2>/dev/null || true
+kubectl delete -f yamls/namespaces.yaml --ignore-not-found
+```
 
+**Expected:** **Releases** **removed**; **namespaces** **terminated**.
+
+## Troubleshooting
+
+- **`release name already exists`** → **uninstall** **or** **pick** **a** **new** **release** **name**
+- **`namespaces "dev-env" not found`** → **apply** **`namespaces.yaml`** **first**
+- **Chart** **path** **errors** → **run** **from** **this** **lesson** **directory** **so** **`../02-helm-charting-strategies/...`** **resolves**
+- **Same** **defaults** **in** **both** **envs** → **confirm** **`-f`** **flag** **points** **at** **the** **intended** **values** **file**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/namespaces.yaml` | **`dev-env`**, **`prod-env`** |
+| `yamls/values-dev.yaml` | **Dev** **Helm** **values** |
+| `yamls/values-prod.yaml` | **Prod** **Helm** **values** |
+
+## Cleanup
+
+```bash
+helm uninstall core-app -n dev-env 2>/dev/null || true
+helm uninstall core-app -n prod-env 2>/dev/null || true
+kubectl delete -f yamls/namespaces.yaml --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[3.4 Promotion and rollbacks](../04-promotion-and-rollbacks/README.md)

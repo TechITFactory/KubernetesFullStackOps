@@ -1,26 +1,26 @@
-# 2.5.11 Service ClusterIP Allocation — teaching transcript
+﻿# 2.5.11 Service ClusterIP Allocation â€” teaching transcript
 
 ## Intro
 
-Each **ClusterIP** address is allocated from a **cluster IP range** configured for the **API server** (flags like **`--service-cluster-ip-range`**) and tracked to avoid collisions. **Services** of type **ClusterIP** (and the internal parts of **NodePort** / **LoadBalancer**) consume addresses from that range. **Exhaustion** looks like **Service create failures** with messages about **no available cluster IP**. Some clusters use **automatic** allocation only; advanced setups may discuss **IPAM** components or **dual-stack** secondary ranges. **Headless** Services (`clusterIP: None`) **do not** consume a routable ClusterIP—important when counting address usage.
+Each **ClusterIP** address is allocated from a **cluster IP range** configured for the **API server** (flags like **`--service-cluster-ip-range`**) and tracked to avoid collisions. **Services** of type **ClusterIP** (and the internal parts of **NodePort** / **LoadBalancer**) consume addresses from that range. **Exhaustion** looks like **Service create failures** with messages about **no available cluster IP**. Some clusters use **automatic** allocation only; advanced setups may discuss **IPAM** components or **dual-stack** secondary ranges. **Headless** Services (`clusterIP: None`) **do not** consume a routable ClusterIPâ€”important when counting address usage.
 
-**Prerequisites:** [2.5.1 Service](../2.5.1-service/README.md).
+**Prerequisites:** [2.5.1 Service](../01-service/README.md).
 
 ## Flow of this lesson
 
 ```
   API server service CIDR
-              │
-              ▼
+              â”‚
+              â–¼
   Allocator assigns free ClusterIP per Service
-              │
-              ▼
-  kube-proxy / CNI maps VIP → endpoints
+              â”‚
+              â–¼
+  kube-proxy / CNI maps VIP â†’ endpoints
 ```
 
 **Say:**
 
-When **thousands** of Services exist, IPAM and **EndpointSlice** cardinality—not raw YAML—become the bottleneck.
+When **thousands** of Services exist, IPAM and **EndpointSlice** cardinalityâ€”not raw YAMLâ€”become the bottleneck.
 
 ## Learning objective
 
@@ -30,15 +30,15 @@ When **thousands** of Services exist, IPAM and **EndpointSlice** cardinality—n
 
 ## Why this matters
 
-“Cannot allocate ClusterIP” during a hot migration is a **platform** incident—expanding CIDRs is painful.
+â€œCannot allocate ClusterIPâ€ during a hot migration is a **platform** incidentâ€”expanding CIDRs is painful.
 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/2.5.11-service-clusterip-allocation" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/01-service-clusterip-allocation" 2>/dev/null || cd .
 ```
 
-## Step 1 — Apply notes ConfigMap
+## Step 1 â€” Apply notes ConfigMap
 
 **What happens when you run this:**
 
@@ -54,7 +54,7 @@ kubectl apply -f yamls/2-5-11-service-clusterip-allocation-notes.yaml
 
 ---
 
-## Step 2 — Run inspect script
+## Step 2 â€” Run inspect script
 
 **What happens when you run this:**
 
@@ -68,7 +68,7 @@ bash scripts/inspect-2-5-11-service-clusterip-allocation.sh
 
 **Expected:** Script completes; Service and EndpointSlice listing succeeds.
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 ```bash
 bash scripts/inspect-2-5-11-service-clusterip-allocation.sh
@@ -76,12 +76,12 @@ bash scripts/inspect-2-5-11-service-clusterip-allocation.sh
 
 ## Troubleshooting
 
-- **`range is full` errors** → grow **service-cluster-ip-range** (major change) or delete stale Services
-- **Duplicate IP panic** → rare corruption—platform vendor runbook
-- **Headless counted wrong** → `clusterIP: None`—verify with **`kubectl get svc -o wide`**
-- **Dual-stack needs two ranges** → IPv4 and IPv6 CIDR both sized for growth
-- **Static ClusterIP conflicts** → manual **`clusterIP`** field clashes with allocator
-- **`Forbidden` notes** → offline only
+- **`range is full` errors** â†’ grow **service-cluster-ip-range** (major change) or delete stale Services
+- **Duplicate IP panic** â†’ rare corruptionâ€”platform vendor runbook
+- **Headless counted wrong** â†’ `clusterIP: None`â€”verify with **`kubectl get svc -o wide`**
+- **Dual-stack needs two ranges** â†’ IPv4 and IPv6 CIDR both sized for growth
+- **Static ClusterIP conflicts** â†’ manual **`clusterIP`** field clashes with allocator
+- **`Forbidden` notes** â†’ offline only
 
 ## Repo files (reference)
 
@@ -99,4 +99,4 @@ kubectl delete configmap 2-5-11-service-clusterip-allocation-notes -n kube-syste
 
 ## Next
 
-[2.5.12 Service Internal Traffic Policy](2.5.12-service-internal-traffic-policy/README.md)
+[2.5.12 Service Internal Traffic Policy](01-service-internal-traffic-policy/README.md)

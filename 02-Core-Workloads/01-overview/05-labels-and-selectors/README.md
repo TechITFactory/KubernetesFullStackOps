@@ -1,4 +1,4 @@
-# 2.1.2.3 Labels and Selectors — teaching transcript
+﻿# 2.1.2.3 Labels and Selectors â€” teaching transcript
 
 ## Intro
 
@@ -6,17 +6,17 @@ Labels are the connective tissue of Kubernetes.
 
 A Service finds its pods through labels. A Deployment owns its ReplicaSet through labels. `kubectl get` lets you filter by labels. Monitoring tools, service meshes, and cost allocation tools all use labels to group and query resources. If you don't label things consistently, nothing works the way you expect.
 
-A **label** is a key-value pair in `metadata.labels`. A **selector** is a query that matches objects by those pairs. Services have a `selector:` field. Deployments have a `selector:` field. `kubectl get -l` uses them. Understanding how selectors work — and when they can silently match the wrong thing — is one of the most important debugging skills in Kubernetes.
+A **label** is a key-value pair in `metadata.labels`. A **selector** is a query that matches objects by those pairs. Services have a `selector:` field. Deployments have a `selector:` field. `kubectl get -l` uses them. Understanding how selectors work â€” and when they can silently match the wrong thing â€” is one of the most important debugging skills in Kubernetes.
 
-**Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
+**Prerequisites:** [Part 1](../../part-1-getting-started/README.md).
 
-**Teaching tip:** `scripts/query-label-selectors.sh` only queries — apply the YAML first or it returns empty results.
+**Teaching tip:** `scripts/query-label-selectors.sh` only queries â€” apply the YAML first or it returns empty results.
 
 ## One-time setup
 
 ```bash
 COURSE_DIR="$HOME/K8sOps"
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/01-overview/05-labels-and-selectors"
+cd "$COURSE_DIR/02-Core-Workloads/01-overview/05-labels-and-selectors"
 ```
 
 > If you set `COURSE_DIR` earlier, skip the export and just `cd`.
@@ -25,7 +25,7 @@ cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/01-overview/05-labels-and-select
 
 ```
   [ Step 1 ]          [ Step 2 ]            [ Step 3 ]
-  Apply demo   →      Wait for      →       Query with
+  Apply demo   â†’      Wait for      â†’       Query with
   workload            rollout               label selectors
 ```
 
@@ -35,18 +35,18 @@ Three steps. Deploy a workload with labels, wait for it to be ready, then query 
 
 ---
 
-## Step 1 — Apply the demo workload
+## Step 1 â€” Apply the demo workload
 
 **What happens when you run this:**
 `kubectl apply -f yamls/labels-and-selectors-demo.yaml` creates a Deployment `demo-web` and a Service in the `default` namespace. The Service's `selector:` matches the Deployment's pod template labels. Declarative; safe to re-run.
 
 **Say:**
-Look at the manifest if you open it — the Service's `selector:` matches the pod template's `labels:`. That match is what makes traffic from the Service reach the pods. If those labels drift — if someone edits the pod template but forgets to update the Service selector — the Service has zero endpoints and traffic silently drops.
+Look at the manifest if you open it â€” the Service's `selector:` matches the pod template's `labels:`. That match is what makes traffic from the Service reach the pods. If those labels drift â€” if someone edits the pod template but forgets to update the Service selector â€” the Service has zero endpoints and traffic silently drops.
 
 **Run:**
 
 ```bash
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/01-overview/05-labels-and-selectors"
+cd "$COURSE_DIR/02-Core-Workloads/01-overview/05-labels-and-selectors"
 kubectl apply -f yamls/labels-and-selectors-demo.yaml
 ```
 
@@ -55,13 +55,13 @@ Deployment and Service created or unchanged.
 
 ---
 
-## Step 2 — Wait for the Deployment
+## Step 2 â€” Wait for the Deployment
 
 **What happens when you run this:**
 `kubectl wait --for=condition=available deployment/demo-web` blocks until the Deployment's `Available` condition is true or the timeout is reached. `chmod +x scripts/*.sh` makes the query script executable.
 
 **Say:**
-I always wait for the rollout before querying. If I query while pods are still starting, the selector results are misleading — the endpoint might exist but pods aren't ready yet.
+I always wait for the rollout before querying. If I query while pods are still starting, the selector results are misleading â€” the endpoint might exist but pods aren't ready yet.
 
 **Run:**
 
@@ -75,10 +75,10 @@ chmod +x scripts/*.sh
 
 ---
 
-## Step 3 — Query with label selectors
+## Step 3 â€” Query with label selectors
 
 **What happens when you run this:**
-`query-label-selectors.sh` runs several `kubectl get` commands with `-l` selectors to show how label matching works — pods matching app label, services matching tier, cross-resource queries. All read-only.
+`query-label-selectors.sh` runs several `kubectl get` commands with `-l` selectors to show how label matching works â€” pods matching app label, services matching tier, cross-resource queries. All read-only.
 
 **Say:**
 The `-l` flag is the selector syntax. `app=demo-web` is an equality selector. `app in (demo-web, other-app)` is a set-based selector. `!deprecated` matches objects that do NOT have the `deprecated` key. You'll use all three forms in real clusters.
@@ -90,19 +90,19 @@ The `-l` flag is the selector syntax. `app=demo-web` is an equality selector. `a
 ```
 
 **Expected:**
-Multiple query results printed — pods and services matching course labels.
+Multiple query results printed â€” pods and services matching course labels.
 
 ---
 
 ## Selector types
 
-**Equality-based** — the most common:
+**Equality-based** â€” the most common:
 ```bash
 kubectl get pods -l app=demo-web
 kubectl get pods -l app!=legacy
 ```
 
-**Set-based** — for multiple values or negation:
+**Set-based** â€” for multiple values or negation:
 ```bash
 kubectl get pods -l 'app in (demo-web, api)'
 kubectl get pods -l 'tier notin (frontend)'
@@ -126,10 +126,10 @@ selector:
 
 ## Troubleshooting
 
-- **Service has zero endpoints** → `kubectl describe svc demo-web` — check `Endpoints:` line; if empty, the selector doesn't match any pod labels; compare `kubectl get pods --show-labels` with the Service `selector:`
-- **`kubectl get -l` returns nothing** → check for typos; label keys and values are case-sensitive; `App` ≠ `app`
-- **Deployment selector immutable error** → delete the Deployment (`kubectl delete deploy demo-web`) then re-apply the manifest with the new selector
-- **`query-label-selectors.sh` returns empty** → apply the demo manifest first (Step 1) before running the script
+- **Service has zero endpoints** â†’ `kubectl describe svc demo-web` â€” check `Endpoints:` line; if empty, the selector doesn't match any pod labels; compare `kubectl get pods --show-labels` with the Service `selector:`
+- **`kubectl get -l` returns nothing** â†’ check for typos; label keys and values are case-sensitive; `App` â‰  `app`
+- **Deployment selector immutable error** â†’ delete the Deployment (`kubectl delete deploy demo-web`) then re-apply the manifest with the new selector
+- **`query-label-selectors.sh` returns empty** â†’ apply the demo manifest first (Step 1) before running the script
 
 ---
 
@@ -141,17 +141,17 @@ selector:
 
 ## Why this matters
 
-Labels are the query language of Kubernetes. Every tool that interacts with your cluster — monitoring, service mesh, cost allocation, CI/CD — uses labels to find and group resources. Inconsistent labels mean broken dashboards, misconfigured routing, and billing reports that don't add up. Consistent labels from day one pay dividends across every operational tool you'll ever add.
+Labels are the query language of Kubernetes. Every tool that interacts with your cluster â€” monitoring, service mesh, cost allocation, CI/CD â€” uses labels to find and group resources. Inconsistent labels mean broken dashboards, misconfigured routing, and billing reports that don't add up. Consistent labels from day one pay dividends across every operational tool you'll ever add.
 
 ---
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 **What happens when you run this:**
 Selector-based get, then delete the demo manifest to clean up.
 
 **Say:**
-The selector query confirms the label chain is intact — Service, Deployment, pods all share the same label values. Then I clean up with `kubectl delete -f` using the same manifest that created the objects.
+The selector query confirms the label chain is intact â€” Service, Deployment, pods all share the same label values. Then I clean up with `kubectl delete -f` using the same manifest that created the objects.
 
 ```bash
 kubectl get deploy,svc -n default -l app.kubernetes.io/part-of=overview-module
@@ -172,4 +172,4 @@ kubectl delete -f yamls/labels-and-selectors-demo.yaml --ignore-not-found
 
 ## Next
 
-[2.1.2.4 Namespaces](../2.1.2.4-namespaces/README.md)
+[2.1.2.4 Namespaces](../06-namespaces/README.md)

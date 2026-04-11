@@ -1,18 +1,18 @@
-# 2.3 Containers — teaching transcript
+﻿# 2.3 Containers â€” teaching transcript
 
 ## Intro
 
-If you only ever think of a container as “an image string in YAML,” you will be surprised by production behavior. Pulls repeat or skip based on **imagePullPolicy**. Supply chain and registry outages push teams toward **digests** instead of floating tags. Private registries need **imagePullSecrets**. Sandboxing and compliance show up as **RuntimeClass**. Graceful shutdown depends on **lifecycle hooks** and **termination grace**. Under all of it, **kubelet** talks to a real runtime through **CRI**. This module walks those layers in order so the Pod spec you write matches what actually runs on the node.
+If you only ever think of a container as â€œan image string in YAML,â€ you will be surprised by production behavior. Pulls repeat or skip based on **imagePullPolicy**. Supply chain and registry outages push teams toward **digests** instead of floating tags. Private registries need **imagePullSecrets**. Sandboxing and compliance show up as **RuntimeClass**. Graceful shutdown depends on **lifecycle hooks** and **termination grace**. Under all of it, **kubelet** talks to a real runtime through **CRI**. This module walks those layers in order so the Pod spec you write matches what actually runs on the node.
 
 **Prerequisites:** [Part 1](../../part-1-getting-started/README.md); [2.1 Overview](../2.1-overview/README.md) and [2.2 Cluster architecture](../2.2-cluster-architecture/README.md) help but are not strict gates.
 
-**Teaching tip:** Each subsection has **What happens when you run this** before commands. The only helper script is **`inspect-cri-endpoint.sh`** (2.3.5), with **WHAT THIS DOES WHEN YOU RUN IT** in its header — run it on a **Linux node** when possible.
+**Teaching tip:** Each subsection has **What happens when you run this** before commands. The only helper script is **`inspect-cri-endpoint.sh`** (2.3.5), with **WHAT THIS DOES WHEN YOU RUN IT** in its header â€” run it on a **Linux node** when possible.
 
 ## One-time setup
 
 ```bash
 COURSE_DIR="$HOME/K8sOps"
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/03-containers"
+cd "$COURSE_DIR/02-Core-Workloads/03-containers"
 ```
 
 > If you set `COURSE_DIR` earlier this session, skip the export and just `cd`.
@@ -20,12 +20,12 @@ cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/03-containers"
 ## Flow of this lesson
 
 ```
-  [ 2.3.1 Images ]  →  [ 2.3.2 Environment ]  →  [ 2.3.3 RuntimeClass ]
-         │                      │                        │
-         └──────────────────────┴────────────────────────┘
-                                  │
-                                  ▼
-  [ 2.3.4 Hooks ]  →  [ 2.3.5 CRI / crictl ]
+  [ 2.3.1 Images ]  â†’  [ 2.3.2 Environment ]  â†’  [ 2.3.3 RuntimeClass ]
+         â”‚                      â”‚                        â”‚
+         â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                  â”‚
+                                  â–¼
+  [ 2.3.4 Hooks ]  â†’  [ 2.3.5 CRI / crictl ]
 ```
 
 **Say:**
@@ -36,24 +36,24 @@ We start with how images are referenced and pulled, then how environment and dow
 
 ```
   Declared in Pod
-  ┌─────────────────────────────┐
-  │ Pod                         │
-  │   └── Container             │
-  │         ├── image + pullPolicy
-  │         ├── command / args / env / hooks
-  │         └── (Pod-level) runtimeClassName (optional)
-  └─────────────────────────────┘
-           │
-           ▼
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ Pod                         â”‚
+  â”‚   â””â”€â”€ Container             â”‚
+  â”‚         â”œâ”€â”€ image + pullPolicy
+  â”‚         â”œâ”€â”€ command / args / env / hooks
+  â”‚         â””â”€â”€ (Pod-level) runtimeClassName (optional)
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
   API server stores desired state
-           │
-           ▼
+           â”‚
+           â–¼
   kubelet watches and reconciles
-           │
-           ▼
-  CRI (gRPC) ──▶ container runtime
-           │
-           ▼
+           â”‚
+           â–¼
+  CRI (gRPC) â”€â”€â–¶ container runtime
+           â”‚
+           â–¼
   Processes inside container namespaces
 ```
 
@@ -63,7 +63,7 @@ The diagram is the spine: everything in the left box is declaration; kubelet plu
 
 ---
 
-## Step 1 — Open the 2.3 module folder
+## Step 1 â€” Open the 2.3 module folder
 
 **What happens when you run this:**
 
@@ -76,7 +76,7 @@ I stand here so relative paths to **2.3.1** through **2.3.5** match what you see
 **Run:**
 
 ```bash
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/03-containers"
+cd "$COURSE_DIR/02-Core-Workloads/03-containers"
 pwd
 ```
 
@@ -86,7 +86,7 @@ Path ending with `2.3-containers`.
 
 ---
 
-## Step 2 — Work children in order (reading step)
+## Step 2 â€” Work children in order (reading step)
 
 **What happens when you run this:**
 
@@ -94,11 +94,11 @@ You open each child README and run its lab commands on a cluster whose API you c
 
 **Say:**
 
-I do not skip **2.3.1** — image policy confusion causes more incident noise than almost any other single field.
+I do not skip **2.3.1** â€” image policy confusion causes more incident noise than almost any other single field.
 
 **Run:**
 
-_(Open [2.3.1 Images](2.3.1-images/README.md) first.)_
+_(Open [2.3.1 Images](01-images/README.md) first.)_
 
 **Expected:**
 
@@ -108,11 +108,11 @@ You are ready to begin **2.3.1**.
 
 ## Troubleshooting
 
-- **`kubectl: command not found` before any 2.3 lab** → finish Part 1 local cluster or fix `PATH`
-- **`Unable to connect to the server`** → `kubectl config current-context`; confirm cluster is up
-- **`Forbidden` applying manifests** → use a namespace you can write to or a lab context with create rights
-- **Child lesson pod stays `Pending`** → `kubectl describe pod` for events; RuntimeClass or image pull issues differ by lesson
-- **Script in 2.3.5 shows no sockets from your laptop** → SSH to a Linux node and run it there — that is expected
+- **`kubectl: command not found` before any 2.3 lab** â†’ finish Part 1 local cluster or fix `PATH`
+- **`Unable to connect to the server`** â†’ `kubectl config current-context`; confirm cluster is up
+- **`Forbidden` applying manifests** â†’ use a namespace you can write to or a lab context with create rights
+- **Child lesson pod stays `Pending`** â†’ `kubectl describe pod` for events; RuntimeClass or image pull issues differ by lesson
+- **Script in 2.3.5 shows no sockets from your laptop** â†’ SSH to a Linux node and run it there â€” that is expected
 
 ---
 
@@ -125,11 +125,11 @@ You are ready to begin **2.3.1**.
 
 Workloads fail in ways that only make sense when you know who pulls images, who injects env, and who owns the socket under `/run/...`. This module is the vocabulary for those escalations.
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 **What happens when you run this:**
 
-Nodes, a sample of pods cluster-wide, and RuntimeClass objects if the API serves that resource — all read-only.
+Nodes, a sample of pods cluster-wide, and RuntimeClass objects if the API serves that resource â€” all read-only.
 
 **Say:**
 
@@ -153,18 +153,18 @@ Node list; first ~25 pod rows; RuntimeClass list or empty output without failing
 
 | Path | Purpose |
 |------|---------|
-| `2.3.1-images/yamls/` | Pull policy demo |
-| `2.3.5-container-runtime-interface-cri/scripts/inspect-cri-endpoint.sh` | Socket scan + `crictl info` |
+| `01-images/yamls/` | Pull policy demo |
+| `05-container-runtime-interface-cri/scripts/inspect-cri-endpoint.sh` | Socket scan + `crictl info` |
 
 ---
 
 ## Children (work in order)
 
-- [2.3.1 Images](2.3.1-images/README.md)
-- [2.3.2 Container environment](2.3.2-container-environment/README.md)
-- [2.3.3 Runtime class](2.3.3-runtime-class/README.md)
-- [2.3.4 Container lifecycle hooks](2.3.4-container-lifecycle-hooks/README.md)
-- [2.3.5 Container Runtime Interface (CRI)](2.3.5-container-runtime-interface-cri/README.md)
+- [2.3.1 Images](01-images/README.md)
+- [2.3.2 Container environment](02-container-environment/README.md)
+- [2.3.3 Runtime class](03-runtime-class/README.md)
+- [2.3.4 Container lifecycle hooks](04-container-lifecycle-hooks/README.md)
+- [2.3.5 Container Runtime Interface (CRI)](05-container-runtime-interface-cri/README.md)
 
 ---
 

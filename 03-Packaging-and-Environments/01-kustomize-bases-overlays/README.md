@@ -1,182 +1,173 @@
-﻿# Lesson Template (Practical-First)
+# 3.1 Kustomize bases and overlays — teaching transcript
 
-Use this template for every lesson README.
+## Intro
 
-## Title
+**Kustomize** **composes** **Kubernetes** **YAML** **without** **embedding** **logic** **inside** **the** **base** **manifests**. **A** **`base`** **holds** **neutral** **Deployments** **and** **Services** **plus** **a** **`kustomization.yaml`** **that** **lists** **resources** **and** **shared** **labels**. **An** **`overlay`** **points** **at** **the** **base**, **adds** **`namePrefix`**, **`commonLabels`**, **and** **`patches`** **so** **production** **can** **scale** **replicas** **without** **duplicating** **the** **whole** **Deployment**. **`kubectl`** **ships** **with** **Kustomize** **(`kubectl apply -k`**, **`kubectl kustomize`)**.
 
-`# 01 kustomize bases overlays`
+**Prerequisites:** [Track 3 module](../README.md); [02-Core-Workloads](../../02-Core-Workloads/README.md) **(Deployments** **and** **Services)**.
 
-## Metadata
+## Flow of this lesson
 
-- Duration: `<minutes>`
-- Difficulty: `<Beginner|Intermediate|Advanced>`
-- Practical/Theory: `70/30`
-- Tested on Kubernetes: `<latest stable version at authoring date>`
-- Also valid for: `<previous stable version>`
-- Lab OS: `Linux`
-- Platform: `<Local (kubeadm/kind/minikube) | EKS extension>`
-
-## Learning Objective
-
-By the end of this lesson, you will be able to:
-
-- `<actionable skill 1>`
-- `<actionable skill 2>`
-- `<actionable skill 3>`
-
-## Why This Matters in Real Jobs
-
-`<Explain where this appears in real teams and incidents.>`
-
-## Prerequisites
-
-- `<required tools>`
-- `<required previous lessons>`
-- `<minimum machine resources>`
-
-## Concepts (Short Theory)
-
-No fluff. Keep this section short and only include concepts needed for the lab.
-
-- `<concept 1 in simple words>`
-- `<concept 2 in simple words>`
-- `<concept 3 in simple words>`
-
-Rules:
-
-- Maximum 5 bullets.
-- Maximum 1-2 lines per bullet.
-- Each bullet must map to a concrete lab step.
-
-## Visual: architecture or workflow (required)
-
-Every lesson README must include **at least one** diagram so the page is not â€œwall of text.â€ Prefer **Mermaid** inside the same `README.md` (renders on GitHub, GitLab, and many Markdown previewers).
-
-**Placement:** Put the diagram **early**â€”right after **Intro** / **Concepts** and **before** the first **Lab** or **Quick Start**â€”so learners see structure before commands.
-
-**Choose one (or combine):**
-
-| Diagram type | When to use | Mermaid keyword |
-|--------------|-------------|-----------------|
-| **Course / lesson flow** | â€œWhat order do I do things?â€ | `flowchart LR` or `flowchart TB` |
-| **Architecture** | â€œWhat talks to what?â€ | `flowchart TB` with `subgraph` |
-| **Sequence / request path** | â€œWhat happens when I run kubectl apply?â€ | `sequenceDiagram` |
-| **State / decision** | â€œIf X fails, what do I check?â€ | `flowchart TD` with diamond nodes |
-
-**Rules:**
-
-- Keep **5â€“12 nodes** when possible; split into a second diagram if the lesson is huge.
-- **No secrets** or environment-specific hostnames in diagramsâ€”use generic labels (`API server`, `Worker node`).
-- Use **one code fence** per diagram: ` ```mermaid ` â€¦ ` ``` ` (blank line before the fence).
-
-**Minimal example (architecture):**
-
-```mermaid
-flowchart LR
-  U[You / kubectl] --> API[API server]
-  API --> ETCD[(etcd)]
-  API --> N[Nodes / kubelet]
+```
+  yamls/base (neutral manifests + kustomization.yaml)
+              │
+              ▼
+  yamls/overlays/prod (resources: ../../base, patches, namePrefix)
+              │
+              ▼
+  kubectl kustomize → rendered YAML → kubectl apply -k
 ```
 
-**Minimal example (lab workflow):**
+**Say:**
 
-```mermaid
-flowchart TD
-  A[Read What happens] --> B[Run commands]
-  B --> C[Check Expected]
-  C --> D[Video close / cleanup]
-```
+**The** **base** **never** **says** **“production”**—**only** **the** **overlay** **injects** **`prod-`** **and** **`env: production`**.
 
-## Lab: Step-by-Step Practical
+## Learning objective
 
-### Step 1 - Setup
+- **Structure** **a** **`base`** **and** **`prod`** **overlay** **using** **this** **repo’s** **`yamls/`** **tree**.
+- **Render** **with** **`kubectl kustomize`** **and** **apply** **with** **`kubectl apply -k`**, **then** **verify** **labels** **and** **replicas**.
+
+## Why this matters
+
+**Copy-pasting** **YAML** **per** **environment** **guarantees** **drift**—**Kustomize** **keeps** **one** **source** **of** **truth** **for** **app** **shape** **and** **small** **deltas** **per** **env**.
+
+## One-time setup
 
 ```bash
-# commands
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/03-Packaging-and-Environments/01-kustomize-bases-overlays" 2>/dev/null || cd .
 ```
 
-Explain briefly what changed after this step.
+## Step 1 — Inspect the base
 
-### Step 2 - Deploy/Configure
+**What happens when you run this:**
+
+You **read** **the** **neutral** **Deployment** **and** **how** **`kustomization.yaml`** **groups** **resources** **and** **adds** **`managed-by=kustomize`**.
+
+**Say:**
+
+**Nothing** **in** **the** **base** **fixes** **replica** **count** **for** **prod**—**that** **comes** **from** **the** **overlay** **patch**.
+
+**Run:**
 
 ```bash
-# commands
+cat yamls/base/kustomization.yaml
+cat yamls/base/deployment.yaml
+cat yamls/base/service.yaml
 ```
 
-Explain why this step is done in one simple sentence.
+**Expected:** **`web-app`** **Deployment** **with** **`replicas: 1`**, **Service**, **and** **`commonLabels.managed-by: kustomize`** **in** **the** **kustomization** **file**.
 
-### Step 3 - Verify
+---
+
+## Step 2 — Inspect the production overlay
+
+**What happens when you run this:**
+
+The **overlay** **references** **`../../base`**, **sets** **`namePrefix: prod-`**, **`env: production`**, **and** **a** **patch** **for** **three** **replicas**.
+
+**Run:**
 
 ```bash
-# commands
+cat yamls/overlays/prod/kustomization.yaml
+cat yamls/overlays/prod/replica-patch.yaml
 ```
 
-Add one success signal and one failure signal.
+**Expected:** **Patch** **targets** **`Deployment/web-app`** **with** **`replicas: 3`**.
 
-## Expected Output
+---
 
-- `<what success looks like>`
-- `<sample key output line>`
+## Step 3 — Render (dry run compile)
 
-## Troubleshooting (Top 5)
+**What happens when you run this:**
 
-1. `<error pattern>` -> `<fix>`
-2. `<error pattern>` -> `<fix>`
-3. `<error pattern>` -> `<fix>`
-4. `<error pattern>` -> `<fix>`
-5. `<error pattern>` -> `<fix>`
+**Kustomize** **merges** **base** **+** **overlay** **to** **stdout** **without** **mutating** **the** **cluster**.
 
-## Hands-On Challenge
+**Say:**
 
-- `<small challenge to reinforce learning>`
+**I** **scroll** **the** **rendered** **Deployment** **and** **confirm** **`metadata.name`** **is** **`prod-web-app`** **and** **`replicas: 3`**.
 
-## Assessment
+**Run:**
 
-- Quiz:
-  - `<question 1>`
-  - `<question 2>`
-- Practical check:
-  - `<state validation command>`
+```bash
+kubectl kustomize yamls/overlays/prod
+```
 
-## Version and Compatibility Notes
+**Expected:** **Full** **manifest** **list** **including** **`prod-web-app`** **Deployment** **with** **three** **replicas** **and** **`env: production`** **labels**.
 
-- API changes:
-  - `<if any>`
-- Deprecated fields:
-  - `<if any>`
-- Migration tip from previous stable:
-  - `<tip>`
+---
 
-## Summary
+## Step 4 — Apply to the cluster
 
-- `<key command pattern 1>`
-- `<key troubleshooting rule>`
-- `<key production habit>`
+**What happens when you run this:**
 
-## Next Lesson
+**The** **same** **build** **is** **sent** **to** **the** **API** **server** **as** **`apply`**.
 
-`<next lesson path and why it follows logically>`
+**Run:**
 
-## Transcript (Simple Spoken English)
+```bash
+kubectl apply -k yamls/overlays/prod
+```
 
-**Relationship to the Lab:** The transcript is **spoken narration** for the same steps as **Lab** and **Quick Start**â€”what you say on video or in class while those commands are on screen. It is not a separate lesson track. **Part 0** skips this block and uses a single **Read-through (Say â†’ Run â†’ See)** instead.
+**Expected:** **Resources** **created** **or** **configured** **(Deployment**, **Service)**.
 
-**Optional: Read-through (merged format):** Use **Say** â†’ **Run** â†’ **See** in one linear section (spoken line, then bash block, then expected output). Part **0** uses this as the main lesson body instead of a separate timed transcript.
+---
 
-**What happens before Run (instructor speed):** For each step that runs commands or a script, add **What happens when you run this** (short bullets) *before* **Run** so you can narrate without discovering side effects live. Match the top-of-file **WHAT THIS DOES WHEN YOU RUN IT** comment block in every `scripts/*.sh` helper (same story in two places: README for the camera, script for `cat`/`less` while teaching).
+## Step 5 — Verify
 
-`[0:00-0:30]`  
-`<Hook: what learner will achieve>`
+**What happens when you run this:**
 
-`[0:30-2:00]`  
-`<Explain concept with real-world analogy>`
+**Confirms** **name** **prefix**, **replica** **count**, **and** **labels**.
 
-`[2:00-7:00]`  
-`<Walk through commands and expected behavior>`
+**Run:**
 
-`[7:00-9:00]`  
-`<Troubleshooting and common mistakes>`
+```bash
+kubectl get deployments --show-labels
+kubectl get pods -l env=production
+```
 
-`[9:00-10:00]`  
-`<Recap and next steps>`
+**Expected:** **`prod-web-app`** **with** **3** **ready** **replicas** **(once** **images** **pull)**; **Pods** **labeled** **`env=production`**.
 
+## Video close — fast validation
+
+**What happens when you run this:**
+
+**Deletes** **exactly** **what** **the** **overlay** **defines**, **using** **the** **same** **`-k`** **entrypoint**.
+
+**Say:**
+
+**Delete** **uses** **the** **same** **compilation** **as** **apply**—**no** **manual** **name** **hunting**.
+
+**Run:**
+
+```bash
+kubectl delete -k yamls/overlays/prod
+```
+
+**Expected:** **Deployment** **and** **Service** **removed**.
+
+## Troubleshooting
+
+- **`unable to find one of 'kustomization.yaml'`** → **run** **commands** **from** **this** **lesson** **directory** **so** **relative** **paths** **resolve**
+- **`no matches for Id Deployment.v1.apps/web-app`** **(patch)** → **patch** **`name`**, **`kind`**, **`apiVersion`** **must** **match** **the** **base** **resource** **before** **`namePrefix`**
+- **Used** **`-f`** **instead** **of** **`-k`** → **`kubectl apply -k`** **is** **required** **for** **directories** **with** **`kustomization.yaml`**
+- **`namePrefix` doubled** → **do** **not** **hard-code** **`prod-web-app`** **in** **patches**; **patch** **`web-app`** **only**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/base/kustomization.yaml` | Base **resources** **and** **labels** |
+| `yamls/base/deployment.yaml` | **web-app** **Deployment** |
+| `yamls/base/service.yaml` | **Service** **for** **web** **app** |
+| `yamls/overlays/prod/kustomization.yaml` | **Prod** **overlay** |
+| `yamls/overlays/prod/replica-patch.yaml` | **Replica** **patch** |
+
+## Cleanup
+
+```bash
+kubectl delete -k yamls/overlays/prod --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[3.2 Helm charting strategies](../02-helm-charting-strategies/README.md)

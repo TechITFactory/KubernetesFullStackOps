@@ -1,12 +1,12 @@
-# 2.2.8 Garbage Collection — teaching transcript
+﻿# 2.2.8 Garbage Collection â€” teaching transcript
 
 ## Intro
 
 Kubernetes garbage collection (GC) is how orphaned objects and unused resources are cleaned up automatically. It has two distinct mechanisms.
 
-**ownerReference GC** — every object created by a controller has `metadata.ownerReferences` set, pointing back to its owner. When an owner is deleted, the GC controller finds all objects referencing that owner's UID and deletes them too. This is what makes `kubectl delete deployment` also delete the ReplicaSet and Pods. Bad or missing ownerReferences cause orphans — objects that outlive their owner and consume resources silently.
+**ownerReference GC** â€” every object created by a controller has `metadata.ownerReferences` set, pointing back to its owner. When an owner is deleted, the GC controller finds all objects referencing that owner's UID and deletes them too. This is what makes `kubectl delete deployment` also delete the ReplicaSet and Pods. Bad or missing ownerReferences cause orphans â€” objects that outlive their owner and consume resources silently.
 
-**Image GC** — the kubelet on each node runs a separate GC process that removes unused container images when disk usage exceeds a configurable threshold (default: evict images when disk hits 85%, target 80%). This prevents nodes from filling up with stale images from old deployments.
+**Image GC** â€” the kubelet on each node runs a separate GC process that removes unused container images when disk usage exceeds a configurable threshold (default: evict images when disk hits 85%, target 80%). This prevents nodes from filling up with stale images from old deployments.
 
 **Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
@@ -16,21 +16,21 @@ Kubernetes garbage collection (GC) is how orphaned objects and unused resources 
 
 ```
   [ Step 1 ]              [ Step 2 ]                [ Step 3 ]
-  Run script       →      Inspect ownerReferences  →  Clean up
+  Run script       â†’      Inspect ownerReferences  â†’  Clean up
   (apply demo             on RS and Pods
   Deployment)             (jsonpath)
 ```
 
-**Say:** "Three steps. Apply the demo Deployment to create a full ownership chain — Deployment owns ReplicaSet owns Pods. Then we read the ownerReferences directly from the objects to see how GC tracks ownership. Then clean up and watch the cascade."
+**Say:** "Three steps. Apply the demo Deployment to create a full ownership chain â€” Deployment owns ReplicaSet owns Pods. Then we read the ownerReferences directly from the objects to see how GC tracks ownership. Then clean up and watch the cascade."
 
 ---
 
-## Step 1 — Apply the demo
+## Step 1 â€” Apply the demo
 
 **What happens when you run this:**
-`garbage-collection-demo.sh` creates namespace `gc-demo` and a Deployment inside it. Once the Deployment controller and ReplicaSet controller have run, there is a complete ownership chain: Deployment → ReplicaSet → Pods.
+`garbage-collection-demo.sh` creates namespace `gc-demo` and a Deployment inside it. Once the Deployment controller and ReplicaSet controller have run, there is a complete ownership chain: Deployment â†’ ReplicaSet â†’ Pods.
 
-**Say:** "The script applies one manifest — a Deployment. By the time we inspect, we have a Deployment, a ReplicaSet, and at least one Pod. Each has ownerReferences pointing up the chain. This is what lets the garbage collector know who to delete when the owner goes away."
+**Say:** "The script applies one manifest â€” a Deployment. By the time we inspect, we have a Deployment, a ReplicaSet, and at least one Pod. Each has ownerReferences pointing up the chain. This is what lets the garbage collector know who to delete when the owner goes away."
 
 **Run:**
 
@@ -45,10 +45,10 @@ Deployment, one ReplicaSet, and one or more Pods all listed. All in healthy stat
 
 ---
 
-## Step 2 — Inspect ownerReferences
+## Step 2 â€” Inspect ownerReferences
 
 **What happens when you run this:**
-The jsonpath expressions extract `ownerReferences` from the ReplicaSet and from the first Pod. Each ownerReference contains `kind`, `name`, and `uid` — the UID is what the GC controller actually uses, not the name.
+The jsonpath expressions extract `ownerReferences` from the ReplicaSet and from the first Pod. Each ownerReference contains `kind`, `name`, and `uid` â€” the UID is what the GC controller actually uses, not the name.
 
 **Say:** "Notice the UID in the Pod's ownerReference matches the UID of the ReplicaSet. And the UID in the ReplicaSet's ownerReference matches the Deployment's UID. That UID chain is what garbage collection follows. If you delete the Deployment, the GC controller finds all objects with ownerReferences pointing to that Deployment UID and deletes them."
 
@@ -64,12 +64,12 @@ ReplicaSet shows `owned by Deployment/<name>`. Each Pod shows `owned by ReplicaS
 
 ---
 
-## Step 3 — Clean up and observe cascade
+## Step 3 â€” Clean up and observe cascade
 
 **What happens when you run this:**
 Deleting the namespace removes everything inside it in cascade order. `--ignore-not-found` prevents errors on re-runs.
 
-**Say:** "I delete the namespace. The GC controller finds the Deployment, then finds the ReplicaSet owned by that Deployment, then finds the Pods owned by that ReplicaSet. Everything is deleted in dependency order. This is the same mechanism that runs when you delete any owner object — it's not special to namespace deletion."
+**Say:** "I delete the namespace. The GC controller finds the Deployment, then finds the ReplicaSet owned by that Deployment, then finds the Pods owned by that ReplicaSet. Everything is deleted in dependency order. This is the same mechanism that runs when you delete any owner object â€” it's not special to namespace deletion."
 
 **Run:**
 
@@ -84,11 +84,11 @@ kubectl delete namespace gc-demo --ignore-not-found
 
 ## Troubleshooting
 
-- **`Pods still running after Deployment deleted`** → check if you used `--cascade=orphan`; the Pods' ownerReferences point to a deleted RS UID; the GC controller ignores them; delete manually with `kubectl delete pods -n <namespace> --all`.
-- **`Namespace stuck in Terminating`** → a resource inside has a finalizer that is not being cleared; check `kubectl get all -n <namespace>` for stuck resources; identify the finalizer with `kubectl get <resource> -o yaml | grep finalizer`; fix or force-remove it.
-- **`ReplicaSet not deleted after Deployment delete`** → GC is asynchronous; wait 10–30 seconds; if still present, check GC controller logs: `kubectl logs -n kube-system -l component=kube-controller-manager | grep garbage`.
-- **`DiskPressure from stale images`** → the image GC on the node should handle this; if it is not running, check kubelet logs; manually clean with `crictl rmi --prune` (containerd) or `docker image prune` (docker); do not remove images that running containers depend on.
-- **`ownerReferences pointing to nonexistent UID`** → an orphaned object; the GC controller will not delete it because the owner is already gone and no cascade is triggered; delete manually.
+- **`Pods still running after Deployment deleted`** â†’ check if you used `--cascade=orphan`; the Pods' ownerReferences point to a deleted RS UID; the GC controller ignores them; delete manually with `kubectl delete pods -n <namespace> --all`.
+- **`Namespace stuck in Terminating`** â†’ a resource inside has a finalizer that is not being cleared; check `kubectl get all -n <namespace>` for stuck resources; identify the finalizer with `kubectl get <resource> -o yaml | grep finalizer`; fix or force-remove it.
+- **`ReplicaSet not deleted after Deployment delete`** â†’ GC is asynchronous; wait 10â€“30 seconds; if still present, check GC controller logs: `kubectl logs -n kube-system -l component=kube-controller-manager | grep garbage`.
+- **`DiskPressure from stale images`** â†’ the image GC on the node should handle this; if it is not running, check kubelet logs; manually clean with `crictl rmi --prune` (containerd) or `docker image prune` (docker); do not remove images that running containers depend on.
+- **`ownerReferences pointing to nonexistent UID`** â†’ an orphaned object; the GC controller will not delete it because the owner is already gone and no cascade is triggered; delete manually.
 
 ---
 
@@ -100,16 +100,16 @@ kubectl delete namespace gc-demo --ignore-not-found
 
 ## Why this matters
 
-Orphaned resources — ReplicaSets from deleted Deployments, Pods from deleted Jobs, stale ConfigMaps — accumulate silently and consume etcd storage and node disk. Understanding ownerReferences lets you diagnose why objects are still present after a delete, and understanding image GC explains why nodes hit `DiskPressure` after many deployments.
+Orphaned resources â€” ReplicaSets from deleted Deployments, Pods from deleted Jobs, stale ConfigMaps â€” accumulate silently and consume etcd storage and node disk. Understanding ownerReferences lets you diagnose why objects are still present after a delete, and understanding image GC explains why nodes hit `DiskPressure` after many deployments.
 
 ---
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 **What happens when you run this:**
 All labeled resources in the namespace; recent namespace events; API resource types for context. All read-only.
 
-**Say:** "api-resources grep shows which resource types have GC semantics — anything that can be an owner or a dependent. Events show the GC cascade in action after a delete."
+**Say:** "api-resources grep shows which resource types have GC semantics â€” anything that can be an owner or a dependent. Events show the GC cascade in action after a delete."
 
 ```bash
 kubectl get all -n gc-demo -l app=gc-demo
@@ -139,4 +139,4 @@ kubectl delete namespace gc-demo --ignore-not-found
 
 ## Next
 
-[2.2.9 Mixed version proxy](../2.2.9-mixed-version-proxy/README.md)
+[2.2.9 Mixed version proxy](../09-mixed-version-proxy/README.md)

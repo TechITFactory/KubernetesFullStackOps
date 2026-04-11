@@ -1,10 +1,10 @@
-# 2.2.4 Leases — teaching transcript
+﻿# 2.2.4 Leases â€” teaching transcript
 
 ## Intro
 
 A **Lease** is a lightweight Kubernetes object used for two purposes: **node heartbeats** and **leader election**.
 
-For node heartbeats, each node's kubelet updates a Lease object in the `kube-node-lease` namespace every 10 seconds. The controller manager watches these Leases. If a Lease goes unrenewed for 40 seconds, the node is marked `Unknown`. This design offloads the heartbeat work from the Node object itself — instead of updating a large Node status object every 10 seconds, the kubelet updates only the small Lease, reducing API server load significantly.
+For node heartbeats, each node's kubelet updates a Lease object in the `kube-node-lease` namespace every 10 seconds. The controller manager watches these Leases. If a Lease goes unrenewed for 40 seconds, the node is marked `Unknown`. This design offloads the heartbeat work from the Node object itself â€” instead of updating a large Node status object every 10 seconds, the kubelet updates only the small Lease, reducing API server load significantly.
 
 For leader election, `kube-controller-manager` and `kube-scheduler` each hold a Lease in the `kube-system` namespace. In an HA control plane, only the leader actively runs the reconcile loop. The other replicas watch the Lease and take over if the leader stops renewing.
 
@@ -16,21 +16,21 @@ For leader election, `kube-controller-manager` and `kube-scheduler` each hold a 
 
 ```
   [ Step 1 ]              [ Step 2 ]
-  Run script       →      Describe one Lease
+  Run script       â†’      Describe one Lease
   (list all Leases        (renewTime, holderIdentity)
   across namespaces)
 ```
 
-**Say:** "Two steps. First we list all Leases across the cluster — node heartbeat Leases in kube-node-lease, and leader election Leases in kube-system. Then we describe one to see the renewTime field, which is the timestamp of the last heartbeat."
+**Say:** "Two steps. First we list all Leases across the cluster â€” node heartbeat Leases in kube-node-lease, and leader election Leases in kube-system. Then we describe one to see the renewTime field, which is the timestamp of the last heartbeat."
 
 ---
 
-## Step 1 — List all Leases
+## Step 1 â€” List all Leases
 
 **What happens when you run this:**
 `inspect-leases.sh` runs `kubectl get lease -A`, listing all Leases across all namespaces. `kubectl get lease -A` repeats this so you can observe it directly.
 
-**Say:** "Two groups appear in this list. kube-node-lease holds one Lease per node — these are heartbeats. kube-system holds Leases for kube-controller-manager and kube-scheduler — these are leader election locks. On a single-node or single-control-plane cluster, the leader election Leases exist but there's no competition for them."
+**Say:** "Two groups appear in this list. kube-node-lease holds one Lease per node â€” these are heartbeats. kube-system holds Leases for kube-controller-manager and kube-scheduler â€” these are leader election locks. On a single-node or single-control-plane cluster, the leader election Leases exist but there's no competition for them."
 
 **Run:**
 
@@ -45,12 +45,12 @@ kubectl get lease -A
 
 ---
 
-## Step 2 — Describe a node Lease
+## Step 2 â€” Describe a node Lease
 
 **What happens when you run this:**
-`kubectl describe lease` on the first Lease in `kube-node-lease` shows `renewTime` — the timestamp of the last heartbeat from that node's kubelet.
+`kubectl describe lease` on the first Lease in `kube-node-lease` shows `renewTime` â€” the timestamp of the last heartbeat from that node's kubelet.
 
-**Say:** "renewTime is the key field. On a healthy node this updates every 10 seconds. If you run this command twice, 15 seconds apart, and renewTime hasn't changed — the kubelet on that node has stopped heartbeating. That's your first diagnostic signal before you even SSH to the machine."
+**Say:** "renewTime is the key field. On a healthy node this updates every 10 seconds. If you run this command twice, 15 seconds apart, and renewTime hasn't changed â€” the kubelet on that node has stopped heartbeating. That's your first diagnostic signal before you even SSH to the machine."
 
 **Run:**
 
@@ -66,11 +66,11 @@ kubectl describe lease -n kube-node-lease \
 
 ## Troubleshooting
 
-- **`renewTime is stale (not updating)`** → the kubelet on that node has stopped; SSH to the node and check `systemctl status kubelet`; also check `journalctl -u kubelet -n 50` for errors.
-- **`kube-controller-manager Lease shows wrong holder`** → in an HA cluster, the active leader holds the Lease; if the leader crashed and another replica took over, the holder name changes; this is normal behavior, not an error.
-- **`No Leases in kube-node-lease`** → the kubelet has never successfully connected to the API server; check kubelet logs and API server connectivity from the node.
-- **`Leader election Lease missing from kube-system`** → the kube-controller-manager or kube-scheduler may not be running; check `kubectl get pods -n kube-system` for their pods.
-- **`Node marked Unknown despite machine being alive`** → check the Lease renewTime; if stale, the kubelet is not talking to the API server — check network and TLS certificates; if renewTime is current, the issue is elsewhere in node conditions.
+- **`renewTime is stale (not updating)`** â†’ the kubelet on that node has stopped; SSH to the node and check `systemctl status kubelet`; also check `journalctl -u kubelet -n 50` for errors.
+- **`kube-controller-manager Lease shows wrong holder`** â†’ in an HA cluster, the active leader holds the Lease; if the leader crashed and another replica took over, the holder name changes; this is normal behavior, not an error.
+- **`No Leases in kube-node-lease`** â†’ the kubelet has never successfully connected to the API server; check kubelet logs and API server connectivity from the node.
+- **`Leader election Lease missing from kube-system`** â†’ the kube-controller-manager or kube-scheduler may not be running; check `kubectl get pods -n kube-system` for their pods.
+- **`Node marked Unknown despite machine being alive`** â†’ check the Lease renewTime; if stale, the kubelet is not talking to the API server â€” check network and TLS certificates; if renewTime is current, the issue is elsewhere in node conditions.
 
 ---
 
@@ -86,7 +86,7 @@ Leases are the mechanism behind two of the most important operational signals in
 
 ---
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 **What happens when you run this:**
 Focused Lease list for node heartbeats; all Leases; nodes. All read-only.
@@ -113,4 +113,4 @@ kubectl get nodes
 
 ## Next
 
-[2.2.5 Cloud controller manager](../2.2.5-cloud-controller-manager/README.md)
+[2.2.5 Cloud controller manager](../05-cloud-controller-manager/README.md)

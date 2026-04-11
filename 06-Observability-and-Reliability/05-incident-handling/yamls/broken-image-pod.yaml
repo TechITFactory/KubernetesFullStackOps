@@ -1,0 +1,8 @@
+﻿apiVersion: v1
+kind: Pod
+metadata:
+  name: crashing-pod
+spec:
+  containers:
+  - name: crash
+    image: nginx:non_existent_tag

@@ -1,0 +1,16 @@
+﻿apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: high-cpu-alert
+  labels:
+    role: alert-rules
+spec:
+  groups:
+  - name: general-alerts
+    rules:
+    - alert: HighCPUUsage
+      expr: sum(rate(container_cpu_usage_seconds_total{namespace="production"}[5m])) > 80
+      for: 5m
+      annotations:
+        summary: "High CPU detected on production namespace"
+        description: "CPU load is > 80% for more than 5 minutes. Check HPA limits."

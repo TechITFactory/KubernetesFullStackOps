@@ -1,182 +1,148 @@
-﻿# Lesson Template (Practical-First)
+# 3.2 Helm charting strategies — teaching transcript
 
-Use this template for every lesson README.
+## Intro
 
-## Title
+**Helm** **packages** **Kubernetes** **apps** **into** **charts**: **`Chart.yaml`** **(metadata)**, **`values.yaml`** **(defaults)**, **and** **`templates/`** **(Go** **templates)**. **A** **release** **is** **a** **named** **installation** **of** **a** **chart** **in** **a** **namespace** **with** **revision** **history** **for** **upgrades** **and** **rollbacks**. **`helm template`** **prints** **rendered** **YAML** **without** **touching** **the** **cluster**—**same** **discipline** **as** **`kubectl kustomize`**.
 
-`# 02 helm charting strategies`
+**Prerequisites:** [3.1 Kustomize bases and overlays](../01-kustomize-bases-overlays/README.md); **Helm** **v3** **CLI**; [Track 3 module](../README.md).
 
-## Metadata
+## Flow of this lesson
 
-- Duration: `<minutes>`
-- Difficulty: `<Beginner|Intermediate|Advanced>`
-- Practical/Theory: `70/30`
-- Tested on Kubernetes: `<latest stable version at authoring date>`
-- Also valid for: `<previous stable version>`
-- Lab OS: `Linux`
-- Platform: `<Local (kubeadm/kind/minikube) | EKS extension>`
-
-## Learning Objective
-
-By the end of this lesson, you will be able to:
-
-- `<actionable skill 1>`
-- `<actionable skill 2>`
-- `<actionable skill 3>`
-
-## Why This Matters in Real Jobs
-
-`<Explain where this appears in real teams and incidents.>`
-
-## Prerequisites
-
-- `<required tools>`
-- `<required previous lessons>`
-- `<minimum machine resources>`
-
-## Concepts (Short Theory)
-
-No fluff. Keep this section short and only include concepts needed for the lab.
-
-- `<concept 1 in simple words>`
-- `<concept 2 in simple words>`
-- `<concept 3 in simple words>`
-
-Rules:
-
-- Maximum 5 bullets.
-- Maximum 1-2 lines per bullet.
-- Each bullet must map to a concrete lab step.
-
-## Visual: architecture or workflow (required)
-
-Every lesson README must include **at least one** diagram so the page is not â€œwall of text.â€ Prefer **Mermaid** inside the same `README.md` (renders on GitHub, GitLab, and many Markdown previewers).
-
-**Placement:** Put the diagram **early**â€”right after **Intro** / **Concepts** and **before** the first **Lab** or **Quick Start**â€”so learners see structure before commands.
-
-**Choose one (or combine):**
-
-| Diagram type | When to use | Mermaid keyword |
-|--------------|-------------|-----------------|
-| **Course / lesson flow** | â€œWhat order do I do things?â€ | `flowchart LR` or `flowchart TB` |
-| **Architecture** | â€œWhat talks to what?â€ | `flowchart TB` with `subgraph` |
-| **Sequence / request path** | â€œWhat happens when I run kubectl apply?â€ | `sequenceDiagram` |
-| **State / decision** | â€œIf X fails, what do I check?â€ | `flowchart TD` with diamond nodes |
-
-**Rules:**
-
-- Keep **5â€“12 nodes** when possible; split into a second diagram if the lesson is huge.
-- **No secrets** or environment-specific hostnames in diagramsâ€”use generic labels (`API server`, `Worker node`).
-- Use **one code fence** per diagram: ` ```mermaid ` â€¦ ` ``` ` (blank line before the fence).
-
-**Minimal example (architecture):**
-
-```mermaid
-flowchart LR
-  U[You / kubectl] --> API[API server]
-  API --> ETCD[(etcd)]
-  API --> N[Nodes / kubelet]
+```
+  Chart (Chart.yaml, values.yaml, templates/)
+              │
+              ▼
+  helm template / helm install merges values → manifests
+              │
+              ▼
+  Kubernetes API + Helm release metadata (Secrets by default)
 ```
 
-**Minimal example (lab workflow):**
+**Say:**
 
-```mermaid
-flowchart TD
-  A[Read What happens] --> B[Run commands]
-  B --> C[Check Expected]
-  C --> D[Video close / cleanup]
-```
+**Values** **are** **the** **API** **your** **CI** **pipeline** **and** **operators** **talk** **to**; **templates** **stay** **stable**.
 
-## Lab: Step-by-Step Practical
+## Learning objective
 
-### Step 1 - Setup
+- **Navigate** **`yamls/simple-app`** **and** **explain** **how** **`{{ .Values.* }}`** **maps** **to** **`values.yaml`**.
+- **Render** **with** **`helm template`** **and** **install** **with** **`helm install`**, **then** **verify** **with** **`helm ls`** **and** **`kubectl`**.
+
+## Why this matters
+
+**Fifty** **services** **without** **a** **package** **format** **means** **fifty** **snowflake** **directories** **and** **no** **shared** **upgrade** **story**.
+
+## One-time setup
 
 ```bash
-# commands
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/03-Packaging-and-Environments/02-helm-charting-strategies" 2>/dev/null || cd .
 ```
 
-Explain briefly what changed after this step.
+## Step 1 — Inspect the chart
 
-### Step 2 - Deploy/Configure
+**What happens when you run this:**
+
+You **see** **templated** **Deployment** **fields** **and** **default** **image** **`nginx:1.24`**.
+
+**Run:**
 
 ```bash
-# commands
+cat yamls/simple-app/Chart.yaml
+cat yamls/simple-app/values.yaml
+cat yamls/simple-app/templates/deployment.yaml
 ```
 
-Explain why this step is done in one simple sentence.
+**Expected:** **`replicaCount: 1`**, **image** **repository/tag**, **templates** **using** **`include "simple-app.fullname"`** **and** **`.Values`**.
 
-### Step 3 - Verify
+---
+
+## Step 2 — Render without installing
+
+**What happens when you run this:**
+
+**Helm** **evaluates** **templates** **and** **prints** **YAML** **to** **stdout**.
+
+**Say:**
+
+**If** **this** **output** **looks** **wrong**, **fix** **the** **chart** **before** **any** **`install`**.
+
+**Run:**
 
 ```bash
-# commands
+helm template dry-run-check yamls/simple-app
 ```
 
-Add one success signal and one failure signal.
+**Expected:** **Valid** **Kubernetes** **manifests** **including** **at** **least** **the** **Deployment** **from** **`templates/`**.
 
-## Expected Output
+---
 
-- `<what success looks like>`
-- `<sample key output line>`
+## Step 3 — Install a release
 
-## Troubleshooting (Top 5)
+**What happens when you run this:**
 
-1. `<error pattern>` -> `<fix>`
-2. `<error pattern>` -> `<fix>`
-3. `<error pattern>` -> `<fix>`
-4. `<error pattern>` -> `<fix>`
-5. `<error pattern>` -> `<fix>`
+**Helm** **creates** **objects** **and** **stores** **release** **revision** **1**.
 
-## Hands-On Challenge
+**Run:**
 
-- `<small challenge to reinforce learning>`
+```bash
+helm install my-first-release yamls/simple-app
+```
 
-## Assessment
+**Expected:** **Release** **deployed**; **Pods** **become** **Running** **after** **pull**.
 
-- Quiz:
-  - `<question 1>`
-  - `<question 2>`
-- Practical check:
-  - `<state validation command>`
+---
 
-## Version and Compatibility Notes
+## Step 4 — Verify release and workloads
 
-- API changes:
-  - `<if any>`
-- Deprecated fields:
-  - `<if any>`
-- Migration tip from previous stable:
-  - `<tip>`
+**What happens when you run this:**
 
-## Summary
+**Cross-check** **Helm’s** **view** **with** **the** **API** **objects**.
 
-- `<key command pattern 1>`
-- `<key troubleshooting rule>`
-- `<key production habit>`
+**Run:**
 
-## Next Lesson
+```bash
+helm ls
+kubectl get pods --show-labels
+kubectl get deploy
+```
 
-`<next lesson path and why it follows logically>`
+**Expected:** **`my-first-release`** **revision** **1**; **Pods** **with** **chart** **labels** **such** **as** **`app.kubernetes.io/name`**.
 
-## Transcript (Simple Spoken English)
+## Video close — fast validation
 
-**Relationship to the Lab:** The transcript is **spoken narration** for the same steps as **Lab** and **Quick Start**â€”what you say on video or in class while those commands are on screen. It is not a separate lesson track. **Part 0** skips this block and uses a single **Read-through (Say â†’ Run â†’ See)** instead.
+**What happens when you run this:**
 
-**Optional: Read-through (merged format):** Use **Say** â†’ **Run** â†’ **See** in one linear section (spoken line, then bash block, then expected output). Part **0** uses this as the main lesson body instead of a separate timed transcript.
+**Removes** **the** **release** **and** **its** **managed** **resources** **(typical** **default** **behavior** **for** **this** **chart)**.
 
-**What happens before Run (instructor speed):** For each step that runs commands or a script, add **What happens when you run this** (short bullets) *before* **Run** so you can narrate without discovering side effects live. Match the top-of-file **WHAT THIS DOES WHEN YOU RUN IT** comment block in every `scripts/*.sh` helper (same story in two places: README for the camera, script for `cat`/`less` while teaching).
+**Run:**
 
-`[0:00-0:30]`  
-`<Hook: what learner will achieve>`
+```bash
+helm uninstall my-first-release
+```
 
-`[0:30-2:00]`  
-`<Explain concept with real-world analogy>`
+**Expected:** **Release** **gone** **from** **`helm ls`**.
 
-`[2:00-7:00]`  
-`<Walk through commands and expected behavior>`
+## Troubleshooting
 
-`[7:00-9:00]`  
-`<Troubleshooting and common mistakes>`
+- **`cannot re-use a name that is still in use`** → **`helm uninstall my-first-release`** **or** **use** **`helm upgrade --install`**
+- **`parse error` in template** → **check** **whitespace** **and** **`{{ }}`** **syntax** **in** **`templates/`**
+- **`helm: command not found`** → **install** **Helm** **v3**
+- **Wrong** **namespace** → **add** **`-n`** **to** **every** **`helm`** **and** **matching** **`kubectl`** **command**
 
-`[9:00-10:00]`  
-`<Recap and next steps>`
+## Repo files (reference)
 
+| Path | Purpose |
+|------|---------|
+| `yamls/simple-app/Chart.yaml` | Chart **metadata** |
+| `yamls/simple-app/values.yaml` | **Default** **values** |
+| `yamls/simple-app/templates/deployment.yaml` | **Templated** **Deployment** |
+| `yamls/simple-app/templates/_helpers.tpl` | **Naming** **helpers** |
+
+## Cleanup
+
+```bash
+helm uninstall my-first-release 2>/dev/null || true
+```
+
+## Next
+
+[3.3 Environment separation](../03-environment-separation/README.md)

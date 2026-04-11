@@ -1,18 +1,18 @@
-# 2.3.4 Container Lifecycle Hooks — teaching transcript
+﻿# 2.3.4 Container Lifecycle Hooks â€” teaching transcript
 
 ## Intro
 
-**Lifecycle hooks** let kubelet run extra work at container boundaries. **postStart** fires after a container is created; it runs **asynchronously** relative to the main `ENTRYPOINT`, so you must not rely on it finishing before the primary process does meaningful work. **preStop** runs **before** the **SIGTERM** sent at the start of termination — teams use it to **drain** connections, deregister from service discovery, or sleep briefly so load balancers stop sending traffic. Hooks can use **exec** (run a command in the container namespace) or **httpGet** (HTTP probe against the container). If a hook **fails** or **times out**, Kubernetes records failure; failed **preStop** can block graceful termination within **terminationGracePeriodSeconds**, after which the container still receives SIGKILL if it has not exited.
+**Lifecycle hooks** let kubelet run extra work at container boundaries. **postStart** fires after a container is created; it runs **asynchronously** relative to the main `ENTRYPOINT`, so you must not rely on it finishing before the primary process does meaningful work. **preStop** runs **before** the **SIGTERM** sent at the start of termination â€” teams use it to **drain** connections, deregister from service discovery, or sleep briefly so load balancers stop sending traffic. Hooks can use **exec** (run a command in the container namespace) or **httpGet** (HTTP probe against the container). If a hook **fails** or **times out**, Kubernetes records failure; failed **preStop** can block graceful termination within **terminationGracePeriodSeconds**, after which the container still receives SIGKILL if it has not exited.
 
 **Prerequisites:** [Part 1](../../../part-1-getting-started/README.md); cluster can pull `busybox:1.36`.
 
-**Teaching tip:** `postStart` runs asynchronously with the main process — do not rely on strict ordering for correctness.
+**Teaching tip:** `postStart` runs asynchronously with the main process â€” do not rely on strict ordering for correctness.
 
 ## One-time setup
 
 ```bash
 COURSE_DIR="$HOME/K8sOps"
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/03-containers/04-container-lifecycle-hooks"
+cd "$COURSE_DIR/02-Core-Workloads/03-containers/04-container-lifecycle-hooks"
 ```
 
 > If you set `COURSE_DIR` earlier, skip the export and just `cd`.
@@ -20,9 +20,9 @@ cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/03-containers/04-container-lifec
 ## Flow of this lesson
 
 ```
-  apply Pod (postStart + preStop + grace)  →  wait Ready  →  prove postStart side effect
-                                                                    │
-                                                                    ▼
+  apply Pod (postStart + preStop + grace)  â†’  wait Ready  â†’  prove postStart side effect
+                                                                    â”‚
+                                                                    â–¼
                                               describe (optional second terminal for delete + preStop)
 ```
 
@@ -32,11 +32,11 @@ We prove postStart by reading a file it created; preStop is best observed by del
 
 ---
 
-## Step 1 — Apply the lifecycle hooks demo Pod
+## Step 1 â€” Apply the lifecycle hooks demo Pod
 
 **What happens when you run this:**
 
-`kubectl apply` creates `lifecycle-hooks-demo` with `postStart.exec` writing `/tmp/postStart-ran`, `preStop.exec` echoing and sleeping five seconds, and `terminationGracePeriodSeconds: 30`. An **httpGet** hook would call an HTTP endpoint instead of exec — same lifecycle stages, different probe mechanism.
+`kubectl apply` creates `lifecycle-hooks-demo` with `postStart.exec` writing `/tmp/postStart-ran`, `preStop.exec` echoing and sleeping five seconds, and `terminationGracePeriodSeconds: 30`. An **httpGet** hook would call an HTTP endpoint instead of exec â€” same lifecycle stages, different probe mechanism.
 
 **Say:**
 
@@ -45,7 +45,7 @@ We prove postStart by reading a file it created; preStop is best observed by del
 **Run:**
 
 ```bash
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads/03-containers/04-container-lifecycle-hooks"
+cd "$COURSE_DIR/02-Core-Workloads/03-containers/04-container-lifecycle-hooks"
 kubectl apply -f yamls/lifecycle-hooks-demo.yaml
 ```
 
@@ -55,11 +55,11 @@ kubectl apply -f yamls/lifecycle-hooks-demo.yaml
 
 ---
 
-## Step 2 — Wait until the Pod is Ready
+## Step 2 â€” Wait until the Pod is Ready
 
 **What happens when you run this:**
 
-`kubectl wait` blocks until Ready — read-only on the API aside from wait.
+`kubectl wait` blocks until Ready â€” read-only on the API aside from wait.
 
 **Say:**
 
@@ -77,11 +77,11 @@ Wait succeeds.
 
 ---
 
-## Step 3 — Verify postStart ran
+## Step 3 â€” Verify postStart ran
 
 **What happens when you run this:**
 
-`kubectl exec` reads `/tmp/postStart-ran` in the **`app`** container. `2>/dev/null || true` prevents a non-zero exit if the file were missing on a slow start — explain once per lesson that we tolerate that for script-style runs.
+`kubectl exec` reads `/tmp/postStart-ran` in the **`app`** container. `2>/dev/null || true` prevents a non-zero exit if the file were missing on a slow start â€” explain once per lesson that we tolerate that for script-style runs.
 
 **Say:**
 
@@ -95,15 +95,15 @@ kubectl exec pod/lifecycle-hooks-demo -c app -- cat /tmp/postStart-ran 2>/dev/nu
 
 **Expected:**
 
-Non-empty content such as `postStart` from the hook’s `echo`.
+Non-empty content such as `postStart` from the hookâ€™s `echo`.
 
 ---
 
-## Step 4 — Inspect conditions and events before testing preStop
+## Step 4 â€” Inspect conditions and events before testing preStop
 
 **What happens when you run this:**
 
-`describe` slice shows Conditions and Events — read-only. Use a **second terminal** with `kubectl delete pod lifecycle-hooks-demo --wait=false` and watch logs or events to see **preStop** during termination.
+`describe` slice shows Conditions and Events â€” read-only. Use a **second terminal** with `kubectl delete pod lifecycle-hooks-demo --wait=false` and watch logs or events to see **preStop** during termination.
 
 **Say:**
 
@@ -124,12 +124,12 @@ Pod Running; Conditions and Events visible.
 
 ## Troubleshooting
 
-- **`postStart` hook failed** → check Events; fix command path or permissions; remember postStart is **async** — do not use it for strict ordering with the main process
-- **`preStop` never seems to run** → ensure you are deleting the pod (hook runs on termination); very short **terminationGracePeriodSeconds** can cut hook time
-- **httpGet hook fails** → wrong port/path, or main process not listening yet; align with readiness of the app
-- **Container killed before graceful work finishes** → increase **terminationGracePeriodSeconds** or shorten hook work; SIGKILL still happens after grace expires
-- **`exec` hook and minimal images** → image must contain the shell or binary you invoke
-- **Hook failure blocks termination** → failed preStop consumes grace period; diagnose from `kubectl describe pod` during delete
+- **`postStart` hook failed** â†’ check Events; fix command path or permissions; remember postStart is **async** â€” do not use it for strict ordering with the main process
+- **`preStop` never seems to run** â†’ ensure you are deleting the pod (hook runs on termination); very short **terminationGracePeriodSeconds** can cut hook time
+- **httpGet hook fails** â†’ wrong port/path, or main process not listening yet; align with readiness of the app
+- **Container killed before graceful work finishes** â†’ increase **terminationGracePeriodSeconds** or shorten hook work; SIGKILL still happens after grace expires
+- **`exec` hook and minimal images** â†’ image must contain the shell or binary you invoke
+- **Hook failure blocks termination** â†’ failed preStop consumes grace period; diagnose from `kubectl describe pod` during delete
 
 ---
 
@@ -143,11 +143,11 @@ Pod Running; Conditions and Events visible.
 
 Rolling updates and scale-downs send SIGTERM; without preStop, load balancers may still send traffic while the process is exiting. Hooks are how you align Kubernetes signals with real connection draining.
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 **What happens when you run this:**
 
-Wide pod and Conditions/Events slice — read-only; use a follow-up delete in another shell if demonstrating preStop live.
+Wide pod and Conditions/Events slice â€” read-only; use a follow-up delete in another shell if demonstrating preStop live.
 
 **Say:**
 
@@ -199,4 +199,4 @@ Pod removed or already gone.
 
 ## Next
 
-[2.3.5 Container Runtime Interface (CRI)](../2.3.5-container-runtime-interface-cri/README.md)
+[2.3.5 Container Runtime Interface (CRI)](../05-container-runtime-interface-cri/README.md)

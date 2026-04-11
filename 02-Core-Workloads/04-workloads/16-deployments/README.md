@@ -1,10 +1,10 @@
-# 2.4.3.1 Deployments — teaching transcript
+﻿# 2.4.3.1 Deployments â€” teaching transcript
 
 ## Intro
 
 A **Deployment** declares **desired replicas** and a **Pod template**. The **Deployment controller** creates or updates a **ReplicaSet** whose **selector** and **template** match; the ReplicaSet then creates Pods. When you change the **pod template** (image, env, labels inside the template), the Deployment starts a **rolling update**: it brings up Pods under a **new ReplicaSet** and scales down the old one according to **`strategy.rollingUpdate`**: **`maxSurge`** (extra pods above desired during rollout) and **`maxUnavailable`** (how many may be down). **`kubectl rollout status`** waits until **available** minimums are met; **`kubectl rollout history`** lists **revisions**; **`kubectl rollout undo`** rolls back to a previous revision. Old ReplicaSets are **retained** for rollback up to **`revisionHistoryLimit`**. This is the default pattern for **stateless** apps.
 
-**Prerequisites:** [2.4.1.1 Pod Lifecycle](../../2.4.1-pods/2.4.1.1-pod-lifecycle/README.md) recommended.
+**Prerequisites:** [2.4.1.1 Pod Lifecycle](../../01-pods/02-pod-lifecycle/README.md) recommended.
 
 ## Learning objective
 
@@ -15,23 +15,23 @@ A **Deployment** declares **desired replicas** and a **Pod template**. The **Dep
 
 ## Why this matters
 
-Most stateless services run behind Deployments. Rollouts, image bumps, and “replicas stuck at 0” surface through Deployment and ReplicaSet status.
+Most stateless services run behind Deployments. Rollouts, image bumps, and â€œreplicas stuck at 0â€ surface through Deployment and ReplicaSet status.
 
 ## Flow of this lesson
 
 ```
   Deployment spec (replicas + template)
-              │
-              ▼
+              â”‚
+              â–¼
   ReplicaSet (current revision)
-              │
-              ├──► Pods v1  (scale down during rollout)
-              └──► Pods v2  (scale up, new template)
+              â”‚
+              â”œâ”€â”€â–º Pods v1  (scale down during rollout)
+              â””â”€â”€â–º Pods v2  (scale up, new template)
 ```
 
 **Say:**
 
-You never “mutate a running container’s image” in place—the controller **replaces** Pods using the new template.
+You never â€œmutate a running containerâ€™s imageâ€ in placeâ€”the controller **replaces** Pods using the new template.
 
 ## Concepts (short theory)
 
@@ -40,7 +40,7 @@ You never “mutate a running container’s image” in place—the controller *
 
 ---
 
-## Step 1 — Apply Deployment and wait for rollout
+## Step 1 â€” Apply Deployment and wait for rollout
 
 **What happens when you run this:**
 
@@ -63,7 +63,7 @@ kubectl get rs -l app=deployment-demo
 
 ---
 
-## Step 2 — Run verify script
+## Step 2 â€” Run verify script
 
 **What happens when you run this:**
 
@@ -84,18 +84,18 @@ chmod +x scripts/verify-deployments-lesson.sh
 
 ## Troubleshooting
 
-- **`ProgressDeadlineExceeded`** → stuck rollout; check **image pull**, **probes**, and **Events** on ReplicaSet and Pods
-- **Two ReplicaSets both non-zero** → normal mid-rollout; use **`kubectl rollout status`**
-- **`ImagePullBackOff`** → registry auth or typo in template image
-- **No endpoints during rollout** → **`maxUnavailable`** too aggressive with single replica—raise replicas or tune strategy
-- **`rollout history` empty** → **`revisionHistoryLimit`** may be 0; not recommended for rollback practice
-- **Verify script fails** → wrong namespace or leftover objects from partial cleanup
+- **`ProgressDeadlineExceeded`** â†’ stuck rollout; check **image pull**, **probes**, and **Events** on ReplicaSet and Pods
+- **Two ReplicaSets both non-zero** â†’ normal mid-rollout; use **`kubectl rollout status`**
+- **`ImagePullBackOff`** â†’ registry auth or typo in template image
+- **No endpoints during rollout** â†’ **`maxUnavailable`** too aggressive with single replicaâ€”raise replicas or tune strategy
+- **`rollout history` empty** â†’ **`revisionHistoryLimit`** may be 0; not recommended for rollback practice
+- **Verify script fails** â†’ wrong namespace or leftover objects from partial cleanup
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 **What happens when you run this:**
 
-Deployment-wide view plus revision list—read-only after changes.
+Deployment-wide view plus revision listâ€”read-only after changes.
 
 **Say:**
 
@@ -122,4 +122,4 @@ kubectl delete -f yamls/deployment-demo.yaml --ignore-not-found 2>/dev/null || t
 
 ## Next
 
-[2.4.3.2 ReplicaSet](../2.4.3.2-replicaset/README.md)
+[2.4.3.2 ReplicaSet](../17-replicaset/README.md)

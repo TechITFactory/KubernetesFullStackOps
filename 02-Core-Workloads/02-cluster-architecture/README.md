@@ -1,8 +1,8 @@
-# 2.2 Cluster Architecture — teaching transcript
+﻿# 2.2 Cluster Architecture â€” teaching transcript
 
 ## Intro
 
-Every action you take with `kubectl` flows through a defined architecture: the API server receives it, etcd persists it, controllers reconcile toward it, and kubelets on nodes execute it. Understanding this flow means you can trace any failure — from a stuck pod to a node going `Unknown` — back to the component responsible.
+Every action you take with `kubectl` flows through a defined architecture: the API server receives it, etcd persists it, controllers reconcile toward it, and kubelets on nodes execute it. Understanding this flow means you can trace any failure â€” from a stuck pod to a node going `Unknown` â€” back to the component responsible.
 
 This module walks each architectural piece in order: nodes and their agents, the communication paths between nodes and the control plane, the controller reconcile loop, the Lease heartbeat mechanism, cloud provider integration, cgroup resource isolation, self-healing behavior, and garbage collection.
 
@@ -14,18 +14,18 @@ This module walks each architectural piece in order: nodes and their agents, the
 
 ```
   You (kubectl)
-       │
-       ▼
-  API server ◀────────────────────────────────────┐
-       │                                           │
-       ├──▶ etcd (persists state)                  │
-       │                                           │
-       ├──▶ Controllers (reconcile loop)           │
-       │         └──▶ API server (write actions)   │
-       │                                           │
-       └──▶ kubelet (on each node)                 │
-                 ├──▶ CRI runtime (run containers) │
-                 └──▶ Lease (heartbeat) ───────────┘
+       â”‚
+       â–¼
+  API server â—€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+       â”‚                                           â”‚
+       â”œâ”€â”€â–¶ etcd (persists state)                  â”‚
+       â”‚                                           â”‚
+       â”œâ”€â”€â–¶ Controllers (reconcile loop)           â”‚
+       â”‚         â””â”€â”€â–¶ API server (write actions)   â”‚
+       â”‚                                           â”‚
+       â””â”€â”€â–¶ kubelet (on each node)                 â”‚
+                 â”œâ”€â”€â–¶ CRI runtime (run containers) â”‚
+                 â””â”€â”€â–¶ Lease (heartbeat) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 **Say:** "Everything goes through the API server. Controllers read desired state from it and write back actual state. kubelets read their pod assignments from it and write node status back. Leases are the heartbeat that tells the control plane a node is still alive. When you understand this loop, you understand why almost every Kubernetes failure leaves evidence in `kubectl describe` or `kubectl get events`."
@@ -34,22 +34,22 @@ This module walks each architectural piece in order: nodes and their agents, the
 
 ## Children (work in order)
 
-- [2.2.1 Nodes](2.2.1-nodes/README.md)
-- [2.2.2 Communication between nodes and the control plane](2.2.2-communication-between-nodes-and-the-control-plane/README.md)
-- [2.2.3 Controllers](2.2.3-controllers/README.md)
-- [2.2.4 Leases](2.2.4-leases/README.md)
-- [2.2.5 Cloud controller manager](2.2.5-cloud-controller-manager/README.md)
-- [2.2.6 About cgroup v2](2.2.6-about-cgroup-v2/README.md)
-- [2.2.7 Kubernetes self-healing](2.2.7-kubernetes-self-healing/README.md)
-- [2.2.8 Garbage collection](2.2.8-garbage-collection/README.md)
-- [2.2.9 Mixed version proxy](2.2.9-mixed-version-proxy/README.md)
+- [2.2.1 Nodes](01-nodes/README.md)
+- [2.2.2 Communication between nodes and the control plane](02-communication-between-nodes-and-the-control-plane/README.md)
+- [2.2.3 Controllers](03-controllers/README.md)
+- [2.2.4 Leases](04-leases/README.md)
+- [2.2.5 Cloud controller manager](05-cloud-controller-manager/README.md)
+- [2.2.6 About cgroup v2](06-about-cgroup-v2/README.md)
+- [2.2.7 Kubernetes self-healing](07-kubernetes-self-healing/README.md)
+- [2.2.8 Garbage collection](08-garbage-collection/README.md)
+- [2.2.9 Mixed version proxy](09-mixed-version-proxy/README.md)
 
 ---
 
-## Module wrap — quick validation
+## Module wrap â€” quick validation
 
 **What happens when you run this:**
-Nodes; node heartbeat Leases; kube-system pods; recent events — read-only triage of the full architectural picture.
+Nodes; node heartbeat Leases; kube-system pods; recent events â€” read-only triage of the full architectural picture.
 
 **Say:** "These four commands give me a complete architectural snapshot: which nodes are ready, when they last sent a heartbeat, which control-plane pods are running, and what events have fired recently. If anything in the module left the cluster in a bad state, it shows up here."
 

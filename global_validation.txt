@@ -1,0 +1,13 @@
+﻿REPAIRS COMPLETE.
+Total Validated script/yamls OK: 381
+ERRORS FOUND: 11 missing references:
+04-workloads: scripts/verify-2-4-workloads-module.sh
+15-workload-management: scripts/verify-statefulset-lesson.sh
+15-workload-management: scripts/verify-daemonset-lesson.sh
+15-workload-management: scripts/verify-jobs-lesson.sh
+15-workload-management: scripts/verify-job-ttl-lesson.sh
+15-workload-management: scripts/verify-cronjob-lesson.sh
+15-workload-management: scripts/verify-replicationcontroller-lesson.sh
+26-horizontal-pod-autoscaling: ../../24-managing-workloads/yamls/manage-workloads-demo.yaml
+27-vertical-pod-autoscaling: ../../24-managing-workloads/yamls/manage-workloads-demo.yaml
+

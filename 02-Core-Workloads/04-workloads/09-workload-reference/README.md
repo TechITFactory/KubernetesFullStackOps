@@ -1,20 +1,20 @@
-# 2.4.1.8 Workload Reference — teaching transcript
+﻿# 2.4.1.8 Workload Reference â€” teaching transcript
 
 ## Intro
 
-In production you rarely manage **bare Pods**; you manage **workload API objects** that **create** Pods with consistent labels and **owner references**. Understanding the **decision table** below maps business language (“we need stable broker IDs”) to the right controller. **Deployment** targets **stateless** apps with **rolling updates**. **StatefulSet** gives **stable identity**, **ordered** rollout, and usually **per-pod PVCs**. **DaemonSet** runs a **pod per node** for agents. **Job** runs **batch** work **to completion** once (or N completions). **CronJob** schedules **Job** creation on a **cron** timer.
+In production you rarely manage **bare Pods**; you manage **workload API objects** that **create** Pods with consistent labels and **owner references**. Understanding the **decision table** below maps business language (â€œwe need stable broker IDsâ€) to the right controller. **Deployment** targets **stateless** apps with **rolling updates**. **StatefulSet** gives **stable identity**, **ordered** rollout, and usually **per-pod PVCs**. **DaemonSet** runs a **pod per node** for agents. **Job** runs **batch** work **to completion** once (or N completions). **CronJob** schedules **Job** creation on a **cron** timer.
 
-**Prerequisites:** [2.4.1.7 Pod Quality of Service Classes](../2.4.1.7-pod-quality-of-service-classes/README.md) recommended.
+**Prerequisites:** [2.4.1.7 Pod Quality of Service Classes](../08-pod-quality-of-service-classes/README.md) recommended.
 
 ## Flow of this lesson
 
 ```
   Requirement in plain language
-           │
-           ▼
+           â”‚
+           â–¼
   Pick Deployment | StatefulSet | DaemonSet | Job | CronJob
-           │
-           ▼
+           â”‚
+           â–¼
   Inspect ownerReferences on live Pods
 ```
 
@@ -44,10 +44,10 @@ Wrong controller choice is expensive to unwind after data is written to local di
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/2.4.1-pods/2.4.1.8-workload-reference" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/01-pods/09-workload-reference" 2>/dev/null || cd .
 ```
 
-## Step 1 — Apply reference notes
+## Step 1 â€” Apply reference notes
 
 **What happens when you run this:**
 
@@ -68,7 +68,7 @@ kubectl get configmap workload-reference-notes -n kube-system
 
 ---
 
-## Step 2 — Discover workload API resources
+## Step 2 â€” Discover workload API resources
 
 **What happens when you run this:**
 
@@ -88,15 +88,15 @@ kubectl api-resources | grep -E 'deployments|statefulsets|daemonsets|jobs|cronjo
 
 ---
 
-## Step 3 — Inspect owner chain (optional, if you have a Deployment)
+## Step 3 â€” Inspect owner chain (optional, if you have a Deployment)
 
 **What happens when you run this:**
 
-Pods created by a **Deployment** show **ReplicaSet** as owner, and the ReplicaSet references the Deployment—teaching the chain.
+Pods created by a **Deployment** show **ReplicaSet** as owner, and the ReplicaSet references the Deploymentâ€”teaching the chain.
 
 **Say:**
 
-Only run this if you completed [2.4.3.1 Deployments](../../2.4.3-workload-management/2.4.3.1-deployments/README.md); otherwise skip.
+Only run this if you completed [2.4.3.1 Deployments](../../15-workload-management/16-deployments/README.md); otherwise skip.
 
 **Run:**
 
@@ -106,7 +106,7 @@ kubectl get pods -l app=deployment-demo -o jsonpath='{range .items[*]}{.metadata
 
 **Expected:** Rows showing **ReplicaSet** owner if demo deployment exists.
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 ```bash
 kubectl api-resources | grep -E 'deployments|statefulsets|daemonsets|jobs|cronjobs' || true
@@ -114,12 +114,12 @@ kubectl api-resources | grep -E 'deployments|statefulsets|daemonsets|jobs|cronjo
 
 ## Troubleshooting
 
-- **`Forbidden` to kube-system** → read ConfigMap YAML from git instead of applying
-- **No ownerReferences** → bare Pod or custom operator; `describe pod` **Controlled By** field
-- **CronJob missing** → wrong API group filter; try `kubectl api-resources | grep -i cron`
-- **Confused Job vs Pod** → Job owns Pods; delete Job cleans template pods (policy-dependent)
-- **StatefulSet pods wrong order** → check **podManagementPolicy** and readiness gates
-- **grep empty** → eyes-only `kubectl api-resources` for your server version
+- **`Forbidden` to kube-system** â†’ read ConfigMap YAML from git instead of applying
+- **No ownerReferences** â†’ bare Pod or custom operator; `describe pod` **Controlled By** field
+- **CronJob missing** â†’ wrong API group filter; try `kubectl api-resources | grep -i cron`
+- **Confused Job vs Pod** â†’ Job owns Pods; delete Job cleans template pods (policy-dependent)
+- **StatefulSet pods wrong order** â†’ check **podManagementPolicy** and readiness gates
+- **grep empty** â†’ eyes-only `kubectl api-resources` for your server version
 
 ## Repo files (reference)
 
@@ -136,4 +136,4 @@ kubectl delete configmap workload-reference-notes -n kube-system --ignore-not-fo
 
 ## Next
 
-[2.4.1.9 User Namespaces](../2.4.1.9-user-namespaces/README.md)
+[2.4.1.9 User Namespaces](../10-user-namespaces/README.md)

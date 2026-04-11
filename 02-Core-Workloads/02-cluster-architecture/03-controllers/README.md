@@ -1,12 +1,12 @@
-# 2.2.3 Controllers — teaching transcript
+﻿# 2.2.3 Controllers â€” teaching transcript
 
 ## Intro
 
-A controller is a control loop that watches the API server for a specific resource type, compares **desired state** (what you declared) to **actual state** (what exists), and takes action to close the gap. This pattern — called **reconciliation** — is how everything in Kubernetes works.
+A controller is a control loop that watches the API server for a specific resource type, compares **desired state** (what you declared) to **actual state** (what exists), and takes action to close the gap. This pattern â€” called **reconciliation** â€” is how everything in Kubernetes works.
 
 The Deployment controller watches Deployment objects and ensures a matching ReplicaSet exists. The ReplicaSet controller watches ReplicaSets and ensures the correct number of Pods exist. The Job controller watches Jobs and creates Pods until the completion count is met. Each controller is responsible for one resource type and one reconcile loop.
 
-Controllers run inside `kube-controller-manager` on the control plane for built-in types, or as separate pods for custom controllers. They write back to the API server — they never touch nodes or containers directly. The kubelet, not the controller, is what actually starts and stops containers.
+Controllers run inside `kube-controller-manager` on the control plane for built-in types, or as separate pods for custom controllers. They write back to the API server â€” they never touch nodes or containers directly. The kubelet, not the controller, is what actually starts and stops containers.
 
 **Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
@@ -16,22 +16,22 @@ Controllers run inside `kube-controller-manager` on the control plane for built-
 
 ```
   [ Step 1 ]              [ Step 2 ]                [ Step 3 ]
-  Run script       →      Observe controller  →      Clean up
+  Run script       â†’      Observe controller  â†’      Clean up
   (apply demo             reconcile:
   Deployment)             delete a pod,
                           watch it come back
 ```
 
-**Say:** "Three steps. The script applies a Deployment, which kicks off the controller reconcile loop. Then we manually delete one pod and watch the controller bring it back — that's the reconcile loop in action. Then we clean up."
+**Say:** "Three steps. The script applies a Deployment, which kicks off the controller reconcile loop. Then we manually delete one pod and watch the controller bring it back â€” that's the reconcile loop in action. Then we clean up."
 
 ---
 
-## Step 1 — Apply the demo Deployment
+## Step 1 â€” Apply the demo Deployment
 
 **What happens when you run this:**
 `controller-reconciliation-demo.sh` creates namespace `controller-demo` and a two-replica Deployment inside it. The Deployment controller creates a ReplicaSet; the ReplicaSet controller creates two Pods. The script then lists the resulting resources.
 
-**Say:** "I applied one object — a Deployment. But three things were created: a ReplicaSet and two Pods, each one created by a different controller reacting to the previous object. That cascade of reactions is the reconcile loop in action."
+**Say:** "I applied one object â€” a Deployment. But three things were created: a ReplicaSet and two Pods, each one created by a different controller reacting to the previous object. That cascade of reactions is the reconcile loop in action."
 
 **Run:**
 
@@ -46,7 +46,7 @@ Deployment shows `2/2 READY`. Two pods in `Running` state.
 
 ---
 
-## Step 2 — Observe the reconcile loop
+## Step 2 â€” Observe the reconcile loop
 
 **What happens when you run this:**
 `kubectl delete pod` removes one pod immediately. The ReplicaSet controller detects that actual count (1) is below desired (2) and creates a replacement. The `-w` flag streams pod events so you can see the new pod appear in real time.
@@ -65,7 +65,7 @@ One pod enters `Terminating`, a new pod appears in `Pending` then `Running`. Tot
 
 ---
 
-## Step 3 — Clean up
+## Step 3 â€” Clean up
 
 **What happens when you run this:**
 Deleting the namespace removes everything inside it. `--ignore-not-found` prevents an error if the namespace was already removed.
@@ -85,11 +85,11 @@ kubectl delete namespace controller-demo --ignore-not-found
 
 ## Troubleshooting
 
-- **`Deployment not reconciling`** → check `kubectl describe deploy <name>` for conditions; check `kubectl get events -n <namespace>` for controller errors; if kube-controller-manager is unhealthy, check `kubectl logs -n kube-system -l component=kube-controller-manager`.
-- **`Pod not recreated after deletion`** → confirm the ReplicaSet still exists with `kubectl get rs -n <namespace>`; if the RS was deleted or its selector changed, the controller has no target to reconcile toward.
-- **`Deployment stuck at old replica count`** → the controller may be blocked by a PodDisruptionBudget; check `kubectl get pdb -n <namespace>` and whether `ALLOWED DISRUPTIONS` is 0.
-- **`Too many ReplicaSets accumulating`** → `spec.revisionHistoryLimit` (default 10) controls how many old ReplicaSets are retained; lower it if etcd storage is growing.
-- **`Custom controller not reconciling`** → check the controller pod logs for watch errors or permission denials; the controller needs RBAC to read and write the resources it manages.
+- **`Deployment not reconciling`** â†’ check `kubectl describe deploy <name>` for conditions; check `kubectl get events -n <namespace>` for controller errors; if kube-controller-manager is unhealthy, check `kubectl logs -n kube-system -l component=kube-controller-manager`.
+- **`Pod not recreated after deletion`** â†’ confirm the ReplicaSet still exists with `kubectl get rs -n <namespace>`; if the RS was deleted or its selector changed, the controller has no target to reconcile toward.
+- **`Deployment stuck at old replica count`** â†’ the controller may be blocked by a PodDisruptionBudget; check `kubectl get pdb -n <namespace>` and whether `ALLOWED DISRUPTIONS` is 0.
+- **`Too many ReplicaSets accumulating`** â†’ `spec.revisionHistoryLimit` (default 10) controls how many old ReplicaSets are retained; lower it if etcd storage is growing.
+- **`Custom controller not reconciling`** â†’ check the controller pod logs for watch errors or permission denials; the controller needs RBAC to read and write the resources it manages.
 
 ---
 
@@ -105,12 +105,12 @@ Every "Kubernetes fixed itself" story is a controller doing its job. Every "Kube
 
 ---
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 **What happens when you run this:**
 State check on Deployment and pods; Deployment describe showing controller events; recent namespace events. All read-only.
 
-**Say:** "Describe deploy shows the Events section at the bottom — that's where the controller logs its actions: scaling up, scaling down, creating ReplicaSets. It's the audit trail for everything the controller did."
+**Say:** "Describe deploy shows the Events section at the bottom â€” that's where the controller logs its actions: scaling up, scaling down, creating ReplicaSets. It's the audit trail for everything the controller did."
 
 ```bash
 kubectl get deploy,pods -n controller-demo -l app=controller-demo
@@ -140,4 +140,4 @@ kubectl delete namespace controller-demo --ignore-not-found
 
 ## Next
 
-[2.2.4 Leases](../2.2.4-leases/README.md)
+[2.2.4 Leases](../04-leases/README.md)

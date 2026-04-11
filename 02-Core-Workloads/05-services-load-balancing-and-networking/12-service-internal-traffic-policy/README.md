@@ -1,24 +1,24 @@
-# 2.5.12 Service Internal Traffic Policy — teaching transcript
+﻿# 2.5.12 Service Internal Traffic Policy â€” teaching transcript
 
 ## Intro
 
-**`internalTrafficPolicy`** on a **Service** controls how **cluster-internal** traffic is load-balanced across endpoints. **`Cluster`** (default) uses **all** ready endpoints cluster-wide—classic behavior. **`Local`** restricts routing to endpoints **on the same node** as the client (when used with patterns like **externalTrafficPolicy: Local** on **NodePort/LoadBalancer**, traffic **health** and **source IP** semantics also shift—read the combined docs for your case). **Misunderstanding “Local”** causes **black holes** when a node has **no local endpoints** but clients still land there via **external** paths. **kube-proxy** mode and **CNI** features affect observability—always **`kubectl get svc -o yaml`** and **`kubectl explain service.spec.internalTrafficPolicy`** on your version.
+**`internalTrafficPolicy`** on a **Service** controls how **cluster-internal** traffic is load-balanced across endpoints. **`Cluster`** (default) uses **all** ready endpoints cluster-wideâ€”classic behavior. **`Local`** restricts routing to endpoints **on the same node** as the client (when used with patterns like **externalTrafficPolicy: Local** on **NodePort/LoadBalancer**, traffic **health** and **source IP** semantics also shiftâ€”read the combined docs for your case). **Misunderstanding â€œLocalâ€** causes **black holes** when a node has **no local endpoints** but clients still land there via **external** paths. **kube-proxy** mode and **CNI** features affect observabilityâ€”always **`kubectl get svc -o yaml`** and **`kubectl explain service.spec.internalTrafficPolicy`** on your version.
 
-**Prerequisites:** [2.5.1 Service](../2.5.1-service/README.md); [2.5.5 EndpointSlices](../2.5.5-endpointslices/README.md).
+**Prerequisites:** [2.5.1 Service](../01-service/README.md); [2.5.5 EndpointSlices](../05-endpointslices/README.md).
 
 ## Flow of this lesson
 
 ```
   internalTrafficPolicy: Cluster
-        → any ready endpoint in cluster
+        â†’ any ready endpoint in cluster
 
   internalTrafficPolicy: Local
-        → prefer / restrict to node-local endpoints (datapath dependent)
+        â†’ prefer / restrict to node-local endpoints (datapath dependent)
 ```
 
 **Say:**
 
-I pair this field with **externalTrafficPolicy** when teaching **LoadBalancer** health—easy to conflate them.
+I pair this field with **externalTrafficPolicy** when teaching **LoadBalancer** healthâ€”easy to conflate them.
 
 ## Learning objective
 
@@ -28,15 +28,15 @@ I pair this field with **externalTrafficPolicy** when teaching **LoadBalancer** 
 
 ## Why this matters
 
-Switching to **Local** for latency without enough **per-node** replicas drops traffic on some nodes—production outages.
+Switching to **Local** for latency without enough **per-node** replicas drops traffic on some nodesâ€”production outages.
 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/2.5.12-service-internal-traffic-policy" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/01-service-internal-traffic-policy" 2>/dev/null || cd .
 ```
 
-## Step 1 — Apply notes ConfigMap
+## Step 1 â€” Apply notes ConfigMap
 
 **What happens when you run this:**
 
@@ -52,7 +52,7 @@ kubectl apply -f yamls/2-5-12-service-internal-traffic-policy-notes.yaml
 
 ---
 
-## Step 2 — Inspect Services and policy field
+## Step 2 â€” Inspect Services and policy field
 
 **What happens when you run this:**
 
@@ -66,7 +66,7 @@ bash scripts/inspect-2-5-12-service-internal-traffic-policy.sh
 
 **Expected:** Services list; internal traffic policy visible when API server supports it.
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 ```bash
 bash scripts/inspect-2-5-12-service-internal-traffic-policy.sh
@@ -74,12 +74,12 @@ bash scripts/inspect-2-5-12-service-internal-traffic-policy.sh
 
 ## Troubleshooting
 
-- **Traffic drops after Local** → not every node runs a backend—add **DaemonSet** or revert policy
-- **Health probes fail on cloud LB** → **externalTrafficPolicy: Local** interaction—separate lesson path
-- **Field ignored** → old **Kubernetes** version—upgrade or drop field
-- **kube-proxy iptables vs IPVS** → subtle behavioral differences—vendor matrix
-- **Confused with topology hints** → see [2.5.9](../2.5.9-topology-aware-routing/README.md)
-- **`Forbidden` notes** → offline YAML
+- **Traffic drops after Local** â†’ not every node runs a backendâ€”add **DaemonSet** or revert policy
+- **Health probes fail on cloud LB** â†’ **externalTrafficPolicy: Local** interactionâ€”separate lesson path
+- **Field ignored** â†’ old **Kubernetes** versionâ€”upgrade or drop field
+- **kube-proxy iptables vs IPVS** â†’ subtle behavioral differencesâ€”vendor matrix
+- **Confused with topology hints** â†’ see [2.5.9](../09-topology-aware-routing/README.md)
+- **`Forbidden` notes** â†’ offline YAML
 
 ## Repo files (reference)
 

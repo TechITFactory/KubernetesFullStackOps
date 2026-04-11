@@ -1,20 +1,20 @@
-# 2.5.6 Network Policies — teaching transcript
+﻿# 2.5.6 Network Policies â€” teaching transcript
 
 ## Intro
 
-**NetworkPolicy** selects **Pods** by labels and defines **ingress** and/or **egress** rules: allowed **peers** (pod selectors, namespace selectors, CIDR blocks) and **ports**. Policies are **additive only in the sense you define**—many CNIs implement a **default allow-all** until the first policy touches a Pod, then **only** what policies permit (**default deny**) for that Pod; **confirm semantics with your CNI documentation** because behavior varies slightly. Policies require a **CNI that enforces** them (Calico, Cilium, Antrea, …); without enforcement, `kubectl apply` succeeds but **nothing** changes on the wire. A classic footgun is **locking out DNS** by forgetting an **egress** rule to **kube-system** **DNS** Service or **CoreDNS** pods—**Pods** then fail name resolution.
+**NetworkPolicy** selects **Pods** by labels and defines **ingress** and/or **egress** rules: allowed **peers** (pod selectors, namespace selectors, CIDR blocks) and **ports**. Policies are **additive only in the sense you define**â€”many CNIs implement a **default allow-all** until the first policy touches a Pod, then **only** what policies permit (**default deny**) for that Pod; **confirm semantics with your CNI documentation** because behavior varies slightly. Policies require a **CNI that enforces** them (Calico, Cilium, Antrea, â€¦); without enforcement, `kubectl apply` succeeds but **nothing** changes on the wire. A classic footgun is **locking out DNS** by forgetting an **egress** rule to **kube-system** **DNS** Service or **CoreDNS** podsâ€”**Pods** then fail name resolution.
 
-**Prerequisites:** [2.5.5 EndpointSlices](../2.5.5-endpointslices/README.md); [2.5.1 Service](../2.5.1-service/README.md) for Service/label vocabulary.
+**Prerequisites:** [2.5.5 EndpointSlices](../05-endpointslices/README.md); [2.5.1 Service](../01-service/README.md) for Service/label vocabulary.
 
 ## Flow of this lesson
 
 ```
   NetworkPolicy (pod selector + ingress/egress rules)
-              │
-              ▼
+              â”‚
+              â–¼
   CNI datapath enforces (if supported)
-              │
-              ▼
+              â”‚
+              â–¼
   Allowed flows only; DNS egress often required explicitly
 ```
 
@@ -30,15 +30,15 @@ I draw **default deny** on the whiteboard the moment the first policy appears in
 
 ## Why this matters
 
-Misapplied policies cause “app works in dev CNI, dead in prod CNI” and mysterious **DNS** failures.
+Misapplied policies cause â€œapp works in dev CNI, dead in prod CNIâ€ and mysterious **DNS** failures.
 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/2.5.6-network-policies" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/06-network-policies" 2>/dev/null || cd .
 ```
 
-## Step 1 — Apply notes ConfigMap
+## Step 1 â€” Apply notes ConfigMap
 
 **What happens when you run this:**
 
@@ -54,7 +54,7 @@ kubectl apply -f yamls/2-5-6-network-policies-notes.yaml
 
 ---
 
-## Step 2 — Inspect policies and Services
+## Step 2 â€” Inspect policies and Services
 
 **What happens when you run this:**
 
@@ -68,7 +68,7 @@ bash scripts/inspect-2-5-6-network-policies.sh
 
 **Expected:** Script completes; NetworkPolicy list may be empty on fresh clusters.
 
-## Video close — fast validation
+## Video close â€” fast validation
 
 ```bash
 bash scripts/inspect-2-5-6-network-policies.sh
@@ -76,12 +76,12 @@ bash scripts/inspect-2-5-6-network-policies.sh
 
 ## Troubleshooting
 
-- **Policy applied, no effect** → CNI does not enforce; check provider matrix
-- **Everything breaks after first policy** → implicit **default deny**—add explicit **allow** rules
-- **DNS timeouts** → allow **egress** to **CoreDNS** (UDP/TCP 53) or matching namespace/pod selectors
-- **Cross-namespace** → verify **namespaceSelector** and **podSelector** together
-- **Host network / kube-proxy paths** → some traffic bypasses Pod network—read CNI notes
-- **`Forbidden` apply** → RBAC; teach from YAML without kube-system write
+- **Policy applied, no effect** â†’ CNI does not enforce; check provider matrix
+- **Everything breaks after first policy** â†’ implicit **default deny**â€”add explicit **allow** rules
+- **DNS timeouts** â†’ allow **egress** to **CoreDNS** (UDP/TCP 53) or matching namespace/pod selectors
+- **Cross-namespace** â†’ verify **namespaceSelector** and **podSelector** together
+- **Host network / kube-proxy paths** â†’ some traffic bypasses Pod networkâ€”read CNI notes
+- **`Forbidden` apply** â†’ RBAC; teach from YAML without kube-system write
 
 ## Repo files (reference)
 
@@ -99,4 +99,4 @@ kubectl delete configmap 2-5-6-network-policies-notes -n kube-system --ignore-no
 
 ## Next
 
-[2.5.7 DNS for Services and Pods](2.5.7-dns-for-services-and-pods/README.md)
+[2.5.7 DNS for Services and Pods](07-dns-for-services-and-pods/README.md)

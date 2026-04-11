@@ -1,0 +1,9 @@
+﻿apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: emergency-restore
+  namespace: velero
+spec:
+  backupName: daily-prod-backup
+  includedNamespaces:
+  - prod-env

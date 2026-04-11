@@ -1,0 +1,12 @@
+﻿apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mock-cosign-verification
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: cosign
+        image: bitnami/cosign:latest
+        command: ["cosign", "verify", "--key", "cosign.pub", "myregistry.com/my-app:v1"]

@@ -1,0 +1,37 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capstone-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.24
+        env:
+        - name: REDIS_HOST
+          value: "redis-master"
+        resources:
+          requests:
+            cpu: 50m
+          limits:
+            cpu: 100m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: capstone-frontend
+spec:
+  type: NodePort
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 80

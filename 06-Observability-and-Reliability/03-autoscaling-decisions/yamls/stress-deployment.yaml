@@ -1,0 +1,25 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stress
+  template:
+    metadata:
+      labels:
+        app: stress
+    spec:
+      containers:
+      - name: worker
+        image: vish/stress
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            cpu: 200m
+        args:
+        - -cpus
+        - "1"
