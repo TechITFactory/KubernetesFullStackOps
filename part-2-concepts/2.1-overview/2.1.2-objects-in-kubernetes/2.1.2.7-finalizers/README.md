@@ -14,18 +14,26 @@ This lesson shows you the full lifecycle: apply an object with a finalizer, dele
 
 **Teaching tip:** The `patch` that clears finalizers is a **teaching escape hatch**. In production, the right fix is restoring or fixing the controller that owns the finalizer — not force-clearing it, because that bypasses whatever cleanup the finalizer was protecting.
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.7-finalizers"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Five steps. Apply the demo, read its finalizer, delete it and watch it get stuck, then patch the finalizer away to release it. This is the full lifecycle.
 
 ```
   [ Step 1 ]      [ Step 2 ]      [ Step 3 ]        [ Step 4 ]      [ Step 5 ]
   Apply demo  →   Read the   →    Delete with  →    Show stuck  →   Patch to
   object          finalizer        --wait=false      timestamp       release
 ```
+
+**Say:**
+
+Five numbered steps. Apply the demo, read its finalizer, delete with `--wait=false`, show the deletion timestamp, then patch finalizers empty. That last patch is only for labs or emergencies when the controller is gone; if a real controller still runs, I fix or redeploy that controller instead of stripping finalizers.
 
 ---
 
@@ -40,6 +48,7 @@ The manifest sets `metadata.finalizers: ["training.k8sops.io/demo-finalizer"]`. 
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.7-finalizers"
 kubectl apply -f yamls/finalizer-demo.yaml
 ```
 
@@ -111,7 +120,7 @@ A timestamp string — confirms the object is stuck in termination.
 `kubectl patch configmap finalizer-demo -p '{"metadata":{"finalizers":[]}}' --type=merge` sets the finalizers array to empty. The API server sees all finalizers are gone and immediately deletes the object.
 
 **Say:**
-This patch overwrites the finalizers array with an empty list. The moment that happens, the API server's garbage collection removes the object. Use this only when you know the controller that owned the finalizer is gone and its cleanup work will never happen — or when you're doing it deliberately in a lab.
+This patch overwrites the finalizers array with an empty list. The moment that happens, the API server's garbage collection removes the object. I only do this when the controller that should have removed the finalizer is **gone** or **broken beyond repair** and I accept skipping its cleanup. If the controller is still running, I redeploy or fix it so it clears the finalizer the right way — otherwise it may re-add the finalizer or leave external systems inconsistent.
 
 **Run:**
 

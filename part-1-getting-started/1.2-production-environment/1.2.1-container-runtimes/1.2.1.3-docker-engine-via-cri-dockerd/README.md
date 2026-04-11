@@ -12,11 +12,25 @@ Use this path for **legacy or migration** only — **not** for new clusters (**c
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. `scripts/install-docker-cri-dockerd.sh` repeats the install story in a header comment at the top of the file.
 
-## One-time setup — set your course directory
+## One-time setup
 
 ```bash
-COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.3-docker-engine-via-cri-dockerd"
 ```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  chmod scripts  →  sudo install      →  both systemd   →  cri-dockerd   →  crictl info  →  cgroup grep  →  kubeadm YAML
+                    Docker + shim         units active       socket          shim            docker info      grep
+```
+
+**Say:**
+
+This path installs Docker plus the cri-dockerd shim, proves both services, proves the **CRI** socket (not `docker.sock`), runs `crictl` through the shim, checks Docker’s cgroup driver, then shows the kubeadm `criSocket` line.
 
 ---
 
@@ -64,6 +78,10 @@ Completes without error.
 
 **What happens when you run this:**  
 `systemctl is-active` / `status` for Docker and cri-docker units — verifies both daemons are running.
+
+**Say:**
+
+Kubelet needs **both** Docker and the cri-dockerd service healthy — if either is down, pod sandboxes never start.
 
 **Run:**
 
@@ -154,6 +172,10 @@ grep -n criSocket yamls/kubeadm-node-config-cri-dockerd.yaml
 **What happens when you run this:**  
 `systemctl status` for both services and `crictl version` through the shim — final verification pass.
 
+**Say:**
+
+Last check: both daemons still up, `crictl` still answers on the shim socket — that is the path kubelet must use.
+
 **Run:**
 
 ```bash
@@ -166,6 +188,48 @@ Services OK; `crictl` works.
 
 ---
 
+## Troubleshooting
+
+- **`kubeadm` config still references `/var/run/docker.sock`** → replace with `unix:///run/cri-dockerd.sock` — kubelet talks CRI, not the Docker API
+- **`cri-docker.service` inactive (dead)`** → enable and start `cri-docker.socket` / `cri-docker.service` per your distro packages
+- **`Cgroup Driver: cgroupfs` in `docker info`** → set `"exec-opts": ["native.cgroupdriver=systemd"]` in `/etc/docker/daemon.json`, restart Docker, align kubelet cgroup driver
+- **`crictl` cannot reach `/run/cri-dockerd.sock`** → confirm path with `ls -la /run/cri-dockerd.sock` and package docs
+- **Restarting Docker during production traffic** → drain the node first — restarts kill running containers underneath
+
+---
+
+## Learning objective
+
+- Installed Docker and cri-dockerd, verified the CRI socket, and avoided pointing kubelet at the Docker API socket by mistake.
+
+## Why this matters
+
+This is a **bridge** stack for upgrades and legacy deps — you should recognize it in the field even if you do not choose it for new builds.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+Read-only: both units active, `crictl info` via the shim socket.
+
+**Say:**
+
+I mirror the module README’s Docker path: both services active, then `crictl info` through cri-dockerd.
+
+**Run:**
+
+```bash
+sudo systemctl is-active docker
+sudo systemctl is-active cri-docker
+sudo crictl --runtime-endpoint unix:///run/cri-dockerd.sock info >/dev/null && echo "crictl: OK"
+```
+
+**Expected:**
+
+Two `active` lines and `crictl: OK`.
+
+---
+
 ## Repo files (reference)
 
 | Path | Purpose |
@@ -175,23 +239,6 @@ Services OK; `crictl` works.
 | `yamls/failure-troubleshooting.yaml` | Socket / daemon / endpoint issues |
 
 ---
-
-## Troubleshooting
-
-- **Pointed kubeadm at docker.sock** → wrong; use **cri-dockerd.sock**
-- **cri-docker not active** → enable socket unit if your distro splits `cri-docker.socket` / `cri-docker.service`
-- **cgroupfs from `docker info`** → fix daemon.json + restart **before** joining the cluster
-- **Do not restart docker on busy nodes** → drain / maintenance window for production
-
----
-
-## Learning objective
-
-- Install Docker + cri-dockerd, verify CRI socket, avoid confusing Docker API socket with CRI.
-
-## Why this matters
-
-This is a **bridge** stack for upgrades and legacy deps — you should recognize it in the field even if you do not choose it for new builds.
 
 ## Next
 

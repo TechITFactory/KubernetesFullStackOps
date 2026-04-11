@@ -10,13 +10,26 @@ This lesson gives you a **real Kubernetes cluster on your laptop** using **Minik
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. Shell scripts document the same behavior in a header comment at the top of each file under `scripts/`.
 
-## One-time setup — set your course directory
-
-If you already set `COURSE_DIR` in Part 0, it is still set in your current shell. If you opened a new terminal, set it again:
+## One-time setup
 
 ```bash
-COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.1-learning-environment/1.1.1-minikube-setup-and-configuration"
 ```
+
+> If you set `COURSE_DIR` in Part 0, it is still set in your current shell. If you opened a new terminal, set it again and `cd` here.
+
+## Flow of this lesson
+
+```
+  [ Step 2 ]     [ Step 3 ]      [ Steps 4–6 ]        [ Step 7 ]       [ Step 8 ]      [ Step 9 ]
+  chmod +   →    install CLI  →  start cluster   →   apply + wait  →  open service → recap (opt)
+  scripts                        + ingress           smoke test                        tear down
+```
+
+**Say:**
+
+We make scripts runnable, install or refresh Minikube and kubectl, start the course profile with ingress, apply the smoke manifest, wait for the Deployment, open the service from the laptop, optionally recap with three read-only gets, and optionally delete the profile when we are done.
 
 ---
 
@@ -195,6 +208,48 @@ Profile removed or script reports nothing to do.
 
 ---
 
+## Troubleshooting
+
+- **`Unable to connect to the server: dial tcp ... connection refused`** → `minikube status`; re-run `./scripts/start-minikube.sh`
+- **`ErrImagePull` or `ImagePullBackOff` on hello-nginx** → `kubectl describe pod -n minikube-lab`; fix network, proxy, or registry access
+- **`minikube: command not found`** → re-run `./scripts/install-minikube.sh`; ensure `/usr/local/bin` is on `PATH`
+- **`Permission denied` running `./scripts/...`** → Step 2 `chmod +x scripts/*.sh`
+- **`Exiting due to DRV_NOT_DETECTED` or driver errors** → follow Minikube docs for `docker` vs `virtualbox` / `hyperv` / `kvm2`
+
+---
+
+## Learning objective
+
+- Installed and started Minikube with the course profile; applied the smoke manifest; verified pods and Service; tore down the profile when finished.
+
+## Why this matters
+
+Local clusters are how teams reproduce Kubernetes bugs before staging. Minikube is a common “flight simulator” for real clusters.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+Read-only snapshot: nodes wide, pods and Service in `minikube-lab`, cluster info. Skip if you already ran Step 8 in the same take.
+
+**Say:**
+
+I end the segment with a read-only trio plus cluster-info so viewers see Ready nodes and the service row without starting a tunnel.
+
+**Run:**
+
+```bash
+kubectl get nodes -o wide
+kubectl get pods,svc -n minikube-lab -o wide
+kubectl cluster-info
+```
+
+**Expected:**
+
+One Ready node; `hello-nginx` pod `Running`; Service row present; `cluster-info` prints control-plane URL.
+
+---
+
 ## Repo files (reference)
 
 | Path | Purpose |
@@ -206,24 +261,6 @@ Profile removed or script reports nothing to do.
 | `yamls/failure-troubleshooting.yaml` | Optional cheat sheet (Minikube failures) |
 
 ---
-
-## Troubleshooting
-
-- **Cannot connect to cluster** → `minikube status`; re-run `start-minikube.sh`
-- **Image pull errors** → network / proxy; check `kubectl describe pod -n minikube-lab`
-- **minikube: command not found** → re-run install; check `PATH`
-- **Permission denied on scripts** → Step 2 `chmod +x`
-- **Driver issues** → see Minikube docs for `docker` vs `virtualbox` / `hyperv`
-
----
-
-## Learning objective
-
-- Install and start Minikube; apply a manifest; verify pods and service; tear down cleanly.
-
-## Why this matters
-
-Local clusters are how teams reproduce Kubernetes bugs before staging. Minikube is a common “flight simulator” for real clusters.
 
 ## Next
 

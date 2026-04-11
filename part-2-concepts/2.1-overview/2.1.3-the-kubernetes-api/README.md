@@ -12,18 +12,57 @@ This lesson uses **discovery** — the API's built-in mechanism for advertising 
 
 **Teaching tip:** Script behavior is documented in the header of `scripts/explore-k8s-api.sh`.
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.3-the-kubernetes-api"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Two steps — run the API exploration script to see discovery in action, then manually hit the raw discovery endpoints to see the JSON underneath.
 
 ```
   [ Step 1 ]              [ Step 2 ]
   Run explore     →       Hit raw API
   script                  discovery endpoints
 ```
+
+**Say:**
+
+Two steps — run the API exploration script to see discovery in action, then manually hit the raw discovery endpoints to see the JSON underneath.
+
+---
+
+## API map (core vs named groups)
+
+```
+  /api/v1  ────── core group (Pods, Services, ConfigMaps, Namespaces, ...)
+      │
+      └── namespaced resources live under
+          /api/v1/namespaces/<ns>/<resource>
+
+  /apis  ──────── every other APIGroup (apps/v1, batch/v1, networking.k8s.io/v1, ...)
+      │
+      └── example:
+          /apis/apps/v1/namespaces/<ns>/deployments
+```
+
+**Say:**
+
+`/api` is the legacy **core** group (`apiVersion: v1`). `/apis` lists **named** groups such as **apps**, **batch**, and **networking.k8s.io**. Discovery tells `kubectl` which URL to call for each kind.
+
+### kubectl → HTTP (examples)
+
+| Intent | Approximate request |
+|--------|---------------------|
+| `kubectl get pods -n default` | `GET /api/v1/namespaces/default/pods` |
+| `kubectl get deploy -n default` | `GET /apis/apps/v1/namespaces/default/deployments` |
+| `kubectl get svc -n default` | `GET /api/v1/namespaces/default/services` |
+| `kubectl get ns` | `GET /api/v1/namespaces` |
+| `kubectl get ingressclass` | `GET /apis/networking.k8s.io/v1/ingressclasses` (cluster-scoped) |
+| `kubectl apply -f deploy.yaml` (existing name) | `PATCH /apis/apps/v1/namespaces/<ns>/deployments/<name>` (server-side apply semantics) |
 
 ---
 
@@ -38,6 +77,7 @@ Two steps — run the API exploration script to see discovery in action, then ma
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.3-the-kubernetes-api"
 chmod +x scripts/*.sh
 ./scripts/explore-k8s-api.sh
 ```
@@ -67,43 +107,6 @@ JSON discovery payloads — `apiVersion`, `kind: APIVersions` for `/api`, and `k
 
 ---
 
-## API structure
-
-```
-  /api                         ← core group (apiVersion: v1)
-  ├── v1
-  │   ├── pods
-  │   ├── services
-  │   ├── configmaps
-  │   └── namespaces
-  │
-  /apis                        ← named groups
-  ├── apps/v1
-  │   ├── deployments
-  │   ├── replicasets
-  │   └── statefulsets
-  ├── batch/v1
-  │   ├── jobs
-  │   └── cronjobs
-  └── networking.k8s.io/v1
-      ├── ingresses
-      └── networkpolicies
-```
-
-**Every kubectl command maps to an API path:**
-```
-kubectl get pods -n default
-  → GET /api/v1/namespaces/default/pods
-
-kubectl apply -f deployment.yaml
-  → PATCH /apis/apps/v1/namespaces/default/deployments/<name>
-
-kubectl delete service mysvc -n staging
-  → DELETE /api/v1/namespaces/staging/services/mysvc
-```
-
----
-
 ## Troubleshooting
 
 - **`Forbidden` on `--raw` endpoints** → your kubeconfig doesn't have permission to read discovery; on most clusters, authenticated users have this by default; check your RBAC bindings
@@ -115,9 +118,9 @@ kubectl delete service mysvc -n staging
 
 ## Learning objective
 
-- Explain what API discovery is and how `kubectl` uses it.
-- Hit `/api` and `/apis` directly with `kubectl get --raw` and read the JSON structure.
-- Map a `kubectl` command to its underlying HTTP API path.
+- Explained API discovery and how `kubectl` caches group/version metadata.
+- Called `/api` and `/apis` with `kubectl get --raw` and read the JSON payloads.
+- Mapped everyday `kubectl` commands to their HTTP paths using the table in this lesson.
 
 ## Why this matters
 

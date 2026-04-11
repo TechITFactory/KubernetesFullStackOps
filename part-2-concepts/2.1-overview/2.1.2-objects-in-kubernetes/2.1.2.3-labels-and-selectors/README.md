@@ -12,18 +12,26 @@ A **label** is a key-value pair in `metadata.labels`. A **selector** is a query 
 
 **Teaching tip:** `scripts/query-label-selectors.sh` only queries — apply the YAML first or it returns empty results.
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.3-labels-and-selectors"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Three steps. Deploy a workload with labels, wait for it to be ready, then query it using label selectors to see how targeting works.
 
 ```
   [ Step 1 ]          [ Step 2 ]            [ Step 3 ]
   Apply demo   →      Wait for      →       Query with
   workload            rollout               label selectors
 ```
+
+**Say:**
+
+Three steps. Deploy a workload with labels, wait for it to be ready, then query it using label selectors to see how targeting works.
 
 ---
 
@@ -38,6 +46,7 @@ Look at the manifest if you open it — the Service's `selector:` matches the po
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.3-labels-and-selectors"
 kubectl apply -f yamls/labels-and-selectors-demo.yaml
 ```
 

@@ -10,12 +10,30 @@ Every Kubernetes installation has the same set of components: the API server, et
 
 **Teaching tip:** **What happens when you run this** is below each Run block. See **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/inspect-k8s-components.sh`.
 
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.1-kubernetes-components"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  [ Step 1 ]           [ Step 2 ]              [ Step 3 ]
+  inspect script   →   get kube-system    →   apply components
+  + chmod              pods wide               map (optional)
+```
+
+**Say:**
+
+We run the bundled inspector, then list `kube-system` pods to map processes to names, then optionally apply a reference ConfigMap if RBAC allows.
+
 ---
 
 ## Control plane and nodes
-
-**Say:**
-Here's how the components split between the control plane and worker nodes. The control plane runs the brains — API server, etcd, scheduler, controller manager. Each worker node runs the muscle — kubelet drives the runtime, kube-proxy manages network rules.
 
 ```
   Control plane
@@ -34,7 +52,9 @@ Here's how the components split between the control plane and worker nodes. The 
   └─────────────────────────────────────────┘
 ```
 
-Static pods for control-plane components often show up as Pods in `kube-system`. Worker nodes run kubelet, kube-proxy, and the runtime only.
+**Say:**
+
+The control plane holds **kube-apiserver** (HTTP front door), **etcd** (persistence), **kube-scheduler** (placement), and **kube-controller-manager** (built-in controllers). Each node runs **kubelet** (node agent), **kube-proxy** (Service dataplane rules), and the **container runtime** (images and containers via CRI). Static pods for control-plane components often appear in `kube-system` on kubeadm-style clusters.
 
 ---
 
@@ -49,6 +69,7 @@ The script gives me three things at once: what's running in `kube-system`, what 
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.1-kubernetes-components"
 chmod +x scripts/*.sh
 ./scripts/inspect-k8s-components.sh
 ```
@@ -85,7 +106,7 @@ Control-plane and add-on pods listed. All should be `Running` or `Completed`.
 `kubectl apply -f yamls/components-map.yaml` creates or updates a ConfigMap in `kube-system` that maps each component to its role, port, and binary name — documentation stored in the cluster. Needs write access to `kube-system`.
 
 **Say:**
-This ConfigMap is a reference card. Any engineer with cluster access can read it with `kubectl get cm components-map -n kube-system -o yaml`. It's also a useful place to record which version of each component your cluster runs.
+This ConfigMap is a reference card. Any engineer with cluster access can read it with `kubectl get cm components-map -n kube-system -o yaml`. On **managed clusters** your user is often **Forbidden** from writing `kube-system` — edit the manifest’s `metadata.namespace` to **`default`** for the video take, or skip the apply and just read the YAML from git.
 
 **Run:**
 
@@ -100,19 +121,19 @@ ConfigMap created or unchanged. If you get a `Forbidden` error, your kubeconfig 
 
 ## What each component does
 
-**kube-apiserver** — the front door. Everything talks through it. `kubectl`, controllers, kubelet — all API calls go here. If this is down, the cluster is unreachable.
+**kube-apiserver** — the front door; every `kubectl` call and controller watch flows through it.
 
-**etcd** — the database. Stores every Kubernetes object as key-value pairs. Losing etcd without a backup means losing the cluster's state. It runs as a static pod or external cluster.
+**etcd** — durable key-value store for all API objects; protect it like a database.
 
-**kube-scheduler** — assigns pods to nodes. Reads `spec.nodeName` is empty, picks a node based on resources and constraints, writes `spec.nodeName`. Does not start containers.
+**kube-scheduler** — chooses a suitable node for each schedulable pod and writes `spec.nodeName`.
 
-**kube-controller-manager** — runs all the built-in control loops: Deployment controller, ReplicaSet controller, Node controller, Job controller, and more. Each loop watches the API server and reconciles actual state toward desired state.
+**kube-controller-manager** — runs Deployment, ReplicaSet, Node, Job, and other built-in controllers that reconcile spec with reality.
 
-**kubelet** — the node agent. Runs on every node, reads pod specs from the API server, tells the CRI (container runtime interface) to start or stop containers. If a pod is `Pending` on a node, kubelet is the one trying to start it.
+**kubelet** — node agent that talks to the API and drives the runtime to run pod containers and report status.
 
-**kube-proxy** — manages iptables or IPVS rules on each node for Service routing. When you curl a Service ClusterIP, kube-proxy's rules decide which pod actually receives the connection.
+**kube-proxy** — programs node-level rules so Service IPs reach healthy endpoints.
 
-**Container runtime** — the component that actually pulls images and starts containers. kubelet talks to it through the CRI socket. In Part 1 you installed containerd, CRI-O, or cri-dockerd.
+**Container runtime** — pulls images and runs containers; kubelet reaches it through the CRI socket (containerd, CRI-O, or cri-dockerd in this course).
 
 ---
 
@@ -128,15 +149,13 @@ ConfigMap created or unchanged. If you get a `Forbidden` error, your kubeconfig 
 
 ## Learning objective
 
-- Name every Kubernetes component and its role.
-- Find control-plane components in `kube-system` using `kubectl`.
-- Read `/readyz?verbose` output and identify failing health checks.
+- Named all seven core components (API server, etcd, scheduler, controller-manager, kubelet, kube-proxy, container runtime) and their roles.
+- Used `kube-system` pod names and `/readyz?verbose` output to reason about control-plane health.
+- Handled RBAC denials on managed clusters by skipping `kube-system` writes or using `default`.
 
 ## Why this matters
 
-When a cluster is degraded, the first question is always: which component is responsible? An API server outage looks different from a scheduler stuck, which looks different from a kubelet not reporting. Knowing the component map means you go directly to the right log, not through all of them.
-
----
+When a cluster is degraded, the first question is which component failed. The component map sends you to the right logs instead of every log.
 
 ## Video close — fast validation
 
@@ -151,6 +170,10 @@ kubectl get nodes -o wide
 kubectl get pods -n kube-system
 kubectl get componentstatuses 2>/dev/null || echo "(componentstatuses deprecated on this cluster — /readyz is the modern path)"
 ```
+
+**Expected:**
+
+Nodes Ready; static pods or addons listed; message if `componentstatuses` is gone.
 
 ---
 

@@ -10,18 +10,26 @@ This lesson covers the foundational habits: always knowing which cluster you're 
 
 **Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.4-the-kubectl-command-line-tool"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Two steps — run the essentials script to see context, namespaces, and output formats in action, then apply the practice namespace manifest.
 
 ```
   [ Step 1 ]                    [ Step 2 ]
   kubectl-essentials.sh  →      Apply practice
   (context, formatting)         namespace
 ```
+
+**Say:**
+
+Two steps — run the essentials script to see context, namespaces, and output formats in action, then apply the practice namespace manifest.
 
 ---
 
@@ -36,6 +44,7 @@ I always know which cluster I'm on before I run anything that changes state. `ku
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.4-the-kubectl-command-line-tool"
 chmod +x scripts/*.sh
 ./scripts/kubectl-essentials.sh
 ```
@@ -120,7 +129,7 @@ The single most common `kubectl` mistake is running a destructive command on the
    ```bash
    alias kctx='kubectl config current-context'
    ```
-3. Consider tools like `kubectx` and `kubens` (fair-source) that make context switching and namespace switching explicit and visible in your prompt.
+3. Consider optional helpers **`kubectx`** and **`kubens`** that make context and namespace switches obvious in daily use; they wrap the same `kubectl config` commands you already learned.
 
 ---
 
@@ -135,9 +144,9 @@ The single most common `kubectl` mistake is running a destructive command on the
 
 ## Learning objective
 
-- Run `kubectl config current-context` habitually before any state-changing command.
-- Use at least three output formats (`wide`, `yaml`, `jsonpath`) to extract information.
-- Apply a manifest, verify the result, and clean up — the complete lifecycle.
+- Ran `kubectl config current-context` before mutating commands and explained why it matters.
+- Used multiple output formats (`wide`, `yaml`, `jsonpath`, `custom-columns`) to extract information.
+- Applied the practice namespace manifest and verified it with read-only `kubectl get`.
 
 ## Why this matters
 
@@ -158,6 +167,10 @@ kubectl config current-context
 kubectl get nodes
 kubectl get ns | grep kubectl-practice || true
 ```
+
+**Expected:**
+
+Context name prints; nodes list; `kubectl-practice` line appears if the namespace still exists — `|| true` keeps `grep` from failing the take when you deleted the namespace earlier.
 
 ---
 

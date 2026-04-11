@@ -1,5 +1,26 @@
 # 1.2.2.1.5 Options for Highly Available Topology
 
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.2-installing-kubernetes-with-deployment-tools/1.2.2.1-bootstrapping-clusters-with-kubeadm/1.2.2.1.5-options-for-highly-available-topology"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  read stacked vs external etcd  →  load balancer / quorum story  →  record topology choice
+```
+
+**Say:**
+
+HA is an operations contract — I pick stacked or external etcd before I buy hardware and load balancers.
+
+---
+
 - **Summary**: Choose between stacked etcd and external etcd HA topologies based on failure domain requirements, team operational capacity, and recovery objectives.
 - **Content**: What HA means for Kubernetes, stacked vs external etcd trade-offs, load balancer requirements, quorum fundamentals.
 - **Lab**: Run `ha-prereqs-check.sh` to confirm infrastructure prerequisites, review `ha-topology-options.yaml`, record your topology decision and rationale.

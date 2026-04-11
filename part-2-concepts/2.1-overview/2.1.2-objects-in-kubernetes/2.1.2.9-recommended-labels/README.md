@@ -10,6 +10,15 @@ The labels are not enforced by Kubernetes — nothing breaks if you don't use th
 
 **Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.9-recommended-labels"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
 ---
 
 ## The recommended label set
@@ -27,14 +36,15 @@ The labels are not enforced by Kubernetes — nothing breaks if you don't use th
 
 ## Flow of this lesson
 
-**Say:**
-Three steps. Apply a Deployment with recommended labels, wait for rollout, then query it using the standard label keys to confirm filtering works.
-
 ```
   [ Step 1 ]             [ Step 2 ]            [ Step 3 ]
   Apply labeled   →      Wait for      →       Query by
   Deployment             rollout               standard labels
 ```
+
+**Say:**
+
+Three steps. Apply a Deployment with recommended labels, wait for rollout, then query it using the standard label keys to confirm filtering works.
 
 ---
 
@@ -49,6 +59,7 @@ Notice the labels are on two places in the manifest: `metadata.labels` on the De
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.9-recommended-labels"
 kubectl apply -f yamls/recommended-labels-demo.yaml
 ```
 

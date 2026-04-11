@@ -1,5 +1,26 @@
 # 1.2.2.1.2 Troubleshooting kubeadm
 
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.2-installing-kubernetes-with-deployment-tools/1.2.2.1-bootstrapping-clusters-with-kubeadm/1.2.2.1.2-troubleshooting-kubeadm"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  land in lesson folder  →  run diagnostics script  →  read bundle  →  only then change node state
+```
+
+**Say:**
+
+I always capture evidence before I restart kubelet or re-run kubeadm — the diagnostic bundle is the snapshot I share with teammates.
+
+---
+
 - **Summary**: Collect a complete diagnostic bundle from a node before making any changes — preserving the evidence that explains why `kubeadm init` or `kubeadm join` failed.
 - **Content**: What to capture and why, the diagnostic script structure, interpreting kubelet logs and preflight signals, swap and port checks.
 - **Lab**: Run `collect-kubeadm-diagnostics.sh` on a failing node and use the output bundle to identify the root cause.

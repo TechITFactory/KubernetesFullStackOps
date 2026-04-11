@@ -12,18 +12,26 @@ In this lesson you apply a manifest, see what it creates, and then practice the 
 
 **Teaching tip:** `scripts/object-management-demo.sh` header describes the exact API calls made.
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.1-kubernetes-object-management"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Two stages. Apply the manifest and see what it creates. Then validate and clean up.
 
 ```
   [ Step 1 ]              [ Step 2 ]
   Apply demo       →      Validate + delete
   manifest                (cleanup)
 ```
+
+**Say:**
+
+Two stages. Apply the manifest and see what it creates. Then validate and clean up.
 
 ---
 
@@ -38,6 +46,7 @@ Watch the output carefully. The first time you run `apply`, you see `created`. R
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.1-kubernetes-object-management"
 chmod +x scripts/*.sh
 ./scripts/object-management-demo.sh
 ```
@@ -107,11 +116,11 @@ Every Kubernetes team eventually hits a CI/CD pipeline that breaks because someo
 Recap view then delete the demo manifest — removes the namespace and all contents.
 
 **Say:**
-I always clean up lab resources at the end of a lesson. `kubectl delete -f` with the same manifest that created the objects is the cleanest approach — it deletes exactly what the manifest created, no more.
+I always clean up lab resources at the end of a lesson. `kubectl delete -f` with the same manifest that created the objects is the cleanest approach — it deletes exactly what the manifest created, no more. I add `--ignore-not-found` and `|| true` on cleanup so a second recording take does not fail if the namespace is already gone.
 
 ```bash
 kubectl get deploy,pods -n object-management-demo
-kubectl delete -f yamls/object-management-demo.yaml --ignore-not-found
+kubectl delete -f yamls/object-management-demo.yaml --ignore-not-found 2>/dev/null || true
 ```
 
 **Expected:**

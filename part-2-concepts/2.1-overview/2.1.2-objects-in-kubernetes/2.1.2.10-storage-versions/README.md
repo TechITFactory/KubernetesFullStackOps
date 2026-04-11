@@ -12,20 +12,26 @@ Understanding storage versions helps you anticipate and prevent "my deployments 
 
 **Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
-> **RBAC note:** The lab step applies a ConfigMap to `kube-system`. On clusters with restrictive RBAC (many managed clusters), this will return `Forbidden`. If that happens, change the `namespace:` in the YAML to a namespace you can write to, or simply read the YAML locally without applying it.
+## One-time setup
 
----
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.10-storage-versions"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Two steps: apply the storage version notes as a ConfigMap so they live in the cluster, then use kubectl's raw API access to see the actual version information served by the API server.
 
 ```
   [ Step 1 ]                  [ Step 2 ]
   Apply notes      →          Inspect API versions
   ConfigMap                   via kubectl
 ```
+
+**Say:**
+
+Two steps: apply the storage version notes as a ConfigMap so they live in the cluster, then use kubectl's raw API access to see the actual version information served by the API server.
 
 ---
 
@@ -37,9 +43,12 @@ Two steps: apply the storage version notes as a ConfigMap so they live in the cl
 **Say:**
 I store these notes in `kube-system` so they're accessible to any engineer with cluster access. If your cluster's RBAC blocks writes to `kube-system`, apply to another namespace instead — the content is the same.
 
+> **RBAC note:** The `Run` block below writes a ConfigMap to **`kube-system`**. On many managed clusters your user is **Forbidden**. If that happens, edit `yamls/storage-version-notes.yaml` so `metadata.namespace` is **`default`** (or another namespace you can write), or skip the apply and read the file from git.
+
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.10-storage-versions"
 kubectl apply -f yamls/storage-version-notes.yaml
 kubectl get cm storage-version-notes -n kube-system \
   -o jsonpath='{.data.notes}' | head -n 5

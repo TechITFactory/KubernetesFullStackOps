@@ -1,5 +1,26 @@
 # 1.2.2.1.9 Dual-stack Support with kubeadm
 
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.2-installing-kubernetes-with-deployment-tools/1.2.2.1-bootstrapping-clusters-with-kubeadm/1.2.2.1.9-dual-stack-support-with-kubeadm"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  confirm CNI dual-stack  →  edit dual-stack kubeadm config  →  init once  →  verify pod/service IPs
+```
+
+**Say:**
+
+Pod and service CIDR choices are fixed at init — I decide dual-stack before the first `kubeadm init`, not after apps are running.
+
+---
+
 - **Summary**: Initialise a Kubernetes cluster with both IPv4 and IPv6 pod and service CIDRs — a decision that must be made before `kubeadm init` because it cannot be changed afterward.
 - **Content**: IPv4 vs IPv6 vs dual-stack, what dual-stack changes in the cluster, CNI requirements, the dual-stack config structure, init script.
 - **Lab**: Confirm CNI dual-stack support, review `kubeadm-dualstack-config.yaml`, run `init-dualstack-cluster.sh`, verify pods receive dual-stack addresses.

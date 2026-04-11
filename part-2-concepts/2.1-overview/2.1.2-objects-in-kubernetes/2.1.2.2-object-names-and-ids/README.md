@@ -12,18 +12,26 @@ This lesson also covers `generateName` — a Kubernetes feature that lets the AP
 
 **Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.2-object-names-and-ids"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Two steps: create an object using `generateName` to see how name generation works, then read both the name and UID side by side.
 
 ```
   [ Step 1 ]                  [ Step 2 ]
   Create with         →       Read name + UID
   generateName                with custom-columns
 ```
+
+**Say:**
+
+Two steps: create an object using `generateName` to see how name generation works, then read both the name and UID side by side.
 
 ---
 
@@ -38,6 +46,7 @@ Notice the manifest uses `generateName`, not `name`. Every time you `create` fro
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.2-object-names-and-ids"
 kubectl create -f yamls/object-name-and-uid-demo.yaml
 ```
 
@@ -111,15 +120,14 @@ When a namespace cleanup hangs, when pods linger after a Deployment delete, or w
 Delete any existing objects from this lesson, recreate one, show its full YAML header, then delete again as cleanup.
 
 **Say:**
-Notice the YAML output — `metadata.uid` is right there alongside `name` and `creationTimestamp`. This is what every Kubernetes object looks like under the covers. The video close always ends with a delete to keep the cluster clean between lessons.
 
-> **Take-safety note:** If you re-record this block, run the delete first — `create` fails if the object already exists from a previous take. The delete has `--ignore-not-found` so it's safe even if nothing exists yet.
+If I am re-recording this closing block, I always run the delete line first because `kubectl create` errors when the ConfigMap from an earlier take still exists. The delete uses `--ignore-not-found` so it is harmless when nothing is there. After a fresh `create`, I show the top of the object YAML so you see `metadata.uid` next to `name` and `creationTimestamp`, then I delete the label again to leave the cluster tidy.
 
 ```bash
-kubectl delete cm -n default -l training.k8sops.io/lesson=object-names-and-ids --ignore-not-found
+kubectl delete cm -n default -l training.k8sops.io/lesson=object-names-and-ids --ignore-not-found 2>/dev/null || true
 kubectl create -f yamls/object-name-and-uid-demo.yaml
 kubectl get cm -n default -l training.k8sops.io/lesson=object-names-and-ids -o yaml | head -n 40
-kubectl delete cm -n default -l training.k8sops.io/lesson=object-names-and-ids
+kubectl delete cm -n default -l training.k8sops.io/lesson=object-names-and-ids --ignore-not-found 2>/dev/null || true
 ```
 
 ---

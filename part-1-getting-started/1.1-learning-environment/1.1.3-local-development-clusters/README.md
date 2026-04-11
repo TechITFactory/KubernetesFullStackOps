@@ -10,11 +10,26 @@ You already have a cluster from **Minikube (1.1.1)** **or** **Kind (1.1.2)**. Th
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. Shell scripts document the same behavior in a header comment at the top of each file under `scripts/`.
 
-## One-time setup — set your course directory
+## One-time setup
 
 ```bash
-COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.1-learning-environment/1.1.3-local-development-clusters"
 ```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  [ Step 2 ]        [ Step 3 ]           [ Step 4 ]          [ Step 5 ]              [ Step 6 ]        [ Step 7 ]
+  check context  →  bootstrap          →  inspect quota   →  port-forward +     →  recap gets    →  delete ns
+  + tools           dev-local             + limits            curl (two terminals)   (read-only)      (optional)
+```
+
+**Say:**
+
+We confirm kubectl points at the local cluster, run the bootstrap script that applies namespace quota and the demo app, inspect quota objects, forward a port and curl from a second shell, recap with read-only gets, then optionally delete `dev-local`.
 
 ---
 
@@ -105,7 +120,7 @@ Quota and LimitRange listed; describe shows hard limits / defaults.
 First terminal: `kubectl port-forward` opens a local TCP listener on **8080** and proxies to the Service’s port **80** inside the cluster (process runs until Ctrl+C). Second terminal: `curl` sends one HTTP request to localhost and prints only the status code.
 
 **Say:**  
-Service is ClusterIP — I forward **local 8080** to **service port 80** to test without Ingress.
+The Service is ClusterIP only, so I forward **local 8080** to **service port 80** to test without Ingress. Port-forward binds on my laptop; `curl` proves the tunnel works. On WSL2 with Docker Desktop, if `127.0.0.1` fails, I use the first address from `hostname -I` as the host in the URL instead.
 
 **Run:**
 
@@ -119,6 +134,8 @@ kubectl port-forward svc/whoami 8080:80 -n dev-local
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/
 ```
 
+> **WSL2 with Docker Desktop:** if `127.0.0.1:8080` fails while the forward is running, try `HOST=$(hostname -I | awk '{print $1}')` and `curl` to `http://${HOST}:8080/` instead.
+
 **Expected:**  
 Port-forward stays running; `curl` prints **200** (stop port-forward with Ctrl+C when done).
 
@@ -128,6 +145,10 @@ Port-forward stays running; `curl` prints **200** (stop port-forward with Ctrl+C
 
 **What happens when you run this:**  
 Three read-only `kubectl get` calls: namespace existence, quota + limitrange, pods — recap only.
+
+**Say:**
+
+These three lines are the dashboard view of the workspace: namespace exists, governance objects are present, pods are scheduled.
 
 **Run:**
 
@@ -147,6 +168,10 @@ Namespace exists; quota and limit range bound; pod(s) Running.
 **What happens when you run this:**  
 `teardown.sh` runs `kubectl delete namespace dev-local` if it exists — removes all objects in that namespace (cascade delete).
 
+**Say:**
+
+Tearing down the namespace removes every object inside it; I use the script so the command matches what we applied in bootstrap.
+
 **Run:**
 
 ```bash
@@ -155,6 +180,49 @@ Namespace exists; quota and limit range bound; pod(s) Running.
 
 **Expected:**  
 Namespace deleted or already gone.
+
+---
+
+## Troubleshooting
+
+- **`error: the server doesn't have a resource type "quota"`** (or commands hit wrong cluster) → `kubectl config current-context`; switch to Minikube or `kind-kfsops-kind` before Step 3
+- **`Unable to connect to the server`** → start Minikube or Kind; confirm `kubectl cluster-info`
+- **`exceeded quota`** when creating pods → `kubectl describe quota -n dev-local`; lower other lab objects or temporarily widen YAML for learning only
+- **`timed out waiting for the condition` on rollout** → `kubectl describe pod -n dev-local` for `Events:` — often image pull or quota
+- **`unable to listen on 127.0.0.1:8080: bind: address already in use`** → `kubectl port-forward svc/whoami 8081:80 -n dev-local` and curl port **8081**
+- **`curl` connection refused on WSL2** → use `$(hostname -I | awk '{print $1}')` as the host in the URL while port-forward runs
+
+---
+
+## Learning objective
+
+- Explained how a namespace, ResourceQuota, and LimitRange work together; bootstrapped `dev-local`; verified reachability with port-forward and curl.
+
+## Why this matters
+
+Shared clusters use this **three-layer** pattern everywhere: isolate by namespace, cap totals, default per-container resources.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+Read-only: namespace, quota and limit range, pods wide — no port-forward required.
+
+**Say:**
+
+I close with the same three gets as Step 6 so the audience sees governance objects without leaving a forward running.
+
+**Run:**
+
+```bash
+kubectl get ns dev-local
+kubectl get quota,limitrange -n dev-local
+kubectl get pods -n dev-local -o wide
+```
+
+**Expected:**
+
+`dev-local` is `Active`; quota and limitrange rows exist; pods `Running`.
 
 ---
 
@@ -173,24 +241,6 @@ Namespace deleted or already gone.
 
 ---
 
-## Troubleshooting
-
-- **Wrong cluster** → `kubectl config current-context`; switch before Step 3
-- **Cannot reach cluster** → start Minikube or Kind; `kubectl cluster-info`
-- **Quota denied creating pods** → `kubectl describe quota -n dev-local`; reduce other workloads or adjust YAML for lab only
-- **Rollout timeout** → `kubectl describe pod -n dev-local`; image pull / events
-- **Port-forward address already in use** → use `8081:80` and `curl :8081`
-
----
-
-## Learning objective
-
-- Explain namespace vs ResourceQuota vs LimitRange; bootstrap `dev-local`; verify with port-forward.
-
-## Why this matters
-
-Shared clusters use this **three-layer** pattern everywhere: isolate by namespace, cap totals, default per-container resources.
-
 ## Next
 
-Continue with **Part 1** (e.g. [1.2 Production environment](../../1.2-production-environment/README.md)) or **Part 2 Concepts** when your course path says so.
+Continue with [1.2 Production environment](../../1.2-production-environment/README.md) or [Part 2 Concepts](../../../part-2-concepts/README.md) when your course path says so.

@@ -24,22 +24,18 @@ If you’re on Windows, use WSL2 with Ubuntu.
 
 If this feels overwhelming — do the first steps and come back later.
 
-**Teaching tip:** Each step includes **What happens when you run this** so you know the effect *before* you paste. **Say** is optional camera talk. The shell scripts in `scripts/` repeat the same story in a comment header at the top of each file.
-
-## One-time setup — set your course directory
-
-Run this once before Step 1. Replace the path with wherever you cloned this repo.
+## One-time setup
 
 ```bash
-COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-0-prerequisites/0.1-linux-basics-for-kubernetes"
 ```
+
+> If you set `COURSE_DIR` in an earlier lesson this session, it is still set — skip the export and just `cd`.
 
 > **WSL2 users:** keep `COURSE_DIR` under a Linux path (e.g. `~/K8sOps`), not under `/mnt/c/`. Permissions and I/O are much faster inside the Linux filesystem.
 
 ## Flow of this lesson
-
-**Say:**  
-Here’s the shape of this lesson. Four stages, left to right.
 
 ```
   [ Step 1 ]           [ Step 2 ]           [ Steps 3–7 ]        [ Step 8 ]
@@ -47,14 +43,20 @@ Here’s the shape of this lesson. Four stages, left to right.
   lesson folder        workspace             find / ps            linux-basics.sh
 ```
 
+**Say:**
+
+We move through four stages. First we land in the lesson folder so paths like `scripts/` work. Then we copy lab files into a folder under your home directory. Next we practice listing, grepping, finding, and quick process checks inside that lab copy. Last we return to the repo and run the verify script.
+
 ---
 
 ## Step 1 — Move into the lesson folder
 
-**What happens when you run this:**  
+**What happens when you run this:**
+
 `cd` changes your shell’s working directory to the lesson folder (paths like `scripts/` resolve from there). `pwd` prints the full path — no files are created or changed.
 
-**Say:**  
+**Say:**
+
 I move into the lesson directory so `scripts/` paths work. `pwd` shows my location.
 
 **Run:**
@@ -64,17 +66,20 @@ cd "$COURSE_DIR/part-0-prerequisites/0.1-linux-basics-for-kubernetes"
 pwd
 ```
 
-**Expected:**  
+**Expected:**
+
 Path ending with `0.1-linux-basics-for-kubernetes`.
 
 ---
 
 ## Step 2 — Set up the lab workspace
 
-**What happens when you run this:**  
+**What happens when you run this:**
+
 `chmod +x scripts/*.sh` marks every script in `scripts/` as executable (so `./script.sh` works). `./scripts/setup-linux-lab-workspace.sh` creates `~/k8sops-p0-linux-lab` (or `K8SOPS_P0_LINUX_LAB`) and **copies** the contents of `lab-files/` into it — your repo is unchanged; the lab is a disposable copy.
 
-**Say:**  
+**Say:**
+
 Scripts need execute permission. Setup copies sample files into a folder under my home directory — safe to delete later.
 
 **Run:**
@@ -84,7 +89,8 @@ chmod +x scripts/*.sh
 ./scripts/setup-linux-lab-workspace.sh
 ```
 
-**Expected:**  
+**Expected:**
+
 `Lab workspace ready at: .../k8sops-p0-linux-lab`  
 (Optional: set `K8SOPS_P0_LINUX_LAB` before setup if you want a different path.)
 
@@ -92,10 +98,12 @@ chmod +x scripts/*.sh
 
 ## Step 3 — Explore files
 
-**What happens when you run this:**  
+**What happens when you run this:**
+
 `cd` goes to the lab workspace. `pwd` confirms location. `ls -la` lists all files (including hidden) with details — read-only; nothing is modified.
 
-**Say:**  
+**Say:**
+
 I work inside the lab folder. `ls` is a bit like `kubectl get` — what exists *here*?
 
 **Run:**
@@ -106,55 +114,64 @@ pwd
 ls -la
 ```
 
-**Expected:**  
+**Expected:**
+
 `servers.log`, `config.env`, and `nested/`.
 
 ---
 
 ## Step 4 — Read logs
 
-**What happens when you run this:**  
-`grep 'ERROR' servers.log` reads `servers.log` and prints only lines containing the substring `ERROR` — stdout only; the file is not changed.
+**What happens when you run this:**
 
-**Say:**  
-`grep` keeps lines that match — same habit you’ll use with long `kubectl logs` output. I’m searching for ` ERROR ` with spaces on both sides so I match the word exactly, not something like `ERRORCODE`.
+`grep` reads `servers.log` and prints only lines containing a space, the word `ERROR`, and another space — stdout only; the file is not changed. The spaces stop false matches like `ERRORCODE`.
+
+**Say:**
+
+`grep` keeps lines that match. I use double quotes around the pattern so the spaces around `ERROR` match the verify script exactly.
 
 **Run:**
 
 ```bash
-grep ‘ ERROR ‘ servers.log
+grep " ERROR " servers.log
 ```
 
-**Expected:**  
+**Expected:**
+
 Two lines containing ` ERROR `.
 
 ---
 
 ## Step 5 — Count matches
 
-**What happens when you run this:**  
+**What happens when you run this:**
+
 `grep` outputs matching lines; `|` pipes that stream into `wc -l`, which counts newline-terminated lines and prints one number — still read-only on disk.
 
-**Say:**  
-The pipe `|` sends the left command’s output into the right command. Here I count how many lines matched.
+**Say:**
+
+The pipe sends the left command’s output into the right command. Here I count how many lines matched.
 
 **Run:**
 
 ```bash
-grep ‘ ERROR ‘ servers.log | wc -l
+grep " ERROR " servers.log | wc -l
 ```
 
-**Expected:**  
+**Expected:**
+
 A small number (e.g. `2`).
 
 ---
 
 ## Step 6 — Read specific parts
 
-**What happens when you run this:**  
+**What happens when you run this:**
+
 `grep '^APP_' config.env` prints lines in `config.env` that **start with** `APP_`. `head -n 2 servers.log` prints the first two lines of the log; `tail -n 2 servers.log` prints the last two — all read-only.
 
-**Say:**  
+**Say:**
+
 `^APP_` in a pattern means lines that *start with* `APP_`. `head` / `tail` show the start or end of a file.
 
 **Run:**
@@ -165,18 +182,21 @@ head -n 2 servers.log
 tail -n 2 servers.log
 ```
 
-**Expected:**  
+**Expected:**
+
 Lines starting with `APP_`, plus first two and last two log lines.
 
 ---
 
 ## Step 7 — Find and quick system check
 
-**What happens when you run this:**  
-`find . -type f -name '*.txt'` walks the current directory tree and prints paths of `.txt` files. `ps aux | head -n 5` shows a snapshot of running processes (first five lines). The `ss` / `netstat` line tries listening TCP sockets — read-only introspection; `|| true` avoids failing the whole line if a tool is missing.
+**What happens when you run this:**
 
-**Say:**  
-`find` locates files when you forgot the path. `ps` lists processes; `ss` (or `netstat`) shows listening ports — quick health checks.
+`find . -type f -name '*.txt'` walks the current directory tree and prints paths of `.txt` files. `ps aux | head -n 5` shows a snapshot of running processes (first five lines). The `ss` / `netstat` line tries listening TCP sockets — read-only introspection; `|| true` at the end means if every tool in the chain is missing or fails, the shell still returns success so a script or pasted block does not stop.
+
+**Say:**
+
+`find` locates files when you forgot the path. `ps` lists processes; `ss` (or `netstat`) shows listening ports — quick health checks. I append `|| true` so a missing `ss` and `netstat` does not make the whole line fail.
 
 **Run:**
 
@@ -186,18 +206,21 @@ ps aux | head -n 5
 command -v ss >/dev/null && ss -tlnp | head -n 10 || netstat -tlnp 2>/dev/null | head -n 10 || true
 ```
 
-**Expected:**  
+**Expected:**
+
 At least `./nested/data.txt` from `find`; other output varies by machine.
 
 ---
 
 ## Step 8 — Verify
 
-**What happens when you run this:**  
+**What happens when you run this:**
+
 `./scripts/verify-linux-basics.sh` `cd`s into the lab folder, counts ` ERROR ` lines and total lines in `servers.log`, checks `nested/data.txt` exists, then prints `verify-linux-basics: OK` or exits with an error — it does **not** modify your files.
 
-**Say:**  
-We need to go back to the lesson folder to run the verify script — that's where `scripts/` lives. We were working inside the lab copy at `~/k8sops-p0-linux-lab`; now we return to the repo to run the check.
+**Say:**
+
+We were editing and listing files inside the lab copy at `~/k8sops-p0-linux-lab`. The verify script lives next to `scripts/` in the repo, so I `cd` back to the lesson folder first. That way the next lesson’s paths that start from the repo also work.
 
 **Run:**
 
@@ -206,8 +229,53 @@ cd "$COURSE_DIR/part-0-prerequisites/0.1-linux-basics-for-kubernetes"
 ./scripts/verify-linux-basics.sh
 ```
 
-**Expected:**  
+**Expected:**
+
 `verify-linux-basics: OK`.
+
+---
+
+## Troubleshooting
+
+- **`Permission denied` when running `./scripts/...`** → `chmod +x scripts/*.sh`
+- **`grep` prints nothing in steps 4–5** → `pwd` must be `~/k8sops-p0-linux-lab` (or your `K8SOPS_P0_LINUX_LAB`); run Step 3’s `cd` into the lab first
+- **`verify-linux-basics` fails on ERROR count** → open `~/k8sops-p0-linux-lab/servers.log` and confirm at least one line contains a space, `ERROR`, and a space; use `grep " ERROR "` to match the script
+- **`Lab workspace missing` from verify** → run `./scripts/setup-linux-lab-workspace.sh` from the lesson folder (Step 2)
+- **`ss: command not found` and noisy `netstat`** → expected on minimal images; the `|| true` line still completes; install `iproute2` if you want `ss`
+- **WSL labs under `/mnt/c/` feel slow or permission errors** → clone or copy the course under `~/` inside Linux
+
+---
+
+## Learning objective
+
+- Used `cd`, `pwd`, and `ls` to orient in the shell and lab folder.
+- Filtered log lines with `grep " ERROR "` and counted matches with a pipe to `wc -l`.
+- Practiced `find`, `head`/`tail`, and a quick listening-port check without breaking the session when a tool was missing.
+
+## Why this matters
+
+In real DevOps you debug in the terminal, read logs, and filter for the signal. Comfort here means calmer work during incidents and faster Kubernetes labs later.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+These commands only read state: they confirm the lab folder and one grep count. They do not change files.
+
+**Say:**
+
+I quickly confirm the lab still exists and that the log still has error lines before I wrap the segment.
+
+**Run:**
+
+```bash
+test -f "${K8SOPS_P0_LINUX_LAB:-$HOME/k8sops-p0-linux-lab}/servers.log" && echo "servers.log OK"
+grep -c " ERROR " "${K8SOPS_P0_LINUX_LAB:-$HOME/k8sops-p0-linux-lab}/servers.log" 2>/dev/null || true
+```
+
+**Expected:**
+
+`servers.log OK` and a positive integer for the error line count.
 
 ---
 
@@ -222,40 +290,17 @@ cd "$COURSE_DIR/part-0-prerequisites/0.1-linux-basics-for-kubernetes"
 
 ---
 
-## Troubleshooting
-
-- Wrong folder → `pwd` and `ls`
-- Permission denied → `chmod +x scripts/*.sh`
-- `grep` empty → you must be in `~/k8sops-p0-linux-lab` for steps 4–7
-- `ss` missing → use `netstat` if present, or skip
-- WSL → keep labs under `~/` in Linux, not only under `/mnt/c/`
-
----
-
-## Learning objective
-
-- `cd`, `pwd`, `ls`
-- `grep` and pipes
-- Basic troubleshooting
-
----
-
-## Why this matters
-
-In real DevOps:
-
-- You debug in the terminal
-- You read logs
-- You filter for the signal
-
-Speed here = calmer incidents later.
-
----
-
 ## Challenge
 
-**What happens when you run this:**  
-You edit the **lab workspace copy** of `servers.log` (not the repo original), add a line with ` ERROR ` in it, then re-run the verify script — it should still pass with a higher error-line count.
+**What happens when you run this:**
+
+You edit the **lab copy** at `~/k8sops-p0-linux-lab/servers.log` (not the file inside the repo), add a line that includes ` ERROR `, then re-run the verify script.
+
+**Say:**
+
+The challenge file lives only under your home directory in the lab folder we created. I add one realistic log line with spaces around `ERROR`, save, then run verify from the lesson folder again.
+
+**Run:**
 
 Open `~/k8sops-p0-linux-lab/servers.log` in any editor and add a line like:
 
@@ -263,12 +308,16 @@ Open `~/k8sops-p0-linux-lab/servers.log` in any editor and add a line like:
 2025-04-01T10:00:06Z ERROR simulated crash on node worker-2
 ```
 
-Then verify again:
+Then:
 
 ```bash
 cd "$COURSE_DIR/part-0-prerequisites/0.1-linux-basics-for-kubernetes"
 ./scripts/verify-linux-basics.sh
 ```
+
+**Expected:**
+
+`verify-linux-basics: OK` with an increased `ERROR lines=` count in the message.
 
 ---
 

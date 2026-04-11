@@ -1,5 +1,26 @@
 # 1.2.2.1.6 Creating Highly Available Clusters with kubeadm
 
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.2-installing-kubernetes-with-deployment-tools/1.2.2.1-bootstrapping-clusters-with-kubeadm/1.2.2.1.6-creating-highly-available-clusters-with-kubeadm"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  init first CP + --upload-certs  →  CNI  →  join extra CPs  →  join workers  →  verify
+```
+
+**Say:**
+
+Every additional control plane needs the load-balanced endpoint and the certificate key from the first init — I never improvise those strings.
+
+---
+
 > **Lab reality:** This lesson assumes **multiple control-plane nodes**, a **load balancer** (or stable VIP) in front of **TCP 6443**, and **root** on each node. Most learners finish [1.2.2.1.3 — Creating a cluster with kubeadm](../1.2.2.1.3-creating-a-cluster-with-kubeadm/README.md) first. If you only have a single VM or laptop lab, read [1.2.2.1.5 — HA topology options](../1.2.2.1.5-options-for-highly-available-topology/README.md) for the decision tree, then continue to [1.2.2.1.8 — kubelet config](../1.2.2.1.8-kubelet-config-using-kubeadm/README.md) without performing the multi-node joins below.
 
 - **Summary**: Bootstrap the first HA control-plane node with `--upload-certs`, then join additional control-plane nodes behind a shared load balancer.

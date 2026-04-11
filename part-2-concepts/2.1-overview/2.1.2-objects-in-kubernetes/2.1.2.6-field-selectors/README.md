@@ -10,18 +10,26 @@ Field selectors are less powerful than label selectors — they support only equ
 
 **Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.6-field-selectors"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-One step — run the field selector demo script, then look at two manual examples in the video close to see the syntax clearly.
 
 ```
   [ Step 1 ]              [ Video close ]
   Run demo script  →      Manual field-selector
   (Running + Warning)     examples
 ```
+
+**Say:**
+
+One step — run the field selector demo script, then look at two manual examples in the video close to see the syntax clearly.
 
 ---
 
@@ -36,6 +44,7 @@ The script shows two of the most useful field selector queries in daily operatio
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.6-field-selectors"
 chmod +x scripts/*.sh
 ./scripts/field-selector-demo.sh
 ```

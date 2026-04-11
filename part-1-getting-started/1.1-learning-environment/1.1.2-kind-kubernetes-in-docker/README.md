@@ -12,11 +12,26 @@ This lesson builds a **multi-node Kubernetes cluster** where each node runs as a
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. Shell scripts document the same behavior in a header comment at the top of each file under `scripts/`.
 
-## One-time setup — set your course directory
+## One-time setup
 
 ```bash
-COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.1-learning-environment/1.1.2-kind-kubernetes-in-docker"
 ```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  [ Step 2 ]      [ Step 3 ]       [ Step 4 ]         [ Step 5 ]        [ Step 6 ]       [ Step 7 ]      [ Step 8 ]
+  chmod +    →    install kind  →  create cluster  →  apply workload →  wait + curl →  read-only     →  tear down
+  scripts                          kfsops-kind         sample YAML        NodePort        recap           (optional)
+```
+
+**Say:**
+
+We make scripts executable, install Kind and kubectl if needed, create or reuse the `kfsops-kind` cluster, apply the sample workload, wait for rollout and curl through the published host port, run a short read-only recap, then optionally delete the cluster.
 
 ---
 
@@ -142,6 +157,10 @@ Rollout success; pod `Running`; `curl` returns echo output (HTTP body with reque
 **What happens when you run this:**  
 Read-only: node list, short pod list across namespaces, HTTP status code probe to `:8888` — no object changes.
 
+**Say:**
+
+I double-check nodes, sample pods, and an HTTP status code on the mapped host port before calling the lesson done — still no writes to the API.
+
 **Run:**
 
 ```bash
@@ -160,6 +179,10 @@ Two Ready nodes; `kind-lab` pod listed; HTTP **200** (or success code).
 **What happens when you run this:**  
 `teardown.sh` runs `kind delete cluster` for `kfsops-kind` if present — removes node containers and Kind’s kubeconfig entry for that cluster.
 
+**Say:**
+
+Deleting the Kind cluster frees Docker CPU and memory; the script is safe to re-run when the cluster is already gone.
+
 **Run:**
 
 ```bash
@@ -168,6 +191,48 @@ Two Ready nodes; `kind-lab` pod listed; HTTP **200** (or success code).
 
 **Expected:**  
 Kind cluster deleted or already absent.
+
+---
+
+## Troubleshooting
+
+- **`docker: command not found`** → start Docker Desktop or the Linux daemon; Kind requires Docker
+- **`bind: address already in use` on port 8888** → edit `hostPort` in `yamls/kind-cluster-config.yaml`, align Service `nodePort`, recreate the cluster, or stop the conflicting host process
+- **`kubectl` hits the wrong cluster** → `kubectl config current-context`; add `--context kind-kfsops-kind` to every command in this lesson
+- **`Failed to pull image` for Kubernetes or pause images** → check outbound network and registry allow lists for `registry.k8s.io`
+- **`ERROR: failed to create cluster`** → `docker info`; on WSL2 allocate enough RAM/disk to Docker
+
+---
+
+## Learning objective
+
+- Installed Kind; created the multi-node `kfsops-kind` cluster from config; applied the NodePort workload; verified with `curl`; deleted the cluster when finished.
+
+## Why this matters
+
+Kind is the default answer for **throwaway clusters in CI** and for **multi-node** behavior on a laptop.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+Read-only checks on the Kind context: nodes, a slice of pods, HTTP status on `:8888`.
+
+**Say:**
+
+This is the same recap as Step 7 — I use it as the closing beat so the camera sees green checks without re-applying YAML.
+
+**Run:**
+
+```bash
+kubectl get nodes --context kind-kfsops-kind
+kubectl get pods -A --context kind-kfsops-kind | head -n 15
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:8888/
+```
+
+**Expected:**
+
+Two Ready nodes; pods listed; HTTP **200**.
 
 ---
 
@@ -183,24 +248,6 @@ Kind cluster deleted or already absent.
 | `yamls/failure-troubleshooting.yaml` | Kind / context / networking hints |
 
 ---
-
-## Troubleshooting
-
-- **docker: not found** → start Docker; Kind depends on it
-- **port 8888 in use** → change `hostPort` in `kind-cluster-config.yaml` and align Service `nodePort`, or stop the conflicting process
-- **wrong cluster** → `kubectl config current-context`; use `--context kind-kfsops-kind` every time
-- **Image pull errors** → network / registry access for `registry.k8s.io`
-- **Cluster create fails** → `docker info`; WSL2: enough RAM/disk
-
----
-
-## Learning objective
-
-- Install Kind; create a multi-node cluster from config; apply NodePort workload; verify with `curl`; tear down.
-
-## Why this matters
-
-Kind is the default answer for **throwaway clusters in CI** and for **multi-node** behavior on a laptop.
 
 ## Next
 

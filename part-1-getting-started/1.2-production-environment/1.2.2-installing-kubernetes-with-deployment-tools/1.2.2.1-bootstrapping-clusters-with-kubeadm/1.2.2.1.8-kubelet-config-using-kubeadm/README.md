@@ -1,5 +1,26 @@
 # 1.2.2.1.8 Configuring each kubelet in your Cluster Using kubeadm
 
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.2-installing-kubernetes-with-deployment-tools/1.2.2.1-bootstrapping-clusters-with-kubeadm/1.2.2.1.8-kubelet-config-using-kubeadm"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  edit KubeletConfiguration patch  →  apply via kubeadm drop-in  →  restart kubelet  →  verify effective config
+```
+
+**Say:**
+
+Cgroup driver and eviction settings must match across nodes — kubeadm’s drop-in directory is how I keep that uniform.
+
+---
+
 - **Summary**: Apply a consistent `KubeletConfiguration` across all cluster nodes using kubeadm's drop-in mechanism, ensuring cgroup driver, eviction thresholds, and authentication settings are uniform.
 - **Content**: What kubelet is, why consistent configuration matters, the kubeadm drop-in directory, key KubeletConfiguration fields, applying and verifying.
 - **Lab**: Run `apply-kubelet-config.sh` as root on a node, restart kubelet, verify the effective configuration.

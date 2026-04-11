@@ -12,18 +12,26 @@ Understanding namespace scope also explains a common `kubectl` confusion: why do
 
 **Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.4-namespaces"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Two steps — apply the namespace manifest and then inspect it. The lesson is short because namespaces themselves are simple objects; the depth is in understanding what they scope and what they don't.
 
 ```
   [ Step 1 ]            [ Step 2 ]
   Apply namespace  →    Inspect labels
   manifest              and scope
 ```
+
+**Say:**
+
+Two steps — apply the namespace manifest and then inspect it. The lesson is short because namespaces themselves are simple objects; the depth is in understanding what they scope and what they don't.
 
 ---
 
@@ -38,6 +46,7 @@ Namespaces are just Kubernetes objects — you create them with a manifest like 
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.4-namespaces"
 kubectl apply -f yamls/namespace-demo.yaml
 ```
 
@@ -114,11 +123,11 @@ Every production Kubernetes cluster uses namespaces to separate teams, environme
 Read the namespace YAML, then delete it — cascades all contents.
 
 **Say:**
-`kubectl get ns -o yaml` shows the full namespace object including status. The `status.phase` field should be `Active`. Then I delete — `kubectl delete ns` cascades and removes everything inside it. This is why deleting a namespace is the nuclear option for cleanup.
+`kubectl get ns -o yaml` shows the full namespace object including status. The `status.phase` field should be `Active`. Then I delete — `kubectl delete ns` cascades and removes everything inside it. This is why deleting a namespace is the nuclear option for cleanup. I append `2>/dev/null || true` on the delete so a second take does not fail when the namespace is already gone.
 
 ```bash
 kubectl get ns overview-lab -o yaml | head -n 30
-kubectl delete ns overview-lab --ignore-not-found
+kubectl delete ns overview-lab --ignore-not-found 2>/dev/null || true
 ```
 
 ---

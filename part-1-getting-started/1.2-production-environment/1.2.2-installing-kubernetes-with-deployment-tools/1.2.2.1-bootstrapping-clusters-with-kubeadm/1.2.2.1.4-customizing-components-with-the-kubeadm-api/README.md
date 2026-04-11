@@ -1,5 +1,26 @@
 # 1.2.2.1.4 Customizing Components with the kubeadm API
 
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.2-installing-kubernetes-with-deployment-tools/1.2.2.1-bootstrapping-clusters-with-kubeadm/1.2.2.1.4-customizing-components-with-the-kubeadm-api"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  edit ClusterConfiguration patches  →  kubeadm phases / upgrade hooks  →  verify API flags live
+```
+
+**Say:**
+
+I treat kubeadm config as the source of truth for API server flags, kube-proxy mode, and feature gates instead of hand-editing static pods.
+
+---
+
 - **Summary**: Override default API server flags, controller-manager settings, kube-proxy mode, and etcd configuration through a structured kubeadm config file instead of command-line arguments.
 - **Content**: Why config files beat flags, the kubeadm config API structure, key customisation points, validating config before init.
 - **Lab**: Review `custom-cluster-config.yaml`, run `validate-kubeadm-config.sh` to confirm it is valid, use it as the `--config` argument for `kubeadm init`.

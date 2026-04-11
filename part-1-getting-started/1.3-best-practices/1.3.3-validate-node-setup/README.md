@@ -1,113 +1,122 @@
 # 1.3.3 Validate Node Setup — teaching transcript
 
-- **Summary**: Node validation should happen before `kubeadm join` or workload rollout, not after failures start surfacing.
-- **Content**: The script checks swap, sysctls, required binaries, runtime sockets, kernel modules, and kubelet prerequisites.
-- **Lab**: Run the validator on a node and fix every failed prerequisite before joining it to a cluster.
-
-## Assets
-
-- `scripts/validate-node-setup.sh`
-- `yamls/node-validation-baseline.yaml`
-- `yamls/failure-troubleshooting.yaml`
-
-**Teaching tip:** Run `validate-node-setup.sh` **on the Linux node itself** before `kubeadm join`. **WHAT THIS DOES WHEN YOU RUN IT** is in the script header. The script does **not** require a working `kubectl` context — it runs local checks only.
-
----
-
 ## Intro
 
-Here's the scenario that happens more than it should.
+Here is the scenario that happens more than it should.
 
-You provision a new VM, run `kubeadm join`, and the node joins the cluster. Everything looks fine. Three days later, pods start failing on that node — `OOMKilled`, networking not working, or image pulls hanging. You trace it back and discover swap was enabled, or a required kernel module wasn't loaded, or the CRI socket path was wrong.
+You provision a new VM, run `kubeadm join`, and the node shows up. Days later pods on that node fail — swap pressure, bridged traffic missing iptables rules, or the CRI socket path never matched what kubelet expects.
 
-These are things a pre-join validation script would have caught in 30 seconds.
+Those failures are what `validate-node-setup.sh` catches **before** join. It checks **swap off**, **`br_netfilter` and `overlay` modules**, **`net.bridge.bridge-nf-call-iptables`**, **`net.ipv4.ip_forward`**, core binaries on `PATH`, and a responsive **CRI socket** (containerd, CRI-O, or cri-dockerd depending on your prior lesson).
 
-`validate-node-setup.sh` is that script. It checks the prerequisites that kubeadm itself assumes are in place — but doesn't verify for you. Think of it as the checklist a pilot runs before takeoff, not after the wheels leave the ground.
+**Teaching tip:** Run `validate-node-setup.sh` **on the Linux node itself** as a user who can read `/proc` and run `sudo` where the script requires it. See the script header for details.
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.3-best-practices/1.3.3-validate-node-setup"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
 
-**Say:**
-Two stages. First run the validator on the node — it either passes or lists specific failures. Then apply the in-cluster baseline manifest to record what a valid node looks like for your cluster.
+```
+  [ Step 1 ]                  [ Step 2 ]                 [ Step 3 ]
+  Copy or run script    →     Fix any FAIL lines    →     Apply baseline
+  on target Linux node        (swap, modules,          ConfigMap (optional
+                              sysctl, CRI)             cluster doc)
+                                    │
+                                    ▼
+                             [ Step 4 ]
+                             kubelet Conditions
+                             via describe node
+```
 
-```
-  [ Step 1 ]                  [ Step 2 ]
-  Run validate-node-   →      Apply baseline
-  setup.sh on the             manifest to
-  Linux node                  the cluster
-```
+**Say:**
+
+We run the validator on the node, fix every hard FAIL, apply the documentation ConfigMap if we have API access, then read kubelet **Conditions** from `kubectl describe node` for the post-join view.
 
 ---
 
-## Step 1 — Run the node validator
+## Step 1 — Run the node validator on the Linux node
 
 **What happens when you run this:**
-`validate-node-setup.sh` runs entirely on the local node — no cluster API needed. It checks:
-- **Swap** is disabled (`/proc/swaps` empty or no active swap entries)
-- **`br_netfilter` and `overlay` kernel modules** are loaded (required for CNI and container networking)
-- **`net.bridge.bridge-nf-call-iptables`** sysctl is set to 1
-- **`net.ipv4.ip_forward`** sysctl is set to 1
-- **`kubeadm`, `kubelet`, `kubectl`** are on PATH
-- **The CRI socket** is present and responsive (containerd, CRI-O, or cri-dockerd)
 
-Each check prints `[PASS]`, `[WARN]`, or `[FAIL]` with a short explanation. Exits non-zero if any `[FAIL]` is found.
+`validate-node-setup.sh` executes local checks (no Kubernetes API required): swap, modules, sysctls, binaries, CRI socket responsiveness — as implemented in the script. It prints `[PASS]`, `[WARN]`, or `[FAIL]` per check.
 
 **Say:**
-I run this before I ever touch `kubeadm join`. Each failure it finds is something that would have caused a confusing problem later. I fix every `[FAIL]` before I continue — warnings are informational.
+
+I treat every `[FAIL]` as a blocker before `kubeadm join`. Warnings are informational.
 
 **Run:**
 
+On the **node under test** (copy the script there or mount the repo):
+
 ```bash
+cd "$COURSE_DIR/part-1-getting-started/1.3-best-practices/1.3.3-validate-node-setup"
+chmod +x scripts/*.sh 2>/dev/null || true
 ./scripts/validate-node-setup.sh
 ```
 
 **Expected:**
-All required checks show `[PASS]`. If anything shows `[FAIL]`, fix it — see the Troubleshooting section below — then re-run until the script exits 0.
+
+Exit `0` when all required checks pass; otherwise follow Troubleshooting, fix, re-run.
 
 ---
 
-## What each check means
+## Step 2 — Fix common failures (reference commands)
 
-**Swap disabled:**
-Kubernetes expects swap to be off. Kubelet refuses to start with swap enabled by default (you can override with `--fail-swap-on=false` but this is not recommended for production). Disable swap permanently with `swapoff -a` and remove the swap entry from `/etc/fstab`.
+**What happens when you run this:**
 
-**Kernel modules (`br_netfilter`, `overlay`):**
-`overlay` is required for the overlay filesystem driver that containers use. `br_netfilter` enables iptables to see bridged traffic — required for Kubernetes networking policies and service routing. Load them with:
+These commands change node configuration — run only for the failures the script printed.
+
+**Say:**
+
+Swap must be off for kubelet’s default expectations. Bridging modules and sysctls enable kube-proxy/CNI paths. If the CRI socket fails, I return to the **1.2.1.x** runtime lesson for that stack.
+
+**Run:**
+
+Swap off immediately and persist:
+
 ```bash
-modprobe overlay
-modprobe br_netfilter
+sudo swapoff -a
+sudo sed -i.bak '/ swap / s/^/#/' /etc/fstab 2>/dev/null || true
 ```
-To persist across reboots:
+
+Load modules once and persist:
+
 ```bash
-cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
-overlay
-br_netfilter
-EOF
+sudo modprobe overlay
+sudo modprobe br_netfilter
+printf '%s\n' 'overlay' 'br_netfilter' | sudo tee /etc/modules-load.d/k8s.conf >/dev/null
 ```
 
-**Sysctls:**
-These two let the kernel forward network traffic through bridge interfaces and between network namespaces — exactly what pod networking needs. Set them with:
+Sysctls:
+
 ```bash
-cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+sudo tee /etc/sysctl.d/k8s.conf >/dev/null <<'EOF'
 net.bridge.bridge-nf-call-iptables = 1
 net.ipv4.ip_forward = 1
 EOF
 sudo sysctl --system
 ```
 
-**CRI socket:**
-The validator checks that the socket file exists and the runtime responds to a `crictl info` call. If this fails, the runtime is not running or is at the wrong path — see your runtime's lesson (1.2.1.x) for the correct socket path.
+**Expected:**
+
+Script re-run reaches PASS after each addressed failure.
 
 ---
 
-## Step 2 — Apply the in-cluster baseline
+## Step 3 — Apply the in-cluster baseline (optional)
 
 **What happens when you run this:**
-`kubectl apply -f yamls/node-validation-baseline.yaml` creates a ConfigMap in `kube-system` that records what a validated node looks like — swap disabled, modules loaded, sysctls set, CRI socket path. This is documentation stored in the cluster, not live validation.
+
+`kubectl apply -f yamls/node-validation-baseline.yaml` stores a ConfigMap documenting expected node state — documentation only.
 
 **Say:**
-This baseline is useful for two things: it's a record you can point to during audits ("yes, we validate nodes before joining"), and it's something new team members can read to understand what the cluster expects from each node.
+
+This gives auditors a cluster-local pointer to “what good looks like” for your platform.
 
 **Run:**
 
@@ -116,7 +125,75 @@ kubectl apply -f yamls/node-validation-baseline.yaml
 ```
 
 **Expected:**
+
 ConfigMap created or unchanged.
+
+---
+
+## Step 4 — Read kubelet Conditions after join
+
+**What happens when you run this:**
+
+`kubectl describe node` prints **Conditions** such as `Ready`, `MemoryPressure`, `DiskPressure`, `PIDPressure`, and `NetworkUnavailable` — read-only API call.
+
+**Say:**
+
+Pre-join script catches OS prerequisites. After join, kubelet **Conditions** tell me if the node is actually healthy: `Ready` should be `True`, pressure conditions `False`, `NetworkUnavailable` `False` once CNI finishes.
+
+**Run:**
+
+```bash
+kubectl describe node "$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')" | sed -n '/Conditions:/,/Addresses:/p'
+```
+
+**Expected:**
+
+A `Conditions:` block showing current statuses for the first node in the list.
+
+---
+
+## Troubleshooting
+
+- **`[FAIL] swap`** → run Step 2 swap commands; confirm `/proc/swaps` empty
+- **`[FAIL] br_netfilter` / `overlay`** → `sudo modprobe` lines from Step 2; verify `/etc/modules-load.d/k8s.conf`
+- **`[FAIL] sysctl`** → re-run `sysctl.d` block; confirm `sysctl net.ipv4.ip_forward` prints `1`
+- **`[FAIL] CRI socket`** → `sudo systemctl status containerd` **or** `crio` **or** `docker` + `cri-docker`; align socket with **1.2.1.x**
+- **`Ready False` after join with `NetworkUnavailable True`** → finish CNI install; not covered by the node script
+- **`validate-node-setup.sh: not found` on bare node** → copy `scripts/validate-node-setup.sh` to the node or clone `$COURSE_DIR` there
+
+---
+
+## Learning objective
+
+- Ran `validate-node-setup.sh` and cleared swap, module, sysctl, and CRI failures before join.
+- Applied the optional baseline ConfigMap for documentation.
+- Read kubelet **Conditions** from `kubectl describe node` for post-join health.
+
+## Why this matters
+
+Most “node joined but workloads are weird” tickets trace back to swap, bridging, forwarding, or the wrong CRI endpoint. Fixing them before join trades mystery failures for a short checklist.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+On the node: rerun the validator. From kubectl: `get nodes` plus the Conditions slice from describe.
+
+**Say:**
+
+Closing beat: script still green on the node, API still shows Ready with calm Conditions.
+
+**Run:**
+
+```bash
+./scripts/validate-node-setup.sh || true
+kubectl get nodes -o wide
+kubectl describe node "$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')" | sed -n '/Conditions:/,/Addresses:/p'
+```
+
+**Expected:**
+
+Validator passes on a prepared node; nodes list; Conditions block visible.
 
 ---
 
@@ -124,47 +201,9 @@ ConfigMap created or unchanged.
 
 | Path | Purpose |
 |------|---------|
-| `scripts/validate-node-setup.sh` | Local node prerequisite check — no cluster API required |
-| `yamls/node-validation-baseline.yaml` | ConfigMap recording expected node state |
-| `yamls/failure-troubleshooting.yaml` | Swap, sysctl, module, and runtime socket fixes |
-
----
-
-## Troubleshooting
-
-- **Swap active** → `sudo swapoff -a` immediately; remove or comment out the swap line in `/etc/fstab`
-- **Module missing** → `sudo modprobe overlay && sudo modprobe br_netfilter`; then add to `/etc/modules-load.d/k8s.conf`
-- **Sysctl not set** → run the `sysctl.d/k8s.conf` block above; `sudo sysctl --system` applies immediately
-- **CRI socket missing** → service not running or wrong path; check `sudo systemctl status containerd` (or crio / cri-docker) and confirm socket path from your 1.2.1 lesson
-- **Script exits 0 but node still NotReady after join** → the validator checks prerequisites, not CNI; if networking is broken after join, check your CNI plugin install
-
----
-
-## Learning objective
-
-- Run the node validator and interpret its output.
-- Fix the six most common node prerequisite failures before `kubeadm join`.
-- Explain why swap, kernel modules, and sysctls matter for Kubernetes networking and stability.
-
-## Why this matters
-
-Most "my node joined but something's wrong" situations trace back to one of the items this script checks. Running it before join converts unpredictable failures into predictable ones — you fix them in a controlled window, not in the middle of an incident.
-
----
-
-## Video close — fast validation
-
-**What happens when you run this:**
-Re-validate locally; then read-only `kubectl` summary of the first node's conditions.
-
-**Say:**
-The node validator catches pre-join problems. The `describe node` output catches post-join problems — look at the Conditions section for `MemoryPressure`, `DiskPressure`, `PIDPressure`, and `Ready`. All should be `False` except `Ready` which should be `True`.
-
-```bash
-./scripts/validate-node-setup.sh
-kubectl get nodes -o wide
-kubectl describe node "$(kubectl get nodes -o name | head -n 1 | cut -d'/' -f2)" | sed -n '1,40p'
-```
+| `scripts/validate-node-setup.sh` | Local prerequisite checks |
+| `yamls/node-validation-baseline.yaml` | ConfigMap documenting expectations |
+| `yamls/failure-troubleshooting.yaml` | Swap, sysctl, module hints |
 
 ---
 

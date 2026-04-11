@@ -1,68 +1,74 @@
 # 1.3.2 Running in Multiple Zones — teaching transcript
 
-- **Summary**: Multi-zone Kubernetes improves resilience only when nodes, workloads, and storage choices are aligned with real failure domains.
-- **Content**: Zone labeling checks, topology spread constraints, anti-affinity examples, and storage-zone awareness.
-- **Lab**: Check zone labels on nodes, deploy a zone-spread workload, and confirm replicas distribute across availability zones.
-
-## Assets
-
-- `scripts/check-multi-zone-labels.sh`
-- `yamls/multi-zone-deployment.yaml`
-- `yamls/storage-zone-notes.yaml`
-- `yamls/failure-troubleshooting.yaml`
-
-**Teaching tip:** **What happens when you run this** is below each Run block. See **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/check-multi-zone-labels.sh`.
-
----
-
 ## Intro
 
 Alright — here's the scenario.
 
-You have a cluster spread across three availability zones. You feel good about redundancy. Then zone B goes down, and your service goes with it — because all your pod replicas happened to land in zone B.
+You have a cluster spread across three availability zones. You feel good about redundancy. Then zone B fails, and your service goes with it — because every replica landed in zone B.
 
-**Multi-zone means nothing if your workloads aren't zone-aware.** Kubernetes won't spread pods across zones automatically unless you tell it to. And even when you do, there's a storage problem waiting: a PVC created in zone A cannot be used by a pod rescheduled to zone B.
+**Multi-zone means nothing if workloads and storage ignore failure domains.** Kubernetes does not spread pods across zones unless you express it with labels and constraints. Even when you do, **zonal block storage** pins a volume to one zone; a pod using that disk cannot reschedule elsewhere without a new volume.
 
 This lesson covers:
-- How Kubernetes knows which zone a node is in (topology labels)
-- How to enforce spreading across those zones
-- What the storage-zone trap looks like and how to avoid it
 
----
+- The **`topology.kubernetes.io/zone`** label prerequisite on nodes
+- **`topologySpreadConstraints`** keyed on zone topology
+- **`volumeBindingMode: WaitForFirstConsumer`** on StorageClasses so disks are created in the zone the scheduler chooses
+- A short **zone-failure narrative**: losing a zone removes nodes; spread plus PDBs controls how many replicas disappear at once, while storage class choices decide whether pods can come back elsewhere
+
+**Teaching tip:** See **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/check-multi-zone-labels.sh`.
+
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.3-best-practices/1.3.2-running-in-multiple-zones"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
 
-**Say:**
-Three stages. First I check whether zone labels even exist on the nodes — without them, zone-aware scheduling is impossible. Then I deploy a workload with zone spread constraints. Then I verify the pods actually landed in different zones.
-
 ```
   [ Step 1 ]              [ Step 2 ]              [ Step 3 ]
-  Check zone      →       Deploy zone-     →      Verify spread
-  labels on              spread workload          across zones
-  nodes
+  Zone label        →     Apply multi-zone    →     Verify pods
+  check script            Deployment               vs zone columns
+           │
+           └──────────────────────┐
+                                  ▼
+                          storage-zone notes
+                          (WaitForFirstConsumer)
 ```
+
+**Say:**
+
+First I prove zone labels exist, then I apply a Deployment that spreads on `topology.kubernetes.io/zone`, then I correlate pods to zones with `kubectl get nodes -L`. I finish by applying the storage notes ConfigMap that documents **`WaitForFirstConsumer`**.
 
 ---
 
 ## Step 1 — Check zone labels on nodes
 
 **What happens when you run this:**
-`check-multi-zone-labels.sh` reads all node labels via the API and checks for `topology.kubernetes.io/zone` — the standard label Kubernetes and cloud providers use to identify availability zones. Exits with a warning if any node is missing the label. Read-only.
+
+`check-multi-zone-labels.sh` reads node objects and checks for `topology.kubernetes.io/zone` — read-only. It may warn when labels are missing (common on local clusters).
 
 **Say:**
-Before I do anything else, I need to know if the cluster actually has zone information on its nodes. A cloud-provisioned cluster (EKS, GKE, AKS) will have these labels automatically. A bare-metal cluster or a local cluster won't — and if the labels aren't there, zone-aware scheduling can't work.
+
+Without this label, zone-aware scheduling is blind. Cloud providers usually inject it; bare metal and local VMs need you to add it for practice.
 
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-1-getting-started/1.3-best-practices/1.3.2-running-in-multiple-zones"
+chmod +x scripts/*.sh 2>/dev/null || true
 ./scripts/check-multi-zone-labels.sh
 ```
 
 **Expected:**
-Each node's zone label printed. If labels are missing, the script warns. On a local Minikube or Kind cluster this is expected — you can add labels manually for practice:
+
+Per-node zone output or explicit warnings. For manual practice on Kind/Minikube you may label a node:
 
 ```bash
-kubectl label node <node-name> topology.kubernetes.io/zone=zone-a
+kubectl label node <node-name> topology.kubernetes.io/zone=zone-a --overwrite
 ```
 
 ---
@@ -70,12 +76,12 @@ kubectl label node <node-name> topology.kubernetes.io/zone=zone-a
 ## Step 2 — Deploy the zone-spread workload
 
 **What happens when you run this:**
-`kubectl apply -f yamls/multi-zone-deployment.yaml` creates a Deployment where `topologySpreadConstraints` instructs the scheduler to distribute pods across values of `topology.kubernetes.io/zone`, keeping the maximum skew between zones at 1. Declarative; safe to re-apply.
+
+`kubectl apply -f yamls/multi-zone-deployment.yaml` creates a Deployment whose `topologySpreadConstraints` target `topology.kubernetes.io/zone` with a small **`maxSkew`**.
 
 **Say:**
-Here's what zone spreading looks like in a Deployment spec. The key field is `topologySpreadConstraints` with `topologyKey: topology.kubernetes.io/zone`. The scheduler reads the zone label on each node and tries to keep pod counts balanced across zone values.
 
-`maxSkew: 1` means: at most one extra pod in any zone compared to the least-loaded zone. So for three zones and six replicas, you'd expect 2/2/2. For five replicas across three zones, you'd get 2/2/1.
+The scheduler reads each node’s zone label and keeps replica counts balanced across distinct zone values whenever possible.
 
 **Run:**
 
@@ -84,17 +90,20 @@ kubectl apply -f yamls/multi-zone-deployment.yaml
 ```
 
 **Expected:**
-Resources created or unchanged.
+
+Created or unchanged.
 
 ---
 
 ## Step 3 — Verify spread across zones
 
 **What happens when you run this:**
-`kubectl get pods -o wide` lists pods with node placement. `kubectl get nodes -L topology.kubernetes.io/zone` adds the zone label as a column. Cross-referencing these shows which zone each pod landed in.
+
+`kubectl get nodes -L topology.kubernetes.io/zone` prints the zone column. `kubectl get pods -o wide` maps pods to nodes so you crosswalk into zones.
 
 **Say:**
-I look at two things: which node each pod landed on, and which zone each node belongs to. If spread is working, I should see pods across multiple distinct zone values.
+
+If zone A disappears in a real outage, only pods on nodes labeled with that zone value vanish immediately — spread and PDBs determine whether you still serve traffic.
 
 **Run:**
 
@@ -104,29 +113,74 @@ kubectl get pods -o wide
 ```
 
 **Expected:**
-Nodes show zone values in the `ZONE` column. Pods from the zone-spread Deployment distributed across nodes in different zones.
+
+Nodes show `ZONE` values when labeled; pods list `NODE` names you can map to those zones.
 
 ---
 
-## The storage-zone trap
+## Step 4 — Apply storage-zone reference
 
-There is a failure pattern that trips teams who get zone spreading right for compute but wrong for storage.
+**What happens when you run this:**
 
-**The problem:** `PersistentVolumeClaims` backed by cloud block storage (EBS, Persistent Disk, Azure Disk) are created in a specific availability zone. A pod that uses that PVC can only run in the same zone. If the pod is rescheduled to a different zone, it cannot mount the volume.
+`kubectl apply -f yamls/storage-zone-notes.yaml` stores a ConfigMap that explains **`volumeBindingMode: WaitForFirstConsumer`** — provisioning waits until the scheduler picks a node so zonal disks land in the correct AZ.
 
-**The result:** a pod that stays `Pending` after rescheduling with an event like `volume node affinity conflict`.
+**Say:**
 
-**How to avoid it:**
+Immediate binding created a disk in zone A while the pod later scheduled to zone B is the classic **volume node affinity conflict** failure mode. `WaitForFirstConsumer` avoids that race.
 
-1. **Stateless services** — use `topologySpreadConstraints` freely. No storage constraint.
-2. **Stateful services with block storage** — use a `StorageClass` with `volumeBindingMode: WaitForFirstConsumer`. This delays volume creation until the scheduler picks a node, so the volume is created in the right zone.
-3. **Stateful services across zones** — use distributed storage (Rook/Ceph, Portworx, or cloud-native distributed options) that is inherently zone-agnostic.
-
-`yamls/storage-zone-notes.yaml` contains a ConfigMap with these patterns as reference — apply it to your cluster or read it as documentation.
+**Run:**
 
 ```bash
 kubectl apply -f yamls/storage-zone-notes.yaml
 ```
+
+**Expected:**
+
+ConfigMap created or unchanged.
+
+---
+
+## Troubleshooting
+
+- **`check-multi-zone-labels.sh` warns about missing zones** → expected on laptop clusters; add fake zone labels for practice or read the script output as “not zone-aware yet”
+- **`0/N pods scheduled` with `DoNotSchedule` spread** → fewer zone values than replicas; temporarily lower replicas or set `whenUnsatisfiable: ScheduleAnyway` for softer labs
+- **`pod has unbound immediate PersistentVolumeClaims` then Pending with volume affinity errors** → zonal PVC created before scheduling; switch StorageClass to **`WaitForFirstConsumer`** or delete/recreate PVCs in the correct zone
+- **`topology.kubernetes.io/zone` typo in manifest** → key must match exactly what nodes expose (`kubectl get nodes --show-labels`)
+- **`Forbidden` applying manifests** → use a cluster where you have create rights
+
+---
+
+## Learning objective
+
+- Explained why **`topology.kubernetes.io/zone`** labels are prerequisites for zone-aware scheduling.
+- Applied `topologySpreadConstraints` and read pod placement against node zone columns.
+- Described the storage-zone trap and how **`WaitForFirstConsumer`** mitigates it.
+
+## Why this matters
+
+“We run in three zones” is not the same as surviving a zone loss. Spread rules, disruption budgets, and storage binding modes decide whether an availability zone failure becomes a blip or an outage.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+Read-only: rerun the label check, print zone column, list pods wide. `|| true` keeps a WARN exit code from stopping the closing take.
+
+**Say:**
+
+Same trio I run after any node or topology change: label script, zone column, pods wide.
+
+**Run:**
+
+```bash
+./scripts/check-multi-zone-labels.sh || true
+kubectl get nodes -L topology.kubernetes.io/zone
+kubectl get pods -o wide
+```
+
+**Expected:**
+
+Script output; nodes with zone column when labeled; pods listed.
 
 ---
 
@@ -134,47 +188,10 @@ kubectl apply -f yamls/storage-zone-notes.yaml
 
 | Path | Purpose |
 |------|---------|
-| `scripts/check-multi-zone-labels.sh` | Checks `topology.kubernetes.io/zone` on all nodes |
-| `yamls/multi-zone-deployment.yaml` | Deployment with `topologySpreadConstraints` |
-| `yamls/storage-zone-notes.yaml` | Storage-zone patterns and `WaitForFirstConsumer` reference |
-| `yamls/failure-troubleshooting.yaml` | Zone label, skew, and storage-zone failure hints |
-
----
-
-## Troubleshooting
-
-- **Pods not spreading** → confirm zone labels exist (`kubectl get nodes --show-labels`); check `topologyKey` matches exactly
-- **`whenUnsatisfiable: DoNotSchedule`** → pods go Pending if the constraint can't be met (e.g. fewer zones than replicas); switch to `ScheduleAnyway` for softer enforcement
-- **Pod Pending after zone node failure** → check for PVC zone affinity conflict with `kubectl describe pod`; this is the storage-zone trap
-- **Local cluster (Minikube/Kind)** → add zone labels manually to practice scheduling; actual zone failure simulation requires multiple nodes in different groups
-
----
-
-## Learning objective
-
-- Explain why zone labels are a prerequisite for zone-aware scheduling.
-- Apply `topologySpreadConstraints` and verify pod distribution across zones.
-- Describe the storage-zone trap and name two ways to avoid it.
-
-## Why this matters
-
-"We're in three zones" is not the same as "we survive a zone failure." The difference is whether your workloads are scheduled with zone-aware constraints and whether your storage is zone-agnostic. This lesson draws that line.
-
----
-
-## Video close — fast validation
-
-**What happens when you run this:**
-Label check again; nodes with zone column; pod placement — read-only recap.
-
-**Say:**
-Same pattern as before a change or after a node event. Zone labels, node placement, pod distribution. These three lines take five seconds and tell you the zone health of your cluster at a glance.
-
-```bash
-./scripts/check-multi-zone-labels.sh
-kubectl get nodes -L topology.kubernetes.io/zone
-kubectl get pods -o wide
-```
+| `scripts/check-multi-zone-labels.sh` | Checks `topology.kubernetes.io/zone` on nodes |
+| `yamls/multi-zone-deployment.yaml` | Deployment with zone spread |
+| `yamls/storage-zone-notes.yaml` | `WaitForFirstConsumer` and zonal volume notes |
+| `yamls/failure-troubleshooting.yaml` | Zone / skew / storage hints |
 
 ---
 

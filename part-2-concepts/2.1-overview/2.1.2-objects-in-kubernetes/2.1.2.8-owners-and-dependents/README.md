@@ -12,18 +12,26 @@ This matters in two scenarios. First, understanding why cascade deletes work the
 
 **Teaching tip:** `scripts/show-owner-references.sh` expects namespace **`owner-demo`** to exist and have objects in it — apply the manifest before running the script.
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.8-owners-and-dependents"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Three steps. Apply the demo Deployment, wait for rollout, then inspect the ownerReferences chain with both the script and manual kubectl.
 
 ```
   [ Step 1 ]          [ Step 2 ]          [ Step 3 ]
   Apply demo   →      Wait for    →       Inspect owner
   Deployment          rollout             chain
 ```
+
+**Say:**
+
+Three steps. Apply the demo Deployment, wait for rollout, then inspect the ownerReferences chain with both the script and manual kubectl.
 
 ---
 
@@ -38,6 +46,7 @@ I'm applying one manifest — one Deployment. But that triggers a cascade of cre
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.8-owners-and-dependents"
 kubectl apply -f yamls/owner-reference-demo.yaml
 ```
 

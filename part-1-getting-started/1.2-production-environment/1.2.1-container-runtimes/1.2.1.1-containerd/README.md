@@ -10,11 +10,25 @@
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. `scripts/install-containerd.sh` repeats the install story in a header comment at the top of the file.
 
-## One-time setup — set your course directory
+## One-time setup
 
 ```bash
-COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.1-containerd"
 ```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  chmod scripts  →  sudo install   →  systemctl +    →  socket ls   →  crictl info  →  kubeadm YAML
+                    containerd         status                          grep           recap
+```
+
+**Say:**
+
+We make the install script executable, run the installer as root, confirm systemd, prove the socket exists, call `crictl` against that socket, then show the matching `criSocket` line for kubeadm.
 
 ---
 
@@ -62,6 +76,10 @@ Script completes without error; no duplicate-install explosions on re-run.
 
 **What happens when you run this:**  
 `systemctl is-active` prints `active` or not; `systemctl status` shows unit state and recent log lines — read-only aside from systemd’s status query.
+
+**Say:**
+
+I confirm the unit is active before I trust any socket or `crictl` output — a stopped daemon explains both failures at once.
 
 **Run:**
 
@@ -134,6 +152,10 @@ Line showing `unix:///run/containerd/containerd.sock` (or equivalent).
 **What happens when you run this:**  
 `systemctl status` again for sanity; `crictl version` prints client/server CRI versions — still verification only.
 
+**Say:**
+
+Last pass: daemon still healthy, CRI client and server versions print — that is what kubelet will rely on after join.
+
 **Run:**
 
 ```bash
@@ -146,6 +168,47 @@ Service OK; `crictl` prints client/server versions.
 
 ---
 
+## Troubleshooting
+
+- **`sudo: install-containerd.sh: command not found`** → run Step 1 `cd` and `chmod +x scripts/*.sh`
+- **`crictl: rpc error: code = Unavailable desc = transport is closing`** → `sudo systemctl restart containerd`; re-check the socket path
+- **`cgroup` or `systemd` errors when kubelet starts** → confirm `SystemdCgroup = true` in containerd’s config and kubelet `cgroupDriver: systemd`
+- **`no such file or directory` for `/run/containerd/containerd.sock`** → daemon not running or different socket path for your distro — compare with distro docs
+- **`permission denied` on the socket without sudo** → use `sudo crictl` on lab nodes unless your org configures group access
+
+---
+
+## Learning objective
+
+- Installed containerd, verified the socket and `crictl`, and aligned kubeadm’s `criSocket` with the endpoint kubelet must use.
+
+## Why this matters
+
+Wrong runtime or cgroup mismatch is a top reason fresh kubeadm nodes stay **NotReady**.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+Read-only: systemd active check and `crictl info` against the containerd socket.
+
+**Say:**
+
+I close with the same pair as the module README’s containerd block — active unit, JSON from `crictl info`.
+
+**Run:**
+
+```bash
+sudo systemctl is-active containerd
+sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock info >/dev/null && echo "crictl: OK"
+```
+
+**Expected:**
+
+`active` then `crictl: OK`.
+
+---
+
 ## Repo files (reference)
 
 | Path | Purpose |
@@ -155,23 +218,6 @@ Service OK; `crictl` prints client/server versions.
 | `yamls/failure-troubleshooting.yaml` | Socket / cgroup / install hints |
 
 ---
-
-## Troubleshooting
-
-- **Not root** → install script must run under `sudo`
-- **cgroup errors later with kubelet** → confirm `SystemdCgroup = true` in containerd config and kubelet uses `cgroupDriver: systemd`
-- **`crictl` fails** → `sudo journalctl -u containerd -n 50`
-- **Socket missing** → service not started or wrong path for your distro (check lesson + distro docs)
-
----
-
-## Learning objective
-
-- Install containerd, verify socket and `crictl`, align kubeadm config with the CRI endpoint.
-
-## Why this matters
-
-Wrong runtime or cgroup mismatch is a top reason fresh kubeadm nodes stay **NotReady**.
 
 ## Next
 

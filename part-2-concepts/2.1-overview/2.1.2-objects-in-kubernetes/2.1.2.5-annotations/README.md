@@ -10,18 +10,26 @@ Many Kubernetes features are controlled through annotations. The nginx Ingress c
 
 **Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
----
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.5-annotations"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
 
 ## Flow of this lesson
-
-**Say:**
-Two steps — apply an annotated object and then read those annotations using jsonpath and describe.
 
 ```
   [ Step 1 ]              [ Step 2 ]
   Apply annotated  →      Read annotations
   ConfigMap               two ways
 ```
+
+**Say:**
+
+Two steps — apply an annotated object and then read those annotations using jsonpath and describe.
 
 ---
 
@@ -36,6 +44,7 @@ I'll show you the manifest annotations section. Notice the key format: domain-pr
 **Run:**
 
 ```bash
+cd "$COURSE_DIR/part-2-concepts/2.1-overview/2.1.2-objects-in-kubernetes/2.1.2.5-annotations"
 kubectl apply -f yamls/annotations-demo.yaml
 ```
 

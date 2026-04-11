@@ -1,5 +1,26 @@
 # 1.2.2.1.3 Creating a Cluster with kubeadm
 
+## One-time setup
+
+```bash
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.2-installing-kubernetes-with-deployment-tools/1.2.2.1-bootstrapping-clusters-with-kubeadm/1.2.2.1.3-creating-a-cluster-with-kubeadm"
+```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  init control plane  →  install CNI  →  verify Ready  →  print join  →  join workers
+```
+
+**Say:**
+
+The cluster becomes real on `kubeadm init`, but nodes stay tainted until a CNI runs; only then do I hand out join commands for workers.
+
+---
+
 - **Summary**: Initialise the Kubernetes control plane from a config file, copy the admin kubeconfig, and generate a reproducible worker join command.
 - **Content**: What `kubeadm init` does step by step, the admin.conf file, CNI requirement, bootstrap token join mechanics, idempotent init script.
 - **Lab**: Run `init-control-plane.sh` as root, install a CNI plugin, run `print-worker-join-command.sh`, join a worker node.

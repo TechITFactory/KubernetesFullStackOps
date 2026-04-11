@@ -10,11 +10,25 @@
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. `scripts/install-crio.sh` repeats the install story in a header comment at the top of the file.
 
-## One-time setup — set your course directory
+## One-time setup
 
 ```bash
-COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+COURSE_DIR="$HOME/K8sOps"
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.2-cri-o"
 ```
+
+> If you set `COURSE_DIR` earlier, skip the export and just `cd`.
+
+## Flow of this lesson
+
+```
+  chmod scripts  →  sudo install   →  systemctl +    →  socket ls   →  crictl info  →  kubeadm YAML
+                    CRI-O              status                          grep           recap
+```
+
+**Say:**
+
+Same rhythm as containerd: executable scripts, root install, systemd proof, socket on disk, `crictl` proof, then the kubeadm snippet for the CRI-O endpoint.
 
 ---
 
@@ -62,6 +76,10 @@ Script finishes cleanly; re-run does not break an existing install.
 
 **What happens when you run this:**  
 `systemctl is-active` / `status` query systemd for the `crio` unit — no config files changed.
+
+**Say:**
+
+CRI-O must be active before I trust `crictl` — otherwise every later failure is noise.
 
 **Run:**
 
@@ -134,6 +152,10 @@ grep -n criSocket yamls/kubeadm-node-config-crio.yaml
 **What happens when you run this:**  
 `systemctl status crio` + `crictl version` — final sanity check of service and CRI versions.
 
+**Say:**
+
+Final glance: `crio` still running, CRI versions print — kubelet will use this socket on join.
+
 **Run:**
 
 ```bash
@@ -146,6 +168,47 @@ Service OK; `crictl` version output succeeds.
 
 ---
 
+## Troubleshooting
+
+- **`Unable to locate package cri-o` or repo errors** → align CRI-O major with OS and target Kubernetes (see CRI-O project docs)
+- **`crictl: rpc error: code = Unavailable`** → `sudo journalctl -u crio -n 50` for startup failures
+- **`cgroup driver is cgroupfs` mismatches kubelet** → confirm `/etc/crio/crio.conf.d/` drop-ins and kubelet `cgroupDriver: systemd`
+- **`wrong node /var/run/docker.sock` in kubelet args** → switch to `unix:///var/run/crio/crio.sock` in kubeadm config
+- **Socket path differs on your distro** → `sudo crio-status` or distro package docs for the canonical path
+
+---
+
+## Learning objective
+
+- Installed CRI-O, verified the socket and `crictl`, and pointed kubeadm’s `criSocket` at the CRI-O endpoint.
+
+## Why this matters
+
+OpenShift-style and many enterprise clusters standardize on CRI-O; the skill transfers to vanilla kubeadm the same way.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+Read-only: `systemctl is-active` and `crictl info` for CRI-O.
+
+**Say:**
+
+I match the module’s CRI-O closing block — active service, JSON from `crictl info`.
+
+**Run:**
+
+```bash
+sudo systemctl is-active crio
+sudo crictl --runtime-endpoint unix:///var/run/crio/crio.sock info >/dev/null && echo "crictl: OK"
+```
+
+**Expected:**
+
+`active` then `crictl: OK`.
+
+---
+
 ## Repo files (reference)
 
 | Path | Purpose |
@@ -155,23 +218,6 @@ Service OK; `crictl` version output succeeds.
 | `yamls/failure-troubleshooting.yaml` | Install / socket / cgroup hints |
 
 ---
-
-## Troubleshooting
-
-- **Package / repo errors** → match CRI-O major to your OS and target Kubernetes version (see CRI-O docs).
-- **`crictl` connection failed** → `sudo journalctl -u crio -n 50`
-- **cgroup driver mismatch** → confirm drop-in under `/etc/crio/crio.conf.d/` and kubelet `cgroupDriver: systemd`
-- **Wrong socket in kubeadm** → must be CRI-O socket, not Docker’s
-
----
-
-## Learning objective
-
-- Install CRI-O, verify socket and `crictl`, point kubeadm config at the CRI-O endpoint.
-
-## Why this matters
-
-OpenShift-style and many enterprise clusters standardize on CRI-O; the skill transfers to vanilla kubeadm the same way.
 
 ## Next
 
