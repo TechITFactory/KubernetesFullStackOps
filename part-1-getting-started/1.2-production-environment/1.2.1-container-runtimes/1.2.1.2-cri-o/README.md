@@ -6,11 +6,15 @@
 
 **You need:** a **Linux node** and **`sudo`**. Not a generic “laptop Minikube” lab unless you are deliberately configuring the node OS.
 
-Replace **`/path/to/K8sOps`** with your clone path.
-
 **Pick one runtime:** if you use **containerd** or **Docker + cri-dockerd**, skip this lesson — see [1.2.1](../README.md).
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. `scripts/install-crio.sh` repeats the install story in a header comment at the top of the file.
+
+## One-time setup — set your course directory
+
+```bash
+COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+```
 
 ---
 
@@ -19,10 +23,13 @@ Replace **`/path/to/K8sOps`** with your clone path.
 **What happens when you run this:**  
 `cd`, `pwd`, `chmod +x scripts/*.sh` — navigate and mark scripts executable only.
 
+**Say:**  
+I move into the lesson folder so `./scripts` resolves, then make all scripts executable.
+
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.2-cri-o
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.2-cri-o"
 pwd
 chmod +x scripts/*.sh
 ```

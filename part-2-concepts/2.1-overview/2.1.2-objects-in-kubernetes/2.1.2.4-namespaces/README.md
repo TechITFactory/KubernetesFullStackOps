@@ -2,40 +2,135 @@
 
 ## Intro
 
-Namespaces partition **names**, RBAC, quotas — and your default context.
+Namespaces are Kubernetes's first layer of isolation.
+
+They scope names — two teams can each have a Deployment named `api` as long as they're in different namespaces. They scope RBAC — a RoleBinding in namespace `team-a` gives permissions only within that namespace. They scope quotas — a ResourceQuota on namespace `team-b` caps what that team can consume without touching anyone else.
+
+What namespaces do **not** do: they don't isolate network traffic. Pods in different namespaces can reach each other by default. If you need network isolation between namespaces, you need NetworkPolicies — that's covered in Part 2's networking section.
+
+Understanding namespace scope also explains a common `kubectl` confusion: why does `kubectl get pods` show nothing when there are pods running? Because `kubectl` defaults to the namespace in your current context, not `--all-namespaces`. This lesson makes that behavior predictable.
 
 **Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
-## Lab — Quick Start
+---
 
-**What happens when you run this:**  
-- Apply namespace manifest.  
-- Show labels on `overview-lab`.
+## Flow of this lesson
+
+**Say:**
+Two steps — apply the namespace manifest and then inspect it. The lesson is short because namespaces themselves are simple objects; the depth is in understanding what they scope and what they don't.
+
+```
+  [ Step 1 ]            [ Step 2 ]
+  Apply namespace  →    Inspect labels
+  manifest              and scope
+```
+
+---
+
+## Step 1 — Apply the namespace manifest
+
+**What happens when you run this:**
+`kubectl apply -f yamls/namespace-demo.yaml` creates namespace `overview-lab` with labels set. Declarative; safe to re-run.
+
+**Say:**
+Namespaces are just Kubernetes objects — you create them with a manifest like anything else. The labels on a namespace are important: they're how Pod Security Standards labels work, how network policies can target namespaces, and how monitoring tools group workloads. An unlabeled namespace is a namespace you can't filter on later.
+
+**Run:**
 
 ```bash
 kubectl apply -f yamls/namespace-demo.yaml
+```
+
+**Expected:**
+`namespace/overview-lab created` or unchanged.
+
+---
+
+## Step 2 — Inspect the namespace
+
+**What happens when you run this:**
+`kubectl get ns overview-lab --show-labels` lists the namespace with its label columns — read-only.
+
+**Say:**
+Two things I check on every namespace: the labels (for PSS, quota, and tooling) and whether there's a `ResourceQuota` and `LimitRange` on it. Without quota, a single runaway workload can consume all cluster resources. We covered setting those up in Part 1's dev-local workspace — the same pattern applies to any production namespace.
+
+**Run:**
+
+```bash
 kubectl get ns overview-lab --show-labels
 ```
 
-**Expected:**  
-Namespace `overview-lab` with `purpose=training` (or labels from your YAML).
+**Expected:**
+Namespace listed with `purpose=training` (or whatever labels your YAML set).
+
+---
+
+## Namespace scope cheat sheet
+
+| Thing | Scoped by namespace? |
+|-------|---------------------|
+| Pod, Deployment, Service, ConfigMap | ✅ Yes |
+| PersistentVolumeClaim | ✅ Yes |
+| Role, RoleBinding | ✅ Yes |
+| Node, PersistentVolume, StorageClass | ❌ No — cluster-scoped |
+| ClusterRole, ClusterRoleBinding | ❌ No — cluster-scoped |
+| Network traffic between pods | ❌ No — needs NetworkPolicy |
+
+**Default namespace:** If your `kubectl` context has no namespace set, commands hit `default`. You can change the default with:
+```bash
+kubectl config set-context --current --namespace=overview-lab
+```
+Reset it with:
+```bash
+kubectl config set-context --current --namespace=default
+```
+
+---
+
+## Troubleshooting
+
+- **`kubectl get pods` returns nothing but pods exist** → you're in the wrong namespace; add `-n <namespace>` or `-A` for all namespaces; check `kubectl config current-context`
+- **Cannot delete namespace — stuck Terminating** → something inside the namespace has a finalizer blocking cleanup; check `kubectl get all -n <namespace>` and `kubectl describe ns <namespace>` for finalizer info
+- **`kubectl apply` in wrong namespace** → if your manifest has no `namespace:` in `metadata`, it goes to the current context namespace; always set `metadata.namespace` in shared manifests
+- **RBAC error in new namespace** → Roles are namespace-scoped; a Role in `default` gives no permissions in `overview-lab`; create a matching Role and RoleBinding in each namespace where access is needed
+
+---
+
+## Learning objective
+
+- Create a labeled namespace and explain what namespace scope applies to.
+- Explain the difference between namespace-scoped and cluster-scoped resources.
+- Describe what namespaces do not isolate and how to address that gap.
+
+## Why this matters
+
+Every production Kubernetes cluster uses namespaces to separate teams, environments, or services. Getting namespace scope wrong — thinking namespaces provide network isolation, or not labeling namespaces for PSS — creates security and operational gaps that are hard to fix later without disrupting running workloads.
+
+---
 
 ## Video close — fast validation
 
-**What happens when you run this:**  
-YAML snippet then **delete namespace** (cascades contents).
+**What happens when you run this:**
+Read the namespace YAML, then delete it — cascades all contents.
+
+**Say:**
+`kubectl get ns -o yaml` shows the full namespace object including status. The `status.phase` field should be `Active`. Then I delete — `kubectl delete ns` cascades and removes everything inside it. This is why deleting a namespace is the nuclear option for cleanup.
 
 ```bash
 kubectl get ns overview-lab -o yaml | head -n 30
 kubectl delete ns overview-lab --ignore-not-found
 ```
 
+---
+
 ## Repo files (reference)
 
 | Path | Purpose |
 |------|---------|
-| `yamls/namespace-demo.yaml` | Demo namespace |
-| `yamls/failure-troubleshooting.yaml` | Context / finalizer issues |
+| `yamls/namespace-demo.yaml` | Labeled demo namespace |
+| `yamls/failure-troubleshooting.yaml` | Context, finalizer, and scope issues |
+
+---
 
 ## Next
 

@@ -6,11 +6,15 @@
 
 **You need:** a **Linux node** (VM or bare metal) where you can use **`sudo`**. These steps are **not** for your Minikube laptop unless you know you are configuring node OS packages there.
 
-Replace **`/path/to/K8sOps`** with your clone path.
-
 **Pick one runtime:** if you use **CRI-O** or **Docker + cri-dockerd**, skip this lesson and open the matching sibling under [1.2.1](../README.md).
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. `scripts/install-containerd.sh` repeats the install story in a header comment at the top of the file.
+
+## One-time setup — set your course directory
+
+```bash
+COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+```
 
 ---
 
@@ -25,7 +29,7 @@ I run install scripts from this folder so `./scripts` resolves.
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.1-containerd
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.1-containerd"
 pwd
 chmod +x scripts/*.sh
 ```

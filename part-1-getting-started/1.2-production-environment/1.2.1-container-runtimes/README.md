@@ -15,16 +15,27 @@ Kubernetes does **not** run containers itself. Each node runs a **CRI-compatible
 ## Module wrap — quick validation
 
 **What happens when you run this:**  
-`systemctl is-active` reports whether the daemon is running; `crictl info` calls the CRI over the socket — both read-only checks (example paths below are for **containerd**).
+`systemctl is-active` reports whether the runtime daemon is running. `crictl info` calls the CRI API over the Unix socket — both are read-only. Run the block for **the runtime you installed**.
 
-You installed **one** runtime. Use **that** lesson’s unit name and socket (example below is **containerd**):
-
+**containerd** (1.2.1.1):
 ```bash
 sudo systemctl is-active containerd
 sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock info
 ```
 
-**CRI-O:** `crio`, socket `unix:///var/run/crio/crio.sock`.  
-**cri-dockerd:** `docker` + `cri-docker`, socket `unix:///run/cri-dockerd.sock`.
+**CRI-O** (1.2.1.2):
+```bash
+sudo systemctl is-active crio
+sudo crictl --runtime-endpoint unix:///var/run/crio/crio.sock info
+```
 
-Before **1.2.2 (kubeadm)**, you want **`active`** and **`crictl info`** without connection errors.
+**Docker + cri-dockerd** (1.2.1.3):
+```bash
+sudo systemctl is-active docker
+sudo systemctl is-active cri-docker
+sudo crictl --runtime-endpoint unix:///run/cri-dockerd.sock info
+```
+
+**Expected for all three:** service reports `active`, `crictl info` returns JSON with no "connection refused" error.
+
+Before **1.2.2 (kubeadm)**, you want both checks green. A missing socket or `inactive` daemon is why a fresh node stays `NotReady` after join.

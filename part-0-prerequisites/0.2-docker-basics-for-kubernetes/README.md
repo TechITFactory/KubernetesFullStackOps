@@ -16,19 +16,27 @@ That’s the thread.
 
 **You need:** Docker installed and running — `docker info` should work with no “cannot connect to daemon” error. (Docker Desktop on Windows/Mac, or Docker Engine on Linux. Podman with a `docker`-compatible CLI is fine.)
 
-Replace **`/path/to/K8sOps`** in the steps below with the folder where you cloned this repo.
-
 If pulls or builds are slow — do **Steps 1–4**, take a break, then do **5–6**.
 
 **Teaching tip:** Each step includes **What happens when you run this** so you know the effect *before* you paste. **Say** is optional camera talk. `scripts/verify-docker-basics.sh` has the same explanation in a comment header at the top of the file.
 
-## Image to container (same vocabulary as Kubernetes)
+## One-time setup — set your course directory
 
-```mermaid
-flowchart LR
-  R[Registry] -->|docker pull| I[Image local]
-  I -->|docker run| C[Container]
-  C -->|logs stop rm| OPS[Operate]
+If you already set `COURSE_DIR` in lesson 0.1, it's still set in your current shell. If you opened a new terminal, set it again:
+
+```bash
+COURSE_DIR=”$HOME/K8sOps”   # ← change this if you cloned elsewhere
+```
+
+## Flow of this lesson
+
+**Say:**  
+Here's what we'll do — four stages. We pull an image from a registry, run it as a container, operate it (logs, ports, stop), and then run the verify script.
+
+```
+  [ Registry ]          [ Image ]           [ Container ]       [ Operate ]
+               ──pull──▶  local   ──run──▶   running      ──▶  logs / stop / rm
+                                                                verify script
 ```
 
 ---
@@ -44,7 +52,7 @@ I work from this lesson directory so `docker/` and `scripts/` paths are correct.
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-0-prerequisites/0.2-docker-basics-for-kubernetes
+cd "$COURSE_DIR/part-0-prerequisites/0.2-docker-basics-for-kubernetes"
 pwd
 ```
 
@@ -104,11 +112,12 @@ A **Dockerfile** is a recipe. `docker build` creates a **tagged image** on my ma
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-0-prerequisites/0.2-docker-basics-for-kubernetes
 chmod +x scripts/*.sh
 docker build -t k8sops-p0-lab:0.2 docker/
 docker run --rm k8sops-p0-lab:0.2
 ```
+
+> **Note:** No need to `cd` again — you're already in the lesson folder from Step 1.
 
 **Expected:**  
 Build completes; container prints something like `K8sOps Part 0 Docker lab`.
@@ -121,7 +130,7 @@ Build completes; container prints something like `K8sOps Part 0 Docker lab`.
 `docker run -d --name k8sops-p0-web -p 8080:80 nginx:...` pulls `nginx` if needed, starts it **detached** with a fixed name, and publishes host `8080` → container `80`. `docker ps --filter` lists that running container. `docker logs ... | tail` shows the last few log lines. `curl` sends an HTTP GET to localhost:8080 and prints only the status code. `docker stop` stops the container; `docker rm` removes it (the `2>/dev/null || true` ignores “already removed” noise).
 
 **Say:**  
-`-p 8080:80` means: traffic to **my machine’s port 8080** goes to **port 80 inside the container**. That’s the same *idea* as publishing a service later — just on my laptop. I use a **name** so I can stop and remove the container cleanly.
+`-p 8080:80` means: traffic to **my machine’s port 8080** goes to **port 80 inside the container**. That’s the same *idea* as publishing a service later — just on my laptop. I use a **name** so I can stop and remove the container cleanly. The `|| true` at the end of `docker rm` just means: if the container was already removed, don’t fail — carry on.
 
 **Run:**
 
@@ -134,8 +143,10 @@ docker stop k8sops-p0-web
 docker rm k8sops-p0-web 2>/dev/null || true
 ```
 
+> **WSL2 / Docker Desktop users:** if `127.0.0.1:8080` doesn’t respond, try `localhost:8080` instead. Docker Desktop on Windows routes ports to `localhost` by default. If port 8080 is already in use on your machine, change `-p 8080:80` to `-p 8081:80` and update the `curl` URL to match.
+
 **Expected:**  
-Container shows as running in `docker ps`; `curl` prints `200` (or another success HTTP code); stop/rm completes without a name conflict next time.
+Container shows as running in `docker ps`; `curl` prints `200`; stop/rm completes without a name conflict next time.
 
 ---
 
@@ -150,7 +161,7 @@ This script repeats pull, build, and run so I can regression-check my machine an
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-0-prerequisites/0.2-docker-basics-for-kubernetes
+cd "$COURSE_DIR/part-0-prerequisites/0.2-docker-basics-for-kubernetes"
 ./scripts/verify-docker-basics.sh
 ```
 
@@ -195,27 +206,39 @@ On a cluster, workloads are **containers from images**. When something breaks, y
 
 ## Challenge
 
-Add a line to `docker/Dockerfile` after the existing `RUN` (still as root), for example:
+Open `docker/Dockerfile` and add this line anywhere **before** `USER appuser` (environment variables can go anywhere, but placing them before the user switch keeps root-owned metadata together):
 
 ```dockerfile
 ENV LAB_USER=yourname
 ```
 
+Your Dockerfile should look like:
+
+```dockerfile
+FROM alpine:3.19
+RUN adduser -D -u 1000 appuser && \
+    echo "K8sOps Part 0 Docker lab" > /etc/lab-message.txt
+ENV LAB_USER=yourname
+USER appuser
+WORKDIR /home/appuser
+CMD ["cat", "/etc/lab-message.txt"]
+```
+
 Rebuild and prove the variable is visible:
 
 **What happens when you run this:**  
-Rebuild bakes `ENV LAB_USER=...` into a new image layer. `docker run ... env | grep LAB_USER` starts a throwaway container, dumps environment variables, and filters for your variable — proves the image carries that metadata.
+Rebuild bakes `ENV LAB_USER=...` into a new image layer. `docker run ... env | grep LAB_USER` starts a throwaway container, dumps all environment variables, and filters for yours — proves the image carries that metadata.
 
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-0-prerequisites/0.2-docker-basics-for-kubernetes
+cd "$COURSE_DIR/part-0-prerequisites/0.2-docker-basics-for-kubernetes"
 docker build -t k8sops-p0-lab:0.2 docker/
 docker run --rm k8sops-p0-lab:0.2 env | grep LAB_USER
 ```
 
 **Expected:**  
-`LAB_USER=yourname` (or whatever you set).
+`LAB_USER=yourname` (or whatever name you set).
 
 ---
 

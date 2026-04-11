@@ -25,7 +25,7 @@ fi
 
 cd "$LAB_ROOT"
 
-errors="$(grep -c ' ERROR ' servers.log || true)"
+errors="$(grep -c ' ERROR ' servers.log || true)"   # spaces around ERROR — matches word exactly, same as README Step 4
 lines="$(wc -l < servers.log | tr -d ' ')"
 nested="$(test -f nested/data.txt && echo ok || echo missing)"
 

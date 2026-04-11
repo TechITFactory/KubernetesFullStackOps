@@ -10,13 +10,21 @@ Kubernetes **objects** are declarative records: metadata, spec, status, ownershi
 
 ## Object lifecycle (mental model)
 
-```mermaid
-flowchart TD
-  M[Manifest YAML] --> A[kubectl apply]
-  A --> API[API server validates and stores]
-  API --> ETCD[(etcd)]
-  CTRL[Controllers] -->|reconcile| API
-  API -->|desired state| NODE[Node agents]
+**Say:**
+Every Kubernetes object follows this path. You write a manifest, apply it, the API server validates and stores it in etcd. Controllers watch etcd for changes and reconcile actual state. Node agents — kubelet — receive that desired state and make it real on the node.
+
+```
+  Manifest YAML
+       │
+       ▼ kubectl apply
+  API server (validates + stores)
+       │                    ▲
+       ▼                    │ reconcile
+     etcd            Controllers
+  (desired state)
+       │
+       ▼
+  Node agents (kubelet)
 ```
 
 ## Children (work in order)

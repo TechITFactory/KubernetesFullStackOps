@@ -1,8 +1,23 @@
 # Part 2: CONCEPTS
 
+## Prerequisites met? (read this before 2.1)
+
+**Bridge from Part 1:** You should already have a cluster whose API you can reach with `kubectl` (Minikube, Kind, or kubeadm lab). Part 1 taught **how to stand up** that control plane; Part 2 teaches **what it is doing** when you create Pods, Services, and other objects.
+
+**Minimum gate — run from repo root or from this folder:**
+
+```bash
+cd part-2-concepts
+bash scripts/verify-part2-prerequisites.sh
+```
+
+You should see `cluster-info`, a successful `/readyz` check, and your nodes listed. If this fails, fix context and connectivity in [Part 1](../part-1-getting-started/README.md) before continuing — otherwise the concept lessons will feel like abstract theory with no feedback loop.
+
+---
+
 Part 2 turns what you installed in [Part 1](../part-1-getting-started/README.md) into a **clear model**: how the control plane and nodes cooperate, how workloads and networking are expressed, and where security and policy hooks sit.
 
-**Format (aligned with Part 1):** Lessons in **2.1**, **2.2**, and **2.3** use a **teaching transcript** style: **What happens when you run this** before runnable blocks, **Expected** outputs, **Video close** recap commands, and `scripts/*.sh` files include a **WHAT THIS DOES WHEN YOU RUN IT** header where scripts exist. Modules **2.4+** are still being brought up to the same standard in follow-on passes.
+**Format (aligned with Part 1):** Lessons in **2.1**, **2.2**, and **2.3** use a **teaching transcript** style: **What happens when you run this** before runnable blocks, **Expected** outputs, **Video close** recap commands, and `scripts/*.sh` files include a **WHAT THIS DOES WHEN YOU RUN IT** header where scripts exist. **2.4 Workloads** — module README, **2.4.1**, **2.4.3** parents, **2.4.1.1**, **2.4.3.1–2.4.3.8**, and **2.4.4** match that pattern (verify scripts + transcripts); **2.4.5**, **2.4.1.2+** pods, and **2.4.2** may still use shorter stubs until expanded. **2.5 Networking** — module README plus **2.5.1 Service** (`svc-demo` + verify); other **2.5.x** lessons are mixed depth until expanded.
 
 **Suggested order:** **2.1 → 2.2 → 2.4 → 2.5 → 2.7 → 2.6 → 2.10 → 2.8 → 2.9 → 2.11**, then optional **2.12** (Windows) and **2.13** (extensions) as needed for your role.
 

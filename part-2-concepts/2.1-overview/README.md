@@ -9,15 +9,27 @@
 
 ## How this module fits the control plane
 
-```mermaid
-flowchart TB
-  U[You] --> K[kubectl]
-  K --> API[API server]
-  API --> E[(etcd desired state)]
-  API --> CM[Controllers]
-  CM --> API
-  API --> KL[kubelet on nodes]
-  KL --> CRI[CRI / runtime]
+**Say:**
+Here's the mental model you're building in this module. You talk to kubectl, kubectl talks to the API server, the API server persists desired state in etcd, controllers watch the API server and reconcile actual state, and kubelet on each node drives the container runtime to make it real.
+
+```
+  You
+   │
+   ▼
+ kubectl
+   │
+   ▼
+ API server ──────────────── etcd (desired state)
+   │    ▲
+   │    │
+   ▼    │
+ Controllers (reconcile loops)
+   │
+   ▼
+ kubelet on each node
+   │
+   ▼
+ CRI / container runtime
 ```
 
 ## Children (work in order)

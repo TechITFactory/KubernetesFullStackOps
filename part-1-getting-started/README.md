@@ -6,26 +6,27 @@ Hands-on path: **1.1** (local cluster + `dev-local` workspace) → **1.2** (prod
 
 ## Part 1 map
 
-```mermaid
-flowchart TB
-  subgraph Local[On your laptop]
-    A[1.1 Local cluster Minikube or Kind]
-    B[1.1.3 dev-local workspace]
-    A --> B
-  end
-  subgraph Prod[Production-style path]
-    C[1.2.1 CRI runtime on Linux nodes]
-    D[1.2.2 kubeadm lifecycle]
-    E[1.2.3 Managed K8s trade-offs]
-    C --> D
-    D --- E
-  end
-  subgraph Ops[Habits]
-    F[1.3 Best practices]
-  end
-  B --> C
-  B --> F
-  D --> F
+**Say:**
+Here's how Part 1 is laid out. There are three tracks — local cluster on your laptop, the production-style path using kubeadm, and operational habits. You can run them sequentially or jump to what your environment needs.
+
+```
+  ┌─────────────────────────────┐    ┌───────────────────────────────────┐
+  │       On your laptop        │    │       Production-style path        │
+  │                             │    │                                   │
+  │  1.1.1 Minikube             │    │  1.2.1 CRI runtime on Linux nodes │
+  │     or                      │    │           │                       │
+  │  1.1.2 Kind                 │    │           ▼                       │
+  │           │                 │    │  1.2.2 kubeadm lifecycle          │
+  │           ▼                 │    │           │                       │
+  │  1.1.3 dev-local workspace  │    │           ▼                       │
+  └──────────┬──────────────────┘    │  1.2.3 Managed K8s trade-offs    │
+             │                       └──────────────┬────────────────────┘
+             │                                      │
+             └──────────────────┬───────────────────┘
+                                ▼
+                     ┌─────────────────────┐
+                     │  1.3 Best practices │
+                     └─────────────────────┘
 ```
 
 ## Recommended order (sequential)
@@ -38,9 +39,9 @@ Follow this when you want a single clean track from zero to “Part 1 done”:
 4. [1.2.1 Container runtimes](1.2-production-environment/1.2.1-container-runtimes/README.md) — pick **one** of [containerd](1.2-production-environment/1.2.1-container-runtimes/1.2.1.1-containerd/README.md) / [CRI-O](1.2-production-environment/1.2.1-container-runtimes/1.2.1.2-cri-o/README.md) / [Docker + cri-dockerd](1.2-production-environment/1.2.1-container-runtimes/1.2.1.3-docker-engine-via-cri-dockerd/README.md) on Linux lab nodes (skip if you stay only on local Minikube/Kind for now).
 5. [1.2.2 Installing Kubernetes](1.2-production-environment/1.2.2-installing-kubernetes-with-deployment-tools/README.md) — kubeadm track **1.2.2.1.1 → 1.2.2.1.9** in order under [Bootstrapping with kubeadm](1.2-production-environment/1.2.2-installing-kubernetes-with-deployment-tools/1.2.2.1-bootstrapping-clusters-with-kubeadm/README.md).
 6. [1.2.3 Turnkey cloud](1.2-production-environment/1.2.3-turnkey-cloud-solutions/README.md) — managed K8s trade-offs and CLI readiness.
-7. [1.3 Best practices](1.3-best-practices/README.md) — 1.3.1 through 1.3.5 in order (or prioritize 1.3.3 before joining production-like nodes).
+7. [1.3 Best practices](1.3-best-practices/README.md) — 1.3.1 through 1.3.5 in order (or prioritize 1.3.3 before joining production-like nodes). Start the module with `bash 1.3-best-practices/scripts/verify-1-3-module-readiness.sh` (from the `part-1-getting-started` directory).
 
-**Next after Part 1:** [Part 2 — Concepts](../part-2-concepts/README.md) (Kubernetes objects, architecture, `kubectl` depth).
+**Next after Part 1:** [Part 2 — Concepts](../part-2-concepts/README.md). Run `bash part-2-concepts/scripts/verify-part2-prerequisites.sh` from the repo root so `cluster-info` and `/readyz` succeed before reading 2.1.
 
 ## Modules
 

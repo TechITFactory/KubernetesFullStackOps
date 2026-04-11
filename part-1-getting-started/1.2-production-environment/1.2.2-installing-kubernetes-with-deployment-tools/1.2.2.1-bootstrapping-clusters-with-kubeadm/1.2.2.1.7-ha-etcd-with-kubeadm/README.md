@@ -1,5 +1,7 @@
 # 1.2.2.1.7 Set up a High Availability etcd Cluster with kubeadm
 
+> **Lab reality:** **External etcd** needs **dedicated etcd nodes** (typically 3+), correct **firewalling** for ports **2379/2380**, and a **certificate distribution** story. It is optional for most teams; **stacked etcd** via kubeadm (covered in 1.2.2.1.3 and 1.2.2.1.6) is the common default. If you are not building this topology now, skim the transcript for the mental model and jump to [1.2.2.1.8 — kubelet config](../1.2.2.1.8-kubelet-config-using-kubeadm/README.md).
+
 - **Summary**: Plan and provision a dedicated external etcd cluster — endpoints, peer URLs, PKI paths — that kubeadm will use instead of managing etcd itself.
 - **Content**: What etcd is, why external etcd, kubeadm's role in PKI for external members, the planning manifest structure, bootstrap script.
 - **Lab**: Run `bootstrap-etcd-member.sh` on each etcd node, use kubeadm to generate etcd certificates, complete `external-etcd-cluster-plan.yaml` with real values, reference it in kubeadm init config.

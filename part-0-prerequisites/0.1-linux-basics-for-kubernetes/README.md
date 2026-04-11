@@ -22,19 +22,29 @@ You just need to:
 
 If you’re on Windows, use WSL2 with Ubuntu.
 
-Replace **`/path/to/K8sOps`** in the steps below with the folder where you cloned this repo.
-
 If this feels overwhelming — do the first steps and come back later.
 
 **Teaching tip:** Each step includes **What happens when you run this** so you know the effect *before* you paste. **Say** is optional camera talk. The shell scripts in `scripts/` repeat the same story in a comment header at the top of each file.
 
+## One-time setup — set your course directory
+
+Run this once before Step 1. Replace the path with wherever you cloned this repo.
+
+```bash
+COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+```
+
+> **WSL2 users:** keep `COURSE_DIR` under a Linux path (e.g. `~/K8sOps`), not under `/mnt/c/`. Permissions and I/O are much faster inside the Linux filesystem.
+
 ## Flow of this lesson
 
-```mermaid
-flowchart LR
-  A[Lesson folder] --> B[Setup lab workspace]
-  B --> C[ls grep find]
-  C --> D[verify-linux-basics.sh]
+**Say:**  
+Here’s the shape of this lesson. Four stages, left to right.
+
+```
+  [ Step 1 ]           [ Step 2 ]           [ Steps 3–7 ]        [ Step 8 ]
+  Move into      →     Set up lab      →     ls / grep /    →     verify-
+  lesson folder        workspace             find / ps            linux-basics.sh
 ```
 
 ---
@@ -50,7 +60,7 @@ I move into the lesson directory so `scripts/` paths work. `pwd` shows my locati
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-0-prerequisites/0.1-linux-basics-for-kubernetes
+cd "$COURSE_DIR/part-0-prerequisites/0.1-linux-basics-for-kubernetes"
 pwd
 ```
 
@@ -107,16 +117,16 @@ ls -la
 `grep 'ERROR' servers.log` reads `servers.log` and prints only lines containing the substring `ERROR` — stdout only; the file is not changed.
 
 **Say:**  
-`grep` keeps lines that match — same habit you’ll use with long `kubectl logs` output.
+`grep` keeps lines that match — same habit you’ll use with long `kubectl logs` output. I’m searching for ` ERROR ` with spaces on both sides so I match the word exactly, not something like `ERRORCODE`.
 
 **Run:**
 
 ```bash
-grep 'ERROR' servers.log
+grep ‘ ERROR ‘ servers.log
 ```
 
 **Expected:**  
-Two lines containing `ERROR`.
+Two lines containing ` ERROR `.
 
 ---
 
@@ -131,7 +141,7 @@ The pipe `|` sends the left command’s output into the right command. Here I co
 **Run:**
 
 ```bash
-grep 'ERROR' servers.log | wc -l
+grep ‘ ERROR ‘ servers.log | wc -l
 ```
 
 **Expected:**  
@@ -184,15 +194,15 @@ At least `./nested/data.txt` from `find`; other output varies by machine.
 ## Step 8 — Verify
 
 **What happens when you run this:**  
-`./scripts/verify-linux-basics.sh` `cd`s into the lab folder, counts `ERROR` lines and total lines in `servers.log`, checks `nested/data.txt` exists, then prints `verify-linux-basics: OK` or exits with an error — it does **not** modify your files.
+`./scripts/verify-linux-basics.sh` `cd`s into the lab folder, counts ` ERROR ` lines and total lines in `servers.log`, checks `nested/data.txt` exists, then prints `verify-linux-basics: OK` or exits with an error — it does **not** modify your files.
 
 **Say:**  
-The course script checks that the workspace and grep results match what we expect.
+We need to go back to the lesson folder to run the verify script — that's where `scripts/` lives. We were working inside the lab copy at `~/k8sops-p0-linux-lab`; now we return to the repo to run the check.
 
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-0-prerequisites/0.1-linux-basics-for-kubernetes
+cd "$COURSE_DIR/part-0-prerequisites/0.1-linux-basics-for-kubernetes"
 ./scripts/verify-linux-basics.sh
 ```
 
@@ -245,12 +255,18 @@ Speed here = calmer incidents later.
 ## Challenge
 
 **What happens when you run this:**  
-You edit `servers.log` in the lab workspace (add a line with `ERROR`), then the verify script re-runs the same checks — it should still pass with a higher error-line count.
+You edit the **lab workspace copy** of `servers.log` (not the repo original), add a line with ` ERROR ` in it, then re-run the verify script — it should still pass with a higher error-line count.
 
-Add another line containing `ERROR` to `servers.log`, then run:
+Open `~/k8sops-p0-linux-lab/servers.log` in any editor and add a line like:
+
+```
+2025-04-01T10:00:06Z ERROR simulated crash on node worker-2
+```
+
+Then verify again:
 
 ```bash
-cd /path/to/K8sOps/part-0-prerequisites/0.1-linux-basics-for-kubernetes
+cd "$COURSE_DIR/part-0-prerequisites/0.1-linux-basics-for-kubernetes"
 ./scripts/verify-linux-basics.sh
 ```
 

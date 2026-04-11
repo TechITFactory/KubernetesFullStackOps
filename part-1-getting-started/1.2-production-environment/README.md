@@ -12,16 +12,21 @@ This module covers the full production setup path: choosing and installing a con
 
 ## Production path vs managed
 
-```mermaid
-flowchart LR
-  subgraph Self[Self-managed]
-    R[1.2.1 CRI on each node] --> K[1.2.2 kubeadm init and join]
-  end
-  subgraph Alt[Alternative]
-    M[1.2.3 EKS GKE AKS etc]
-  end
-  Self -.->|same Kubernetes API| Workloads[Your apps and kubectl]
-  Alt --> Workloads
+**Say:**
+Two routes to a production cluster. On the left, you own everything — runtime, kubeadm, upgrades. On the right, a cloud provider manages the control plane. Both expose the same Kubernetes API to your apps and kubectl.
+
+```
+  Self-managed                        Alternative
+  ──────────────────────────          ─────────────────────
+  1.2.1 CRI on each node              1.2.3 EKS / GKE / AKS
+           │                                   │
+           ▼                                   │
+  1.2.2 kubeadm init + join                    │
+           │                                   │
+           └──────────────┬────────────────────┘
+                          ▼
+              Your apps and kubectl
+              (same Kubernetes API)
 ```
 
 ## Sections

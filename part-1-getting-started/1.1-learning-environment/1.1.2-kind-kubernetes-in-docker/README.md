@@ -6,13 +6,17 @@ This lesson builds a **multi-node Kubernetes cluster** where each node runs as a
 
 **You need:** Docker running; [Part 0](../../../part-0-prerequisites/README.md)–level terminal comfort. **Kind requires Docker** — no Docker, no Kind.
 
-Replace **`/path/to/K8sOps`** with your clone path.
-
 **Context:** This course names the cluster **`kfsops-kind`**. Most `kubectl` commands below use **`--context kind-kfsops-kind`** so you do not accidentally hit another cluster.
 
 **Note:** If you use **Minikube** instead, skip this lesson and use [1.1.1](../1.1.1-minikube-setup-and-configuration/README.md). Pick one local stack for a clean path through 1.1.3.
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. Shell scripts document the same behavior in a header comment at the top of each file under `scripts/`.
+
+## One-time setup — set your course directory
+
+```bash
+COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+```
 
 ---
 
@@ -22,12 +26,12 @@ Replace **`/path/to/K8sOps`** with your clone path.
 `cd` into the lesson; `pwd` confirms path — no cluster created yet.
 
 **Say:**  
-I stand in the lesson folder so scripts and YAML paths resolve.
+I work from the lesson folder so scripts and YAML paths resolve correctly. `pwd` just confirms we're in the right place.
 
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-1-getting-started/1.1-learning-environment/1.1.2-kind-kubernetes-in-docker
+cd "$COURSE_DIR/part-1-getting-started/1.1-learning-environment/1.1.2-kind-kubernetes-in-docker"
 pwd
 ```
 
@@ -40,6 +44,9 @@ Path ending in `1.1.2-kind-kubernetes-in-docker`.
 
 **What happens when you run this:**  
 `chmod +x scripts/*.sh` marks course scripts executable — metadata only.
+
+**Say:**  
+Same as every lesson — git doesn't always preserve the execute bit. One command, all scripts in this folder are fixed.
 
 **Run:**
 
@@ -115,7 +122,7 @@ Resources created or unchanged.
 `rollout status` waits for the Deployment; `get pods` shows placement; `curl` to `localhost:8888` hits the host-mapped NodePort → Service → Pod (HTTP body is the echo response).
 
 **Say:**  
-Once the pod is ready, traffic from **localhost:8888** should reach the echoserver through the published port mapping.
+I wait for the rollout first — if I curl before the pod is ready I'll get a connection refused and think something broke. Once the rollout succeeds I check pod placement with `get pods -o wide`, then curl to confirm the full path from my laptop through the Kind port mapping to the container is working.
 
 **Run:**
 

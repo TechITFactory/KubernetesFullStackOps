@@ -6,11 +6,17 @@ This lesson gives you a **real Kubernetes cluster on your laptop** using **Minik
 
 **You need:** [Part 0](../../../part-0-prerequisites/README.md) (or equivalent terminal + Docker skills); **Docker** (or another Minikube driver you configure). Minikube can use the **Docker driver** (common) or a VM — the scripts default toward Docker-style setups.
 
-Replace **`/path/to/K8sOps`** with your clone path. All **`Run`** blocks assume you start from this lesson folder after **Step 1**.
-
 **Note:** If you use **Kind** instead, skip this lesson and do [1.1.2](../1.1.2-kind-kubernetes-in-docker/README.md). Do **not** run both for the same course track unless you know why.
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. Shell scripts document the same behavior in a header comment at the top of each file under `scripts/`.
+
+## One-time setup — set your course directory
+
+If you already set `COURSE_DIR` in Part 0, it is still set in your current shell. If you opened a new terminal, set it again:
+
+```bash
+COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+```
 
 ---
 
@@ -25,7 +31,7 @@ I work from the lesson directory so `./scripts` and `./yamls` paths work.
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-1-getting-started/1.1-learning-environment/1.1.1-minikube-setup-and-configuration
+cd "$COURSE_DIR/part-1-getting-started/1.1-learning-environment/1.1.1-minikube-setup-and-configuration"
 pwd
 ```
 
@@ -40,7 +46,7 @@ Path ending in `1.1.1-minikube-setup-and-configuration`.
 `chmod +x scripts/*.sh` sets the execute permission on every script in `scripts/` — filesystem metadata only.
 
 **Say:**  
-Shell scripts need the execute bit before I can run them.
+Shell scripts shipped in a git repo don't always have the execute bit set. This one command fixes all of them in one go — nothing is downloaded or changed on the cluster.
 
 **Run:**
 
@@ -221,4 +227,4 @@ Local clusters are how teams reproduce Kubernetes bugs before staging. Minikube 
 
 ## Next
 
-Either continue with [1.1.3 Local development clusters](../1.1.3-local-development-clusters/README.md) on this cluster, **or** if you chose Kind instead, open [1.1.2](../1.1.2-kind-kubernetes-in-docker/README.md) and skip this lesson next time.
+Continue to [1.1.3 Local development clusters](../1.1.3-local-development-clusters/README.md) to set up the `dev-local` workspace on this Minikube cluster.

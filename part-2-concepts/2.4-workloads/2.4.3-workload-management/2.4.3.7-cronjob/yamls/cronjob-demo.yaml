@@ -3,7 +3,11 @@ kind: CronJob
 metadata:
   name: cronjob-demo
 spec:
-  schedule: "*/5 * * * *"
+  # Every minute — easy to observe with: kubectl get jobs -w
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
       template:

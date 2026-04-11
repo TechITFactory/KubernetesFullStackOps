@@ -1,5 +1,7 @@
 # 1.2.2.1.6 Creating Highly Available Clusters with kubeadm
 
+> **Lab reality:** This lesson assumes **multiple control-plane nodes**, a **load balancer** (or stable VIP) in front of **TCP 6443**, and **root** on each node. Most learners finish [1.2.2.1.3 — Creating a cluster with kubeadm](../1.2.2.1.3-creating-a-cluster-with-kubeadm/README.md) first. If you only have a single VM or laptop lab, read [1.2.2.1.5 — HA topology options](../1.2.2.1.5-options-for-highly-available-topology/README.md) for the decision tree, then continue to [1.2.2.1.8 — kubelet config](../1.2.2.1.8-kubelet-config-using-kubeadm/README.md) without performing the multi-node joins below.
+
 - **Summary**: Bootstrap the first HA control-plane node with `--upload-certs`, then join additional control-plane nodes behind a shared load balancer.
 - **Content**: `--upload-certs` mechanics, joining control-plane vs worker nodes, verifying control-plane distribution, load balancer health checks.
 - **Lab**: Run `init-ha-control-plane.sh` as root on the first node, then use the printed join commands to add two more control-plane nodes and worker nodes.

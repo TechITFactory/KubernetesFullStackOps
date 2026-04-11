@@ -6,11 +6,17 @@
 
 Use this path for **legacy or migration** only — **not** for new clusters (**containerd** or **CRI-O** is simpler).
 
-**You need:** **Linux node**, **`sudo`**. Replace **`/path/to/K8sOps`** with your clone path.
+**You need:** **Linux node**, **`sudo`**.
 
 **Pick one runtime:** if you standardize on **containerd** or **CRI-O**, skip this lesson — see [1.2.1](../README.md).
 
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. `scripts/install-docker-cri-dockerd.sh` repeats the install story in a header comment at the top of the file.
+
+## One-time setup — set your course directory
+
+```bash
+COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+```
 
 ---
 
@@ -19,10 +25,13 @@ Use this path for **legacy or migration** only — **not** for new clusters (**c
 **What happens when you run this:**  
 `cd`, `pwd`, `chmod +x scripts/*.sh` — lesson folder + executable scripts only.
 
+**Say:**  
+I move into the lesson folder and make scripts executable before installing anything.
+
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.3-docker-engine-via-cri-dockerd
+cd "$COURSE_DIR/part-1-getting-started/1.2-production-environment/1.2.1-container-runtimes/1.2.1.3-docker-engine-via-cri-dockerd"
 pwd
 chmod +x scripts/*.sh
 ```

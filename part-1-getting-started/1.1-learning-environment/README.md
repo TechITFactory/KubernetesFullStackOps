@@ -10,13 +10,30 @@ Lessons **1.1.1–1.1.3** use the same format as Part 0: **teaching transcript**
 
 ## Pick your local stack
 
-```mermaid
-flowchart TD
-  Start[Need a local cluster] --> Choice{Pick one}
-  Choice -->|Single node addons| MK[1.1.1 Minikube]
-  Choice -->|Multi-node in Docker| KD[1.1.2 Kind]
-  MK --> DL[1.1.3 dev-local namespace]
-  KD --> DL
+**Say:**
+You only need one of these. Pick Minikube if you want single-node with addons like Ingress. Pick Kind if you want a multi-node cluster running inside Docker containers. Either way, both paths land in 1.1.3 to set up your dev-local workspace.
+
+```
+  Need a local cluster
+          │
+          ▼
+   ┌──────┴───────┐
+   │   Pick one   │
+   └──────┬───────┘
+          │
+    ┌─────┴──────┐
+    │            │
+    ▼            ▼
+ 1.1.1        1.1.2
+ Minikube      Kind
+ (single       (multi-node
+  node,         in Docker,
+  addons)       CI-style)
+    │            │
+    └─────┬──────┘
+          ▼
+    1.1.3 dev-local
+      namespace
 ```
 
 ## Sections

@@ -8,9 +8,13 @@ You already have a cluster from **Minikube (1.1.1)** **or** **Kind (1.1.2)**. Th
 
 - **Kind:** use context **`kind-kfsops-kind`** (e.g. `kubectl config use-context kind-kfsops-kind` before bootstrapping).
 
-Replace **`/path/to/K8sOps`** with your clone path.
-
 **Teaching tip:** Each step includes **What happens when you run this** before **Run**. Shell scripts document the same behavior in a header comment at the top of each file under `scripts/`.
+
+## One-time setup — set your course directory
+
+```bash
+COURSE_DIR="$HOME/K8sOps"   # ← change this if you cloned elsewhere
+```
 
 ---
 
@@ -19,10 +23,13 @@ Replace **`/path/to/K8sOps`** with your clone path.
 **What happens when you run this:**  
 `cd` into the lesson; `pwd` prints path; `chmod +x scripts/*.sh` makes scripts runnable — no cluster objects changed.
 
+**Say:**  
+I move into this lesson folder and make all scripts executable before doing anything with the cluster.
+
 **Run:**
 
 ```bash
-cd /path/to/K8sOps/part-1-getting-started/1.1-learning-environment/1.1.3-local-development-clusters
+cd "$COURSE_DIR/part-1-getting-started/1.1-learning-environment/1.1.3-local-development-clusters"
 pwd
 chmod +x scripts/*.sh
 ```
