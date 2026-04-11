@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: teardown.sh (Minikube)
+# Lesson: 1.1.1-minikube-setup-and-configuration (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires minikube on PATH.
+#   2. If profile PROFILE (default kfsops-minikube) exists: minikube delete --profile (stops VM,
+#      removes profile). Else prints nothing-to-do message.
+#
+# Exit: 0 (including "already gone"); non-zero if minikube missing or delete fails.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 PROFILE="${PROFILE:-kfsops-minikube}"

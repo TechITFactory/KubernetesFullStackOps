@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: create-kind-cluster.sh
+# Lesson: 1.1.2-kind-kubernetes-in-docker (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires kind, kubectl, docker on PATH.
+#   2. CONFIG_PATH defaults to ../yamls/kind-cluster-config.yaml; CLUSTER_NAME default kfsops-kind.
+#   3. If cluster name already exists → reuse message only. Else kind create cluster with that config.
+#   4. kubectl cluster-info and kubectl get nodes using context kind-${CLUSTER_NAME}.
+#
+# Exit: 0 when cluster exists/reachable; non-zero if create or kubectl fails.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME:-kfsops-kind}"

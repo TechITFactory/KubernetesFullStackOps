@@ -20,9 +20,14 @@ Replace **`/path/to/K8sOps`** in the steps below with the folder where you clone
 
 If pulls or builds are slow — do **Steps 1–4**, take a break, then do **5–6**.
 
+**Teaching tip:** Each step includes **What happens when you run this** so you know the effect *before* you paste. **Say** is optional camera talk. `scripts/verify-docker-basics.sh` has the same explanation in a comment header at the top of the file.
+
 ---
 
 ## Step 1 — Move into the lesson folder
+
+**What happens when you run this:**  
+`cd` moves into the lesson folder; `pwd` prints the path — no Docker state changes.
 
 **Say:**  
 I work from this lesson directory so `docker/` and `scripts/` paths are correct.
@@ -41,6 +46,9 @@ Path ending with `0.2-docker-basics-for-kubernetes`.
 
 ## Step 2 — Prove the Docker client talks to the daemon
 
+**What happens when you run this:**  
+`docker version` asks the CLI and daemon for version strings (proves both sides exist). `docker info` dumps daemon configuration and confirms the socket/API is reachable — still no containers created yet.
+
 **Say:**  
 If this step fails, nothing else will work — I fix Docker Desktop or `docker.service` first, not Kubernetes.
 
@@ -58,6 +66,9 @@ Client and Server sections; **no** “Cannot connect to the Docker daemon”.
 
 ## Step 3 — Pull an image and run a one-shot container
 
+**What happens when you run this:**  
+`docker pull hello-world` downloads image layers to local storage. `docker run --rm hello-world` creates a container from that image, runs its entrypoint (prints the hello message), then **removes** the container on exit — the image stays cached locally.
+
 **Say:**  
 `docker pull` copies an image from a **registry** (here, Docker Hub). `docker run` starts a **container**. `--rm` deletes the container when it exits — good for demos.
 
@@ -74,6 +85,9 @@ docker run --rm hello-world
 ---
 
 ## Step 4 — Build a small image and run it
+
+**What happens when you run this:**  
+`chmod +x scripts/*.sh` makes helper scripts executable. `docker build -t k8sops-p0-lab:0.2 docker/` reads `docker/Dockerfile`, runs its instructions, and tags the result as `k8sops-p0-lab:0.2` locally. `docker run --rm k8sops-p0-lab:0.2` runs one container from that tag and removes it when it exits.
 
 **Say:**  
 A **Dockerfile** is a recipe. `docker build` creates a **tagged image** on my machine. `docker run` starts a container from that image — same idea as a Pod that uses `image: ...` in YAML.
@@ -93,6 +107,9 @@ Build completes; container prints something like `K8sOps Part 0 Docker lab`.
 ---
 
 ## Step 5 — Run a server in the background, hit a port, clean up
+
+**What happens when you run this:**  
+`docker run -d --name k8sops-p0-web -p 8080:80 nginx:...` pulls `nginx` if needed, starts it **detached** with a fixed name, and publishes host `8080` → container `80`. `docker ps --filter` lists that running container. `docker logs ... | tail` shows the last few log lines. `curl` sends an HTTP GET to localhost:8080 and prints only the status code. `docker stop` stops the container; `docker rm` removes it (the `2>/dev/null || true` ignores “already removed” noise).
 
 **Say:**  
 `-p 8080:80` means: traffic to **my machine’s port 8080** goes to **port 80 inside the container**. That’s the same *idea* as publishing a service later — just on my laptop. I use a **name** so I can stop and remove the container cleanly.
@@ -114,6 +131,9 @@ Container shows as running in `docker ps`; `curl` prints `200` (or another succe
 ---
 
 ## Step 6 — Run the course verify script
+
+**What happens when you run this:**  
+`./scripts/verify-docker-basics.sh` checks `docker info`, then pull/run `hello-world`, then build `docker/Dockerfile` and run that image — end-to-end smoke test; leaves the built image tagged on your machine.
 
 **Say:**  
 This script repeats pull, build, and run so I can regression-check my machine anytime.
@@ -173,6 +193,9 @@ ENV LAB_USER=yourname
 ```
 
 Rebuild and prove the variable is visible:
+
+**What happens when you run this:**  
+Rebuild bakes `ENV LAB_USER=...` into a new image layer. `docker run ... env | grep LAB_USER` starts a throwaway container, dumps environment variables, and filters for your variable — proves the image carries that metadata.
 
 **Run:**
 

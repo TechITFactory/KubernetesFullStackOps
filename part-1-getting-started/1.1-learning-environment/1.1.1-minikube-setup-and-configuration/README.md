@@ -10,9 +10,14 @@ Replace **`/path/to/K8sOps`** with your clone path. All **`Run`** blocks assume 
 
 **Note:** If you use **Kind** instead, skip this lesson and do [1.1.2](../1.1.2-kind-kubernetes-in-docker/README.md). Do **not** run both for the same course track unless you know why.
 
+**Teaching tip:** Each step includes **What happens when you run this** before **Run**. Shell scripts document the same behavior in a header comment at the top of each file under `scripts/`.
+
 ---
 
 ## Step 1 — Open this lesson in the terminal
+
+**What happens when you run this:**  
+`cd` moves into this lesson; `pwd` prints the path — no cluster or Docker changes.
 
 **Say:**  
 I work from the lesson directory so `./scripts` and `./yamls` paths work.
@@ -31,6 +36,9 @@ Path ending in `1.1.1-minikube-setup-and-configuration`.
 
 ## Step 2 — Make scripts executable
 
+**What happens when you run this:**  
+`chmod +x scripts/*.sh` sets the execute permission on every script in `scripts/` — filesystem metadata only.
+
 **Say:**  
 Shell scripts need the execute bit before I can run them.
 
@@ -46,6 +54,9 @@ No errors.
 ---
 
 ## Step 3 — Install Minikube and kubectl (idempotent)
+
+**What happens when you run this:**  
+`install-minikube.sh` may download Minikube and kubectl from the network, then `sudo install` them into `/usr/local/bin` (skips if versions already match). See the script header for OS/arch and env vars.
 
 **Say:**  
 The install script checks what is already installed — safe to run more than once. It may use `sudo` to place binaries under `/usr/local/bin`.
@@ -63,6 +74,9 @@ Success messages; `minikube version` and `kubectl version --client` work afterwa
 
 ## Step 4 — Start the Minikube cluster (idempotent)
 
+**What happens when you run this:**  
+`start-minikube.sh` runs `minikube start` for profile `kfsops-minikube` (or reuses if already Running), enables the **ingress** addon, then `kubectl get nodes`. Creates/starts a local VM or Docker-backed node depending on driver.
+
 **Say:**  
 The start script uses a **profile** (this course uses `kfsops-minikube`). If the cluster is already running, the script reuses it. Ingress add-on is enabled for later lessons.
 
@@ -79,6 +93,9 @@ Cluster starts or “already running”; `kubectl get nodes` shows one node `Rea
 
 ## Step 5 — Apply the smoke test (namespace + app + service)
 
+**What happens when you run this:**  
+`kubectl apply -f yamls/smoke-test.yaml` sends the manifest to the API server: creates or updates Namespace `minikube-lab`, Deployment `hello-nginx`, and its Service (declarative; safe to re-run).
+
 **Say:**  
 One manifest creates namespace `minikube-lab`, a Deployment `hello-nginx`, and a Service. This proves scheduling, DNS, and networking.
 
@@ -94,6 +111,9 @@ kubectl apply -f yamls/smoke-test.yaml
 ---
 
 ## Step 6 — Wait until the pod is ready
+
+**What happens when you run this:**  
+`kubectl rollout status` blocks until the Deployment’s ReplicaSet reports success or times out. `kubectl get pods` lists pod name, phase, and node — read-only after objects exist.
 
 **Say:**  
 I wait for the Deployment to roll out before I open the service — otherwise I might hit an empty endpoint.
@@ -112,6 +132,9 @@ kubectl get pods -n minikube-lab -o wide
 
 ## Step 7 — Reach the app from your machine
 
+**What happens when you run this:**  
+`minikube service` starts a tunnel from your host to the cluster Service URL (and may open a browser). Traffic flows host → minikube network → Service → Pod — blocks until you interrupt in some setups.
+
 **Say:**  
 `minikube service` opens a tunnel and often launches a browser to the Nginx welcome page. That confirms the full path from laptop → cluster → pod.
 
@@ -127,6 +150,9 @@ URL printed and/or browser shows Nginx; or use the URL with `curl` in another te
 ---
 
 ## Step 8 — Quick validation (optional recap)
+
+**What happens when you run this:**  
+Three read-only `kubectl get` calls: nodes, pods in `minikube-lab`, Services — confirms API and workload state.
 
 **Say:**  
 These three commands are my fast health check before moving on.
@@ -145,6 +171,9 @@ One Ready node; pod Running; `hello-nginx` Service present.
 ---
 
 ## Step 9 — Tear down when you are done (optional)
+
+**What happens when you run this:**  
+`teardown.sh` runs `minikube delete` for profile `kfsops-minikube` if it exists — frees CPU/RAM/disk; kubeconfig context for that profile may be removed.
 
 **Say:**  
 Teardown deletes the Minikube profile for this course. Idempotent — safe if already deleted.

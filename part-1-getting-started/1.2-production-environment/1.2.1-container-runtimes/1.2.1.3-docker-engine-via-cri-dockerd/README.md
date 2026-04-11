@@ -10,9 +10,14 @@ Use this path for **legacy or migration** only — **not** for new clusters (**c
 
 **Pick one runtime:** if you standardize on **containerd** or **CRI-O**, skip this lesson — see [1.2.1](../README.md).
 
+**Teaching tip:** Each step includes **What happens when you run this** before **Run**. `scripts/install-docker-cri-dockerd.sh` repeats the install story in a header comment at the top of the file.
+
 ---
 
 ## Step 1 — Open this lesson in the terminal
+
+**What happens when you run this:**  
+`cd`, `pwd`, `chmod +x scripts/*.sh` — lesson folder + executable scripts only.
 
 **Run:**
 
@@ -28,6 +33,9 @@ Path ends with `1.2.1.3-docker-engine-via-cri-dockerd`.
 ---
 
 ## Step 2 — Install Docker + cri-dockerd (root, idempotent)
+
+**What happens when you run this:**  
+`sudo ./scripts/install-docker-cri-dockerd.sh` apt-installs `docker.io` and `cri-dockerd`, enables/restarts Docker and cri-docker — see script header.
 
 **Say:**  
 Script installs packages and enables **docker** and **cri-docker** (socket + service). Idempotent package checks.
@@ -45,6 +53,9 @@ Completes without error.
 
 ## Step 3 — Both services are up
 
+**What happens when you run this:**  
+`systemctl is-active` / `status` for Docker and cri-docker units — verifies both daemons are running.
+
 **Run:**
 
 ```bash
@@ -60,6 +71,9 @@ Both `active` (unit names may be `cri-docker` / `cri-docker.socket` depending on
 ---
 
 ## Step 4 — CRI socket (not Docker’s socket)
+
+**What happens when you run this:**  
+`ls -la /run/cri-dockerd.sock` confirms the **CRI** shim socket exists (distinct from Docker’s API socket).
 
 **Say:**  
 kubeadm must use **cri-dockerd’s** CRI socket — **not** `/var/run/docker.sock`.
@@ -77,6 +91,9 @@ Socket exists.
 
 ## Step 5 — CRI responds through cri-dockerd
 
+**What happens when you run this:**  
+`crictl ... info` talks to cri-dockerd’s endpoint and returns JSON — proves kubelet could use the same socket.
+
 **Run:**
 
 ```bash
@@ -89,6 +106,9 @@ JSON; no connection error.
 ---
 
 ## Step 6 — Cgroup driver check (Docker)
+
+**What happens when you run this:**  
+`docker info | grep -i cgroup` prints Docker’s cgroup driver line — read-only; you may need to change `daemon.json` and restart Docker if it shows **cgroupfs**.
 
 **Say:**  
 On older distros Docker may still use **cgroupfs**. kubelet should use **systemd** — they must match. Newer Ubuntu often defaults correctly.
@@ -106,6 +126,9 @@ Ideally `systemd`. If you see **cgroupfs**, configure `/etc/docker/daemon.json` 
 
 ## Step 7 — Match kubeadm to cri-dockerd socket
 
+**What happens when you run this:**  
+`grep` on the example kubeadm node config shows the expected `criSocket` for cri-dockerd — no apply.
+
 **Run:**
 
 ```bash
@@ -118,6 +141,9 @@ grep -n criSocket yamls/kubeadm-node-config-cri-dockerd.yaml
 ---
 
 ## Step 8 — Fast recap
+
+**What happens when you run this:**  
+`systemctl status` for both services and `crictl version` through the shim — final verification pass.
 
 **Run:**
 

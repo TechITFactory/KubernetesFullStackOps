@@ -11,7 +11,13 @@
 | `scripts/install-kubeadm.sh` | Idempotent: adds the Kubernetes APT repo, installs and holds kubeadm + kubelet + kubectl |
 | `yamls/repo-version-plan.yaml` | Reference doc — maps Kubernetes minor versions to repo URLs and package holds |
 
+**Teaching tip:** Use **What happens when you run this** before each runnable block so you can teach without discovering side effects live. The same steps are documented in **WHAT THIS DOES WHEN YOU RUN IT** at the top of `scripts/install-kubeadm.sh`.
+
 ## Quick Start
+
+**What happens when you run this:**  
+- `sudo ... install-kubeadm.sh` — as root, adds the Kubernetes apt repo for `K8S_MINOR_VERSION`, installs `kubelet`/`kubeadm`/`kubectl`, runs `apt-mark hold` on those packages, enables kubelet (it may not stay healthy until after `kubeadm init`/`join` — expected).  
+- The three `version` commands — print client/binary versions only; no cluster changes.
 
 ```bash
 # Run as root on every node (control-plane and workers)
@@ -175,6 +181,9 @@ At companies running hundreds of nodes, **version drift** is a real operational 
 Next: 1.2.2.1.2 — Troubleshooting kubeadm, covering diagnostic collection before you touch a failing node.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Re-runs the same three version prints — quick proof the binaries are on PATH after the lesson.
 
 ```bash
 kubeadm version

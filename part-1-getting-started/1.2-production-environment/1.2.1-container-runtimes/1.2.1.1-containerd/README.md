@@ -10,9 +10,14 @@ Replace **`/path/to/K8sOps`** with your clone path.
 
 **Pick one runtime:** if you use **CRI-O** or **Docker + cri-dockerd**, skip this lesson and open the matching sibling under [1.2.1](../README.md).
 
+**Teaching tip:** Each step includes **What happens when you run this** before **Run**. `scripts/install-containerd.sh` repeats the install story in a header comment at the top of the file.
+
 ---
 
 ## Step 1 — Open this lesson in the terminal
+
+**What happens when you run this:**  
+`cd` into the lesson; `pwd` confirms; `chmod +x scripts/*.sh` makes install script runnable — no packages installed yet.
 
 **Say:**  
 I run install scripts from this folder so `./scripts` resolves.
@@ -32,6 +37,9 @@ Path ends with `1.2.1.1-containerd`.
 
 ## Step 2 — Install containerd (root, idempotent)
 
+**What happens when you run this:**  
+`sudo ./scripts/install-containerd.sh` runs the script as root: `apt` install/patch config/enable systemd for containerd — see script header for the exact sequence.
+
 **Say:**  
 The script installs packages, generates or patches config (`SystemdCgroup = true`), and restarts **containerd**. Safe to run again on the same node.
 
@@ -48,6 +56,9 @@ Script completes without error; no duplicate-install explosions on re-run.
 
 ## Step 3 — Service is up
 
+**What happens when you run this:**  
+`systemctl is-active` prints `active` or not; `systemctl status` shows unit state and recent log lines — read-only aside from systemd’s status query.
+
 **Run:**
 
 ```bash
@@ -61,6 +72,9 @@ sudo systemctl status containerd --no-pager
 ---
 
 ## Step 4 — CRI socket exists
+
+**What happens when you run this:**  
+`ls -la` shows the Unix socket file metadata — confirms containerd is listening on the expected path.
 
 **Say:**  
 kubelet will dial this socket. Wrong path = node never becomes Ready later.
@@ -78,6 +92,9 @@ Socket file present.
 
 ## Step 5 — CRI responds
 
+**What happens when you run this:**  
+`crictl ... info` calls the CRI over the socket and prints JSON runtime info — proves the API answers; does not start a workload.
+
 **Run:**
 
 ```bash
@@ -90,6 +107,9 @@ JSON with healthy runtime info (no “connection refused”).
 ---
 
 ## Step 6 — Match kubeadm to this socket
+
+**What happens when you run this:**  
+`grep` searches the example YAML for `criSocket` lines — read-only; shows what you’ll pass to kubeadm later.
 
 **Say:**  
 When you bootstrap with kubeadm, node registration must use the **same** socket. This repo ships an example manifest.
@@ -106,6 +126,9 @@ Line showing `unix:///run/containerd/containerd.sock` (or equivalent).
 ---
 
 ## Step 7 — Fast recap
+
+**What happens when you run this:**  
+`systemctl status` again for sanity; `crictl version` prints client/server CRI versions — still verification only.
 
 **Run:**
 

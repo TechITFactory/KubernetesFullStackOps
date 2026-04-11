@@ -11,7 +11,15 @@
 | `scripts/init-ha-control-plane.sh` | Idempotent: runs `kubeadm init` with `--upload-certs`, skips if already initialised |
 | `yamls/ha-kubeadm-config.yaml` | HA cluster config — requires `controlPlaneEndpoint` set to your load balancer address |
 
+**Teaching tip:** **What happens when you run this** matches **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/init-ha-control-plane.sh`. Replace join placeholders with the real command from your `kubeadm init` output.
+
 ## Quick Start
+
+**What happens when you run this:**  
+1. `init-ha-control-plane.sh` — `kubeadm init --config ... --upload-certs` on first CP (skips if already init); uploads cert bundle for other CP joins.  
+2. `kubectl apply` CNI — same as single-CP path; required before extra nodes go Ready.  
+3. `kubeadm join ... --control-plane --certificate-key` — on **each additional** CP node; pulls certs, starts local control-plane static pods.  
+4. `kubectl get nodes -l ...control-plane` — lists control-plane nodes only (read-only).
 
 ```bash
 # 1. On first control-plane node (as root)
@@ -203,6 +211,9 @@ For etcd specifically: etcd is sensitive to disk latency. In cloud environments,
 Next: 1.2.2.1.7 — Set up a High Availability etcd Cluster with kubeadm, for teams choosing the external etcd topology.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Nodes wide output; control-plane-related `kube-system` pods (or fallback head); `kubernetes` Service endpoints — all read-only HA health snapshot.
 
 ```bash
 kubectl get nodes -o wide

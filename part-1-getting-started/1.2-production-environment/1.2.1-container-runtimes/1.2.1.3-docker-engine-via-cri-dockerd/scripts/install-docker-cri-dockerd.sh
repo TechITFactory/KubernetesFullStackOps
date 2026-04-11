@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: install-docker-cri-dockerd.sh
+# Lesson: 1.2.1.3-docker-engine-via-cri-dockerd (Debian/Ubuntu-style; see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Must run as root. apt-get update; installs docker.io and cri-dockerd if missing.
+#   2. Enables and starts docker + cri-docker.socket; restarts both services.
+#
+# Exit: 0 on success; non-zero on apt or systemd failure.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 require_root() {

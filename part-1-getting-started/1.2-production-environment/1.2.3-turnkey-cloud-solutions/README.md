@@ -11,7 +11,13 @@
 | `scripts/cloud-readiness-check.sh` | Checks cloud CLIs (aws, gcloud, az), authentication state, and kubectl context |
 | `yamls/turnkey-cloud-options.yaml` | Structured comparison of managed Kubernetes providers — use as a decision record |
 
+**Teaching tip:** **What happens when you run this** is below; **WHAT THIS DOES WHEN YOU RUN IT** is in `scripts/cloud-readiness-check.sh`.
+
 ## Quick Start
+
+**What happens when you run this:**  
+- `cloud-readiness-check.sh` — prints which cloud/dev CLIs exist, runs light auth checks (AWS/GCP/Azure), prints current kubectl context — **creates no cloud resources**.  
+- `cat turnkey-cloud-options.yaml` — prints provider comparison reference (read-only).
 
 ```bash
 # Check your cloud tooling
@@ -162,6 +168,9 @@ Run this every time you start work on a cluster provisioning task. Expired cloud
 This concludes Part 1 of the course. In Part 2 we move into Kubernetes Concepts — the mental model behind every resource you create and manage.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Re-runs CLI/auth snapshot; prints kubeconfig context; `kubectl get nodes` if API works else a single echo — no provisioning.
 
 ```bash
 ./scripts/cloud-readiness-check.sh

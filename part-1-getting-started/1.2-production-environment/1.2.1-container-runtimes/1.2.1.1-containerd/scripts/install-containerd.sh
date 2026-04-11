@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: install-containerd.sh
+# Lesson: 1.2.1.1-containerd (Debian/Ubuntu-style; see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Must run as root. apt-get update; installs containerd package if missing.
+#   2. Ensures /etc/containerd/config.toml exists (containerd config default if new).
+#   3. Python edits config: enables CRI (removes disabled_plugins cri), sets SystemdCgroup true.
+#   4. systemctl enable --now + restart containerd.
+#
+# Exit: 0 on success; non-zero on apt/python/systemctl failure.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 CONTAINERD_CONFIG="${CONTAINERD_CONFIG:-/etc/containerd/config.toml}"

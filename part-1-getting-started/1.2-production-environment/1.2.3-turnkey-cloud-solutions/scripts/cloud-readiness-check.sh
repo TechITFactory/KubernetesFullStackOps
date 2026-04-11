@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: cloud-readiness-check.sh
+# Lesson: 1.2.3-turnkey-cloud-solutions (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Prints [OK]/[MISSING] for CLIs: aws, gcloud, az, kubectl, helm, terraform, eksctl (with install hints).
+#   2. Probes cloud auth: AWS sts, GCP active account, Azure account show — [OK]/[WARN] only.
+#   3. Prints current kubectl context if kubectl exists — no resources created.
+#
+# Exit: always 0 from script.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 check_tool() {

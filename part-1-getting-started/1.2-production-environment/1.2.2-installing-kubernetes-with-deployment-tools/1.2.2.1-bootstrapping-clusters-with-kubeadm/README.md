@@ -41,6 +41,9 @@ Design and initialise a cluster with both IPv4 and IPv6 pod and service CIDRs �
 
 ## Module wrap — quick validation
 
+**What happens when you run this:**  
+Cluster-info, nodes, `kube-system` pods, default `kubernetes` Service — all read-only. Optional block prints Service `clusterIPs` (one or two families).
+
 End-to-end kubeadm health after the lessons you actually ran (skip HA/etcd/dual-stack checks if you did not build those topologies):
 
 ```bash

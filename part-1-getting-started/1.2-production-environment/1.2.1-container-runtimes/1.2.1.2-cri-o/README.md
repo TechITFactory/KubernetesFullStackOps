@@ -10,9 +10,14 @@ Replace **`/path/to/K8sOps`** with your clone path.
 
 **Pick one runtime:** if you use **containerd** or **Docker + cri-dockerd**, skip this lesson — see [1.2.1](../README.md).
 
+**Teaching tip:** Each step includes **What happens when you run this** before **Run**. `scripts/install-crio.sh` repeats the install story in a header comment at the top of the file.
+
 ---
 
 ## Step 1 — Open this lesson in the terminal
+
+**What happens when you run this:**  
+`cd`, `pwd`, `chmod +x scripts/*.sh` — navigate and mark scripts executable only.
 
 **Run:**
 
@@ -28,6 +33,9 @@ Path ends with `1.2.1.2-cri-o`.
 ---
 
 ## Step 2 — Install CRI-O (root, idempotent)
+
+**What happens when you run this:**  
+`sudo ./scripts/install-crio.sh` installs packages, writes `/etc/crio/crio.conf.d/02-cgroup-manager.conf`, enables/restarts `crio` — full sequence in the script header.
 
 **Say:**  
 Script installs CRI-O + runc, writes cgroup manager drop-in (`systemd`), enables and restarts **crio**.
@@ -45,6 +53,9 @@ Script finishes cleanly; re-run does not break an existing install.
 
 ## Step 3 — Service is up
 
+**What happens when you run this:**  
+`systemctl is-active` / `status` query systemd for the `crio` unit — no config files changed.
+
 **Run:**
 
 ```bash
@@ -59,6 +70,9 @@ sudo systemctl status crio --no-pager
 
 ## Step 4 — CRI socket exists
 
+**What happens when you run this:**  
+`ls -la` lists the CRI-O Unix socket — confirms path kubelet must use.
+
 **Run:**
 
 ```bash
@@ -71,6 +85,9 @@ Socket present.
 ---
 
 ## Step 5 — CRI responds
+
+**What happens when you run this:**  
+`crictl ... info` hits the CRI-O endpoint and prints JSON; optional `grep` filters for cgroup-related fields — read-only.
 
 **Run:**
 
@@ -91,6 +108,9 @@ sudo crictl --runtime-endpoint unix:///var/run/crio/crio.sock info | grep -i cgr
 
 ## Step 6 — Match kubeadm to this socket
 
+**What happens when you run this:**  
+`grep` shows the example `criSocket` line in the repo YAML — no cluster apply yet.
+
 **Run:**
 
 ```bash
@@ -103,6 +123,9 @@ grep -n criSocket yamls/kubeadm-node-config-crio.yaml
 ---
 
 ## Step 7 — Fast recap
+
+**What happens when you run this:**  
+`systemctl status crio` + `crictl version` — final sanity check of service and CRI versions.
 
 **Run:**
 

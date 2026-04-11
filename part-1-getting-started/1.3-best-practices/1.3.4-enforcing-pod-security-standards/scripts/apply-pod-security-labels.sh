@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: apply-pod-security-labels.sh
+# Lesson: 1.3.4-enforcing-pod-security-standards (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires kubectl. Ensures namespace NAMESPACE exists (default pss-restricted) via dry-run apply.
+#   2. kubectl label namespace with pod-security.kubernetes.io enforce/warn/audit (+ version=latest),
+#      levels default to restricted (overridable by env vars).
+#
+# Exit: 0 on success; non-zero if kubectl fails.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-pss-restricted}"

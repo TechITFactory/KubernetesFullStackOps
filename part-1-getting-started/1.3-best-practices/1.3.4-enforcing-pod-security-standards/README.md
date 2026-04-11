@@ -12,7 +12,15 @@
 - `yamls/restricted-noncompliant-pod.yaml`
 - `yamls/failure-troubleshooting.yaml`
 
+**Teaching tip:** **WHAT THIS DOES WHEN YOU RUN IT** is in `scripts/apply-pod-security-labels.sh`. Expect the **noncompliant** apply to be **rejected** when enforcement works.
+
 ## Lab Steps (Linux)
+
+**What happens when you run this:**  
+- `apply-pod-security-labels.sh` — ensures namespace (default `pss-restricted`) exists and sets Pod Security **labels** (enforce/warn/audit).  
+- `restricted-namespace.yaml` — optional extra namespace manifest if used in your variant.  
+- `restricted-compliant-pod.yaml` — should **succeed** admission.  
+- `restricted-noncompliant-pod.yaml` — should **fail** with admission error under `restricted`.
 
 ```bash
 ./scripts/apply-pod-security-labels.sh
@@ -35,6 +43,9 @@ kubectl apply -f yamls/restricted-noncompliant-pod.yaml
 [9:00–10:00] Security is real only when non-compliant workloads are blocked.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Shows namespace labels; lists pods; re-applies noncompliant pod (expect **deny** if PSS still enforced).
 
 ```bash
 kubectl get ns --show-labels | grep restricted

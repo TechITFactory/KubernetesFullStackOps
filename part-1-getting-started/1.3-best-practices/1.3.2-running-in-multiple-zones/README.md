@@ -11,7 +11,14 @@
 - `yamls/storage-zone-notes.yaml`
 - `yamls/failure-troubleshooting.yaml`
 
+**Teaching tip:** **What happens when you run this** below; see **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/check-multi-zone-labels.sh`.
+
 ## Lab Steps (Linux)
+
+**What happens when you run this:**  
+- `check-multi-zone-labels.sh` — fails if any node lacks `topology.kubernetes.io/zone` (read-only check).  
+- `kubectl apply multi-zone-deployment.yaml` — deploys sample with zone spread (cluster change).  
+- `kubectl get pods -o wide` — verify placement across zones.
 
 ```bash
 ./scripts/check-multi-zone-labels.sh
@@ -33,6 +40,9 @@ kubectl get pods -o wide
 [9:00–10:00] Multi-zone is only useful when scheduling and storage are zone-aware.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Label check again; nodes with zone column; pod placement — read-only except script may exit 1 if labels missing.
 
 ```bash
 ./scripts/check-multi-zone-labels.sh

@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: teardown.sh (dev-local namespace)
+# Lesson: 1.1.3-local-development-clusters (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires kubectl. If namespace NAMESPACE (default dev-local) exists → kubectl delete namespace
+#      (cascades all resources in that namespace). Else prints nothing to do.
+#
+# Exit: 0; non-zero on delete failure.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-dev-local}"

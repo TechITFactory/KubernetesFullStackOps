@@ -10,7 +10,13 @@
 - `yamls/node-validation-baseline.yaml`
 - `yamls/failure-troubleshooting.yaml`
 
+**Teaching tip:** Run `validate-node-setup.sh` **on the Linux node** before `kubeadm join`. **WHAT THIS DOES WHEN YOU RUN IT** is in that script’s header.
+
 ## Lab Steps (Linux)
+
+**What happens when you run this:**  
+- `validate-node-setup.sh` — local checks (swap, modules, sysctl, sockets, binaries); exits 1 on blocking failures — **no cluster API required**.  
+- `kubectl apply node-validation-baseline.yaml` — applies in-cluster baseline manifests (needs working `kubectl` context).
 
 ```bash
 ./scripts/validate-node-setup.sh
@@ -31,6 +37,9 @@ kubectl apply -f yamls/node-validation-baseline.yaml
 [9:00–10:00] Node validation is a hard gate before any join operation.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Re-validate node locally; then read-only `kubectl` view of first node’s summary.
 
 ```bash
 ./scripts/validate-node-setup.sh

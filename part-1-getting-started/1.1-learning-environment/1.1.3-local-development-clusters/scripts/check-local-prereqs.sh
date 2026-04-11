@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: check-local-prereqs.sh
+# Lesson: 1.1.3-local-development-clusters (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Prints [OK]/[MISSING]/[OPTIONAL] for: kubectl (required), docker, minikube, kind, helm.
+#   2. Prints current kubectl context (or note if none) — read-only; does not change cluster.
+#
+# Exit: always 0 from script logic (even if tools missing); individual lines tell the story.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 check() {

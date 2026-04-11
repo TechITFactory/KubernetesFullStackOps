@@ -11,7 +11,13 @@
 | `scripts/validate-kubeadm-config.sh` | Runs `kubeadm config validate` and prints the effective defaults for comparison |
 | `yamls/custom-cluster-config.yaml` | Reference config — customises API server SANs, kube-proxy mode, controller-manager flags |
 
+**Teaching tip:** **What happens when you run this** is below; details are in **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/validate-kubeadm-config.sh`. **`kubeadm init` here will create a real control plane** — only run on a clean node intended for that cluster.
+
 ## Quick Start
+
+**What happens when you run this:**  
+- `validate-kubeadm-config.sh` — `kubeadm config validate` on the YAML, then `kubeadm config print init-defaults` for comparison (no cluster changes).  
+- `sudo kubeadm init --config ...` — **destructive on this node if already initialised elsewhere** — runs full init using your custom config; generates PKI, static pods, etc.
 
 ```bash
 # Validate before using
@@ -204,6 +210,9 @@ Never manually edit `/etc/kubernetes/manifests/` static pod files — kubeadm wi
 Next: 1.2.2.1.5 — Options for Highly Available Topology, where we choose how to design a cluster that survives control-plane node failure.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Re-validates config; fetches `kubeadm-config` ConfigMap from a **running** cluster (requires working `kubectl` context) and prints first 50 lines — read-only.
 
 ```bash
 ./scripts/validate-kubeadm-config.sh

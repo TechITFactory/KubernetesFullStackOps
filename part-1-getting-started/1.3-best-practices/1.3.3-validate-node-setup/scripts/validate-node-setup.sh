@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: validate-node-setup.sh
+# Lesson: 1.3.3-validate-node-setup (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Read-only checks: kubelet/kubeadm/kubectl/sysctl/ss on PATH; swap must be off; overlay + br_netfilter
+#      modules; sysctl bridge-nf-call-iptables and ip_forward == 1.
+#   2. Reports presence of common CRI sockets (containerd, cri-o, cri-dockerd) — warns if missing.
+#
+# Exit: 0 if no blocking failures; 1 if required commands missing or swap enabled.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 failed=0

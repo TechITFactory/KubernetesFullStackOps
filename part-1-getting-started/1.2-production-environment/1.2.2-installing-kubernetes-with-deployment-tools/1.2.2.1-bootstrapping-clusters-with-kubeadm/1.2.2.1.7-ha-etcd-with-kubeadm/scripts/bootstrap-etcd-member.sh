@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: bootstrap-etcd-member.sh
+# Lesson: 1.2.2.1.7-ha-etcd-with-kubeadm (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Must run as root on each intended etcd node. Downloads etcd+etcdctl from GitHub releases
+#      (ETCD_VERSION default v3.5.13) into INSTALL_DIR if missing or version mismatch.
+#   2. Creates ETCD_DATA_DIR (chmod 700) and ETCD_PKI_DIR for certs kubeadm will use.
+#   3. Prints manual next steps (systemd unit, kubeadm init with external etcd) — does not start etcd.
+#
+# Exit: 0 on install prep; non-zero on curl/tar failure.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 ETCD_VERSION="${ETCD_VERSION:-v3.5.13}"

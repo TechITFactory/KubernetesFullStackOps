@@ -11,7 +11,14 @@
 - `yamls/topology-spread-sample.yaml`
 - `yamls/failure-troubleshooting.yaml`
 
+**Teaching tip:** **What happens when you run this** is below; script header in `scripts/check-large-cluster-readiness.sh` matches.
+
 ## Lab Steps (Linux)
+
+**What happens when you run this:**  
+- `check-large-cluster-readiness.sh` — counts nodes/pods, probes PriorityClass/PDB/`/readyz`, prints topology labels — read-only warnings.  
+- `kubectl apply topology-spread-sample.yaml` — creates/updates sample workload with spread constraints (cluster change).  
+- `kubectl get pods -o wide` — shows which node each pod landed on (read-only).
 
 ```bash
 ./scripts/check-large-cluster-readiness.sh
@@ -33,6 +40,9 @@ kubectl get pods -o wide
 [9:00–10:00] This checklist is your pre-scale gate in real teams.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Re-run readiness script; wide lists for nodes and pods — recap only.
 
 ```bash
 ./scripts/check-large-cluster-readiness.sh

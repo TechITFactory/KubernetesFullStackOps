@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: start-minikube.sh
+# Lesson: 1.1.1-minikube-setup-and-configuration (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires minikube, kubectl; if DRIVER=docker (default), requires docker.
+#   2. Checks minikube profile PROFILE (default kfsops-minikube): if already Running, skips start.
+#      Otherwise runs minikube start with DRIVER, CPUS, MEMORY_MB, KUBERNETES_VERSION.
+#   3. Enables ingress addon on that profile.
+#   4. Verifies kubectl current-context, prints kubectl get nodes and smoke-test apply hint.
+#
+# Exit: 0 if cluster ready; non-zero if prerequisites or minikube start fail.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 DRIVER="${DRIVER:-docker}"

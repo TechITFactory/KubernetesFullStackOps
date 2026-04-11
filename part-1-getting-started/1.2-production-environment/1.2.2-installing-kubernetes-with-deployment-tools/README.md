@@ -17,6 +17,9 @@ The complete kubeadm workflow: installing packages, initialising the control pla
 
 ## Module wrap — quick validation
 
+**What happens when you run this:**  
+Prints kubeadm/kubectl client info, current context, nodes, and first ~20 `kube-system` pods — read-only (path to `cloud-readiness-check.sh` is separate for 1.2.3).
+
 After **1.2.2.1** plus **1.2.3** (read/decision), sanity-check tooling and cluster reachability:
 
 ```bash

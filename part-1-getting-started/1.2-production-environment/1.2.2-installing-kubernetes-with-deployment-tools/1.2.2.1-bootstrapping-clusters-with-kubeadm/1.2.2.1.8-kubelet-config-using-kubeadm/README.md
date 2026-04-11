@@ -11,7 +11,13 @@
 | `scripts/apply-kubelet-config.sh` | Idempotent: writes kubelet config to the kubeadm drop-in directory, restarts kubelet |
 | `yamls/kubeletconfiguration.yaml` | KubeletConfiguration with cgroup driver, eviction thresholds, and authentication settings |
 
+**Teaching tip:** **WHAT THIS DOES WHEN YOU RUN IT** is in `scripts/apply-kubelet-config.sh`. The `kubectl proxy` + `curl configz` path exposes kubelet config over the API — use a real node name and stop proxy when done.
+
 ## Quick Start
+
+**What happens when you run this:**  
+- `apply-kubelet-config.sh` — copies `yamls/kubeletconfiguration.yaml` to `/var/lib/kubelet/config.yaml`, **restarts kubelet** (brief disruption risk on that node).  
+- `kubectl proxy` — starts local HTTP proxy to the API in background; `curl .../configz` reads kubelet’s live config via the apiserver **node proxy** (replace `<node-name>`).
 
 ```bash
 # Run as root on each node (control-plane and workers)
@@ -203,6 +209,9 @@ Tools like **Kubelet Configuration Controller** (part of the Node Feature Discov
 Next: 1.2.2.1.9 — Dual-stack Support with kubeadm, for clusters that need to serve both IPv4 and IPv6 traffic.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+`systemctl is-active kubelet` on this host; `kubectl` reads first node’s conditions slice from describe — read-only except systemd query.
 
 ```bash
 sudo systemctl is-active kubelet

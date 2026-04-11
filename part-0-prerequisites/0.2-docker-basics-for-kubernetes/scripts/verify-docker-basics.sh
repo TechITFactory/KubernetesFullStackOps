@@ -1,4 +1,19 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: verify-docker-basics.sh
+# Lesson:  part-0-prerequisites / 0.2-docker-basics-for-kubernetes (README Step 6)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Verifies `docker` is on PATH; verifies daemon is reachable via `docker info`.
+#   2. docker pull hello-world — downloads the tiny test image from Docker Hub.
+#   3. docker run --rm hello-world — creates a throwaway container, runs it, removes it.
+#   4. docker build -t $IMAGE_TAG ../docker — builds the course Dockerfile (default tag
+#      k8sops-p0-lab:0.2; override with env K8SOPS_P0_DOCKER_IMAGE).
+#   5. docker run --rm $IMAGE_TAG — runs that image once to prove it works.
+#   6. Prints verify-docker-basics: OK.
+#
+# Exit: 0 on success; non-zero if any docker command fails.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 command -v docker >/dev/null 2>&1 || {

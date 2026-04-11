@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: bootstrap-dev-workspace.sh
+# Lesson: 1.1.3-local-development-clusters (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires kubectl and a reachable cluster (kubectl cluster-info).
+#   2. kubectl apply: dev-namespace.yaml, resource-quota.yaml, limit-range.yaml, whoami-deployment.yaml
+#      from ../yamls/ (namespace NAMESPACE default dev-local).
+#   3. kubectl rollout status deployment/whoami in that namespace (60s timeout).
+#   4. kubectl get all -n NAMESPACE — shows created objects.
+#
+# Exit: 0 on success; non-zero if apply or rollout fails.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-dev-local}"

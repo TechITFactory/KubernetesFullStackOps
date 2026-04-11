@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: install-crio.sh
+# Lesson: 1.2.1.2-cri-o (Debian/Ubuntu-style; see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Must run as root. apt-get update; installs cri-o + cri-o-runc if missing.
+#   2. Writes /etc/crio/crio.conf.d/02-cgroup-manager.conf (systemd cgroup_manager, pod conmon_cgroup).
+#   3. systemctl enable --now + restart crio.
+#
+# Exit: 0 on success; non-zero on failure.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 CRIO_CONF_DIR="${CRIO_CONF_DIR:-/etc/crio/crio.conf.d}"

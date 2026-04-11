@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: teardown.sh (Kind)
+# Lesson: 1.1.2-kind-kubernetes-in-docker (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires kind. If CLUSTER_NAME (default kfsops-kind) exists → kind delete cluster.
+#      Else prints nothing to delete.
+#
+# Exit: 0; non-zero if kind missing or delete fails.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME:-kfsops-kind}"

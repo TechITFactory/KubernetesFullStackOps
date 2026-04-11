@@ -11,7 +11,14 @@
 - `yamls/certificate-renewal-runbook.yaml`
 - `yamls/failure-troubleshooting.yaml`
 
+**Teaching tip:** `check-k8s-pki.sh` must run where `/etc/kubernetes/pki` exists (typically **control-plane** as root). Header: **WHAT THIS DOES WHEN YOU RUN IT** in the script.
+
 ## Lab Steps (Linux)
+
+**What happens when you run this:**  
+- `check-k8s-pki.sh` — `openssl` read of each `.crt`/`.pem` under PKI dir; stdout only.  
+- `kubectl apply pki-inventory.yaml` — creates/updates the `pki-inventory` ConfigMap in `kube-system` (reference text, not live cert sync).  
+- `kubectl apply certificate-renewal-runbook.yaml` — applies the renewal runbook ConfigMap/manifests from that file (cluster metadata only).
 
 ```bash
 ./scripts/check-k8s-pki.sh
@@ -33,6 +40,9 @@ kubectl apply -f yamls/certificate-renewal-runbook.yaml
 [9:00–10:00] Treat certificate health checks as recurring operations work.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+PKI dump again; first lines of `kubeadm-config` ConfigMap; nodes wide — mix of local openssl + API reads.
 
 ```bash
 ./scripts/check-k8s-pki.sh

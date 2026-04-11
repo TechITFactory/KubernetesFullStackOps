@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: init-ha-control-plane.sh
+# Lesson: 1.2.2.1.6-creating-highly-available-clusters-with-kubeadm (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Must run as root. CONFIG_PATH defaults to ../yamls/ha-kubeadm-config.yaml.
+#   2. If admin.conf exists → skip. Else kubeadm init --config ... --upload-certs (for additional CP nodes).
+#
+# Exit: kubeadm / script success; non-zero on init failure.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 CONFIG_PATH="${CONFIG_PATH:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../yamls/ha-kubeadm-config.yaml}"

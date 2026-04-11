@@ -11,7 +11,13 @@
 | `scripts/bootstrap-etcd-member.sh` | Idempotent: installs etcd binary, creates data and PKI directories, prints next steps |
 | `yamls/external-etcd-cluster-plan.yaml` | Template for endpoint addresses, peer URLs, and PKI file locations — fill in before kubeadm init |
 
+**Teaching tip:** **What happens when you run this** for the script is in **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/bootstrap-etcd-member.sh`. Certificate phases and kubeadm init are manual after that — this lesson is planning-heavy.
+
 ## Quick Start
+
+**What happens when you run this:**  
+- `bootstrap-etcd-member.sh` — on each etcd node: may download/install `etcd`/`etcdctl`, creates data + PKI dirs, prints **next steps** (does **not** start etcd or run kubeadm for you).  
+- Comment lines — reminders to run `kubeadm init phase certs ...`, distribute certs, edit `external-etcd-cluster-plan.yaml`, then point `ClusterConfiguration` at external etcd — **you** execute those separately.
 
 ```bash
 # Run on each of the 3 dedicated etcd nodes (as root)
@@ -190,6 +196,9 @@ For a team running a 20-node cluster for a single product, the overhead is rarel
 Next: 1.2.2.1.8 — Configuring each kubelet in your cluster using kubeadm.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Read-only: nodes; filter `kube-system` for etcd/API server pods (or first lines) — sanity check after external etcd + CP are up.
 
 ```bash
 kubectl get nodes -o wide

@@ -1,4 +1,19 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: install-minikube.sh
+# Lesson: 1.1.1-minikube-setup-and-configuration (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires curl + install (coreutils). Detects OS/arch (linux|darwin, amd64|arm64).
+#   2. VERSION: first arg, or "latest" → resolves tag from GitHub API; skips download if
+#      minikube already matches that version.
+#   3. Downloads minikube binary from GCS, sudo install to INSTALL_DIR (default /usr/local/bin).
+#   4. Unless SKIP_KUBECTL=true: fetches stable kubectl (or KUBECTL_VERSION), skips if version
+#      matches, else downloads kubectl from dl.k8s.io and installs to INSTALL_DIR.
+#   5. Prints next step hint (start-minikube.sh).
+#
+# Exit: 0 on success; 1 on unsupported OS/arch, network failure, or missing tools.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 VERSION="${1:-latest}"

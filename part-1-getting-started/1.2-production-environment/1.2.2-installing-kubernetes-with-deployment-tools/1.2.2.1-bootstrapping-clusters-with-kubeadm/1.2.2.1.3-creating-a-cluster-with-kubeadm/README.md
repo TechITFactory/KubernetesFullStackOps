@@ -12,7 +12,16 @@
 | `scripts/print-worker-join-command.sh` | Generates a fresh join token and prints the full `kubeadm join` command |
 | `yamls/kubeadm-init-config.yaml` | Config-driven cluster initialisation — control-plane endpoint, pod CIDR, CRI socket |
 
+**Teaching tip:** **What happens when you run this** below matches **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/init-control-plane.sh` and `scripts/print-worker-join-command.sh`.
+
 ## Quick Start
+
+**What happens when you run this:**  
+1. `init-control-plane.sh` — if no `/etc/kubernetes/admin.conf`, runs `kubeadm init --config`; copies admin kubeconfig to `~/.kube/config`; `kubectl get nodes` (expect **NotReady** until CNI).  
+2. `kubectl apply` Flannel — installs CNI DaemonSet/ConfigMap; nodes should become **Ready** once CNI pods run.  
+3. `kubectl get nodes` — read-only cluster state.  
+4. `print-worker-join-command.sh` — creates a bootstrap token and prints full `kubeadm join ...` (run that on workers as root).  
+5. On workers — `kubeadm join` registers the node; no output here (you paste the printed command).
 
 ```bash
 # 1. Initialise control plane (run as root on control-plane node)
@@ -216,6 +225,9 @@ All pods in `kube-system` should be `Running`. `coredns` pods may be `Pending` b
 Next: 1.2.2.1.4 — Customizing Components with the kubeadm API, where we explore everything you can control through the init config file.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Three read-only `kubectl` queries: node list with IPs, `kube-system` pods, cluster-info endpoint summary.
 
 ```bash
 kubectl get nodes -o wide

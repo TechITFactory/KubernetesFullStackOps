@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: collect-kubeadm-diagnostics.sh
+# Lesson: 1.2.2.1.2-troubleshooting-kubeadm (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Creates OUTPUT_DIR (default ./kubeadm-diagnostics).
+#   2. Runs many read-only commands (uname, systemctl status, journalctl, ip, ss, versions);
+#      redirects stdout+stderr each to a .txt file. Non-zero exits become [WARN] but still capture output.
+#   3. Prints path to the bundle — does not upload anywhere.
+#
+# Exit: 0 after all captures attempted.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 OUTPUT_DIR="${OUTPUT_DIR:-./kubeadm-diagnostics}"

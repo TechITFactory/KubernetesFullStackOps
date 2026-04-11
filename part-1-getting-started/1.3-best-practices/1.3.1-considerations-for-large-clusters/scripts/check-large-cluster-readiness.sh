@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: check-large-cluster-readiness.sh
+# Lesson: 1.3.1-considerations-for-large-clusters (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires kubectl. Counts nodes and pods cluster-wide; warns if fewer than 3 nodes.
+#   2. Probes list PriorityClasses, PDBs, and GET /readyz — warns on failure (RBAC or connectivity).
+#   3. kubectl get nodes with topology zone/region columns — read-only inspection.
+#
+# Exit: 0 (warnings only); exits 1 only if kubectl missing at start.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 warn() {

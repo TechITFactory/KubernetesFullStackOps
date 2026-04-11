@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: check-k8s-pki.sh
+# Lesson: 1.3.5-pki-certificates-and-requirements (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires openssl. PKI_DIR default /etc/kubernetes/pki — must exist.
+#   2. find all .crt/.pem under PKI_DIR; for each, openssl x509 -subject -issuer -dates and SANs
+#      (read-only; prints to stdout).
+#
+# Exit: 0; 1 if openssl missing or PKI_DIR missing.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 PKI_DIR="${PKI_DIR:-/etc/kubernetes/pki}"

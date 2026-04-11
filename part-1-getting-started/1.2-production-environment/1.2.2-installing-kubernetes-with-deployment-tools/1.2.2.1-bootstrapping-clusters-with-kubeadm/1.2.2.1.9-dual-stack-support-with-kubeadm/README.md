@@ -11,7 +11,14 @@
 | `scripts/init-dualstack-cluster.sh` | Idempotent: initialises a dual-stack cluster from config, skips if already initialised |
 | `yamls/kubeadm-dualstack-config.yaml` | Dual-stack init config — sets IPv4 + IPv6 pod and service CIDRs, stable control-plane endpoint |
 
+**Teaching tip:** **WHAT THIS DOES WHEN YOU RUN IT** is in `scripts/init-dualstack-cluster.sh`. Dual-stack must be chosen **before** init; CNI must support both families.
+
 ## Quick Start
+
+**What happens when you run this:**  
+- `init-dualstack-cluster.sh` — `kubeadm init --config` with dual-stack CIDRs if not already initialised.  
+- `kubectl apply` Calico — installs CNI (cluster mutation); pick a version your environment can pull.  
+- `kubectl get pods -A -o wide` — shows pod IPs (look for IPv4 + IPv6 columns when CNI assigns both).
 
 ```bash
 # Verify your CNI supports dual-stack (Calico, Cilium, and Flannel all do)
@@ -181,6 +188,9 @@ For most product companies — a startup, a SaaS app, an internal tool — dual-
 This completes the kubeadm bootstrapping series. Next: 1.2.3 — Turnkey Cloud Solutions, evaluating when managed Kubernetes is the better call.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Read-only: nodes; default `kubernetes` Service **clusterIPs** (may show two entries in dual-stack); sample pod IPs.
 
 ```bash
 kubectl get nodes -o wide

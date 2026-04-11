@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: ha-prereqs-check.sh
+# Lesson: 1.2.2.1.5-options-for-highly-available-topology (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Prints [OK]/[MISSING] for kubectl, kubeadm on PATH.
+#   2. Checks env vars CONTROL_PLANE_ENDPOINT and ETCD_ENDPOINTS (expected for HA planning).
+#   3. Prints topology reminder text (stacked vs external etcd, LB on 6443) — no cluster changes.
+#
+# Exit: always 0.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 CONTROL_PLANE_ENDPOINT="${CONTROL_PLANE_ENDPOINT:-}"

@@ -10,9 +10,14 @@ You already have a cluster from **Minikube (1.1.1)** **or** **Kind (1.1.2)**. Th
 
 Replace **`/path/to/K8sOps`** with your clone path.
 
+**Teaching tip:** Each step includes **What happens when you run this** before **Run**. Shell scripts document the same behavior in a header comment at the top of each file under `scripts/`.
+
 ---
 
 ## Step 1 — Open this lesson in the terminal
+
+**What happens when you run this:**  
+`cd` into the lesson; `pwd` prints path; `chmod +x scripts/*.sh` makes scripts runnable — no cluster objects changed.
 
 **Run:**
 
@@ -28,6 +33,9 @@ Path ends with `1.1.3-local-development-clusters`.
 ---
 
 ## Step 2 — Check tools and current context
+
+**What happens when you run this:**  
+`check-local-prereqs.sh` prints which CLIs exist and shows current context (read-only). `kubectl config current-context` prints the active context name — **this** cluster receives later applies.
 
 **Say:**  
 I verify `kubectl` and see **which cluster** will get `dev-local` — not production.
@@ -46,6 +54,9 @@ kubectl config current-context
 
 ## Step 3 — Bootstrap `dev-local`
 
+**What happens when you run this:**  
+`bootstrap-dev-workspace.sh` `kubectl apply`s namespace, ResourceQuota, LimitRange, and whoami Deployment/Service, then `kubectl rollout status` until ready — all in namespace `dev-local` on the current context.
+
 **Say:**  
 The script applies namespace, quota, limit range, and whoami; it waits for rollout. Uses your **current** kubectl context.
 
@@ -61,6 +72,9 @@ The script applies namespace, quota, limit range, and whoami; it waits for rollo
 ---
 
 ## Step 4 — Inspect quota and limits
+
+**What happens when you run this:**  
+`kubectl get` / `describe` read ResourceQuota and LimitRange objects from the API — no mutations.
 
 **Say:**  
 These objects are what platform teams use to keep one team from starving others.
@@ -79,6 +93,9 @@ Quota and LimitRange listed; describe shows hard limits / defaults.
 ---
 
 ## Step 5 — Hit whoami via port-forward
+
+**What happens when you run this:**  
+First terminal: `kubectl port-forward` opens a local TCP listener on **8080** and proxies to the Service’s port **80** inside the cluster (process runs until Ctrl+C). Second terminal: `curl` sends one HTTP request to localhost and prints only the status code.
 
 **Say:**  
 Service is ClusterIP — I forward **local 8080** to **service port 80** to test without Ingress.
@@ -102,6 +119,9 @@ Port-forward stays running; `curl` prints **200** (stop port-forward with Ctrl+C
 
 ## Step 6 — Module wrap commands
 
+**What happens when you run this:**  
+Three read-only `kubectl get` calls: namespace existence, quota + limitrange, pods — recap only.
+
 **Run:**
 
 ```bash
@@ -116,6 +136,9 @@ Namespace exists; quota and limit range bound; pod(s) Running.
 ---
 
 ## Step 7 — Tear down `dev-local` (optional)
+
+**What happens when you run this:**  
+`teardown.sh` runs `kubectl delete namespace dev-local` if it exists — removes all objects in that namespace (cascade delete).
 
 **Run:**
 

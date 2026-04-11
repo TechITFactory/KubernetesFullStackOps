@@ -14,6 +14,9 @@ Kubernetes does **not** run containers itself. Each node runs a **CRI-compatible
 
 ## Module wrap — quick validation
 
+**What happens when you run this:**  
+`systemctl is-active` reports whether the daemon is running; `crictl info` calls the CRI over the socket — both read-only checks (example paths below are for **containerd**).
+
 You installed **one** runtime. Use **that** lesson’s unit name and socket (example below is **containerd**):
 
 ```bash

@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: install-kubeadm.sh
+# Lesson: 1.2.2.1.1-installing-kubeadm (Debian/Ubuntu + pkgs.k8s.io; see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Must run as root. Installs apt HTTPS tooling; adds Kubernetes apt repo for K8S_MINOR_VERSION
+#      (default v1.35) with signed-by keyring.
+#   2. apt-get install kubelet kubeadm kubectl (skip if already installed); apt-mark hold on those packages.
+#   3. systemctl enable --now kubelet (|| true so script continues if kubelet not fully configured yet).
+#
+# Exit: 0 on success; non-zero on curl/apt failure.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 K8S_MINOR_VERSION="${K8S_MINOR_VERSION:-v1.35}"

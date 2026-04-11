@@ -10,7 +10,13 @@
 |------|---------|
 | `scripts/collect-kubeadm-diagnostics.sh` | Captures system state into a directory of text files — kubelet logs, runtime status, swap, networking, tool versions |
 
+**Teaching tip:** **What happens when you run this** summarizes effects before you paste. Match **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/collect-kubeadm-diagnostics.sh`.
+
 ## Quick Start
+
+**What happens when you run this:**  
+- `collect-kubeadm-diagnostics.sh` — creates `./kubeadm-diagnostics/` (or `OUTPUT_DIR`) and writes one `.txt` per capture command (kubelet logs, `systemctl`, `ip`, `ss`, versions, etc.); non-zero commands still save output.  
+- `ls` / `cat` — read those files locally; no node config changes.
 
 ```bash
 # Run as root on the problematic node
@@ -199,6 +205,9 @@ The script's `[OK]` / `[WARN]` output format is intentional — it is designed t
 Next: 1.2.2.1.3 — Creating a Cluster with kubeadm, where we run `kubeadm init` and join worker nodes.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Re-captures diagnostics (overwrites/merges files in the output dir), lists them, shows kubelet unit status, prints first 40 lines of kubelet log capture — all read-only except regenerating the bundle files.
 
 ```bash
 sudo ./scripts/collect-kubeadm-diagnostics.sh

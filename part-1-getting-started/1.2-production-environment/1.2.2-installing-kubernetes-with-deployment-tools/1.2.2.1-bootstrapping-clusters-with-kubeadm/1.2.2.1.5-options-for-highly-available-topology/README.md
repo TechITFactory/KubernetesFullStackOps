@@ -11,7 +11,13 @@
 | `scripts/ha-prereqs-check.sh` | Checks CLI tools, environment variables, and prints topology node-count requirements |
 | `yamls/ha-topology-options.yaml` | Structured comparison of stacked vs external etcd — use as a decision record |
 
+**Teaching tip:** **What happens when you run this** is below; the check script’s behavior is in **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/ha-prereqs-check.sh`.
+
 ## Quick Start
+
+**What happens when you run this:**  
+- `ha-prereqs-check.sh` — prints whether `kubectl`/`kubeadm` exist and whether `CONTROL_PLANE_ENDPOINT` / `ETCD_ENDPOINTS` env vars are set; prints topology reminders — **no cluster changes**.  
+- `cat ha-topology-options.yaml` — prints the reference YAML to stdout (read-only).
 
 ```bash
 # Check prerequisites
@@ -191,6 +197,9 @@ Record your decision in `ha-topology-options.yaml` with the reason. When you rev
 Next: 1.2.2.1.6 — Creating Highly Available Clusters with kubeadm, where we run the stacked HA init and join additional control-plane nodes.
 
 ## Video close — fast validation
+
+**What happens when you run this:**  
+Read-only snapshot: nodes with IPs, first screen of `kube-system` pods — confirms a live cluster context.
 
 ```bash
 kubectl get nodes -o wide

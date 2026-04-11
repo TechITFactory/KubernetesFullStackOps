@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: install-kind.sh
+# Lesson: 1.1.2-kind-kubernetes-in-docker (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires curl, install. Detects OS/arch. VERSION: first arg (default v0.23.0).
+#   2. If kind already installed at same version → skip. Else downloads kind binary from
+#      kind.sigs.k8s.io, chmod +x, sudo install to INSTALL_DIR (default /usr/local/bin).
+#   3. Unless SKIP_KUBECTL=true: installs kubectl from dl.k8s.io (KUBECTL_VERSION, default stable),
+#      skipping if client version already matches.
+#   4. Prints next step (create-kind-cluster.sh).
+#
+# Exit: 0 on success; 1 on unsupported platform or install failure.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 VERSION="${1:-v0.23.0}"

@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: check-multi-zone-labels.sh
+# Lesson: 1.3.2-running-in-multiple-zones (see README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Requires kubectl. Lists nodes with topology.kubernetes.io/region and zone columns.
+#   2. Parses jsonpath for zone label; exits 1 if any node has empty zone (prints node names).
+#
+# Exit: 0 if every node has a zone label; 1 if any missing or kubectl absent.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 command -v kubectl >/dev/null 2>&1 || {
