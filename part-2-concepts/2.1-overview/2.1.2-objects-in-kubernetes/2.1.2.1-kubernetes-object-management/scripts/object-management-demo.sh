@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: object-management-demo.sh
+# Lesson: 2.1.2.1-kubernetes-object-management (README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. kubectl apply object-management-demo.yaml (namespace + workload).
+#   2. kubectl get deploy,pods in namespace object-management-demo.
+#
+# Exit: kubectl exit codes; 1 if kubectl missing.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

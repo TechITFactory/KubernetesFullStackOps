@@ -1,35 +1,54 @@
-# 2.3.5 Container Runtime Interface (CRI)
+# 2.3.5 Container Runtime Interface (CRI) — teaching transcript
 
-- Summary: CRI is the contract between kubelet and the container runtime, which is why Kubernetes no longer speaks directly to Docker.
-- Content: Connect CRI to runtime sockets, `crictl`, kubelet configuration, and troubleshooting at the node boundary.
-- Lab: Inspect the runtime endpoint and compare kubelet/runtime alignment.
+## Intro
 
-## Assets
+**kubelet → CRI → runtime** (containerd, CRI-O, cri-dockerd). Troubleshooting “pods won’t start” often lands on **socket path** and **cgroup driver** alignment — same themes as Part 1 node setup.
 
-- `scripts/inspect-cri-endpoint.sh`
-- `yamls/cri-notes.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** Run **`inspect-cri-endpoint.sh` on a cluster node** (SSH / cloud node session). From kubectl-only laptop it may print **no sockets** — that is expected.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Script scans common **Unix socket** paths; if `crictl` exists, runs **`crictl info`** against the first socket found (may need `sudo` on your distro — run `sudo ./scripts/...` if permission denied).  
+- `kubectl apply cri-notes.yaml` creates **`kube-system`** ConfigMap `cri-notes` (needs RBAC to write `kube-system`).  
+- `kubectl get nodes` — read-only cluster view.
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/inspect-cri-endpoint.sh
 kubectl apply -f yamls/cri-notes.yaml
 kubectl get nodes -o wide
 ```
 
-## Expected output
+**Expected:**  
+At least one “Found CRI socket” line on a real node, or a clear warning; ConfigMap applies if allowed.
 
-- Script reports a reachable CRI endpoint (or clearly explains what to fix on the node).
-- Notes manifest applies for in-cluster documentation review.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+Nodes; first chunk of `kube-system` pods (runtime/CNI/kubelet-related) — read-only.
 
 ```bash
 kubectl get nodes -o wide
 kubectl get pods -n kube-system -o wide | head -n 15
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common CRI socket, `crictl`, and kubelet/runtime alignment failures.
+| Path | Purpose |
+|------|---------|
+| `scripts/inspect-cri-endpoint.sh` | Local socket scan + optional `crictl info` |
+| `yamls/cri-notes.yaml` | In-cluster CRI notes (kube-system) |
+| `yamls/failure-troubleshooting.yaml` | Socket / crictl / kubelet alignment |
+
+## Cleanup
+
+```bash
+kubectl delete configmap cri-notes -n kube-system --ignore-not-found
+```
+
+## Next
+
+[2.4 Workloads](../../2.4-workloads/README.md)

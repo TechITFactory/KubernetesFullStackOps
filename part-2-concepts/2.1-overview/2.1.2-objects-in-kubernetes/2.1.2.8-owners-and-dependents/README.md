@@ -1,34 +1,48 @@
-# 2.1.2.8 Owners and Dependents
+# 2.1.2.8 Owners and Dependents — teaching transcript
 
-- Summary: Owner references define garbage-collection relationships and help Kubernetes understand what should be cleaned up together.
-- Content: This subsection explains how Deployments own ReplicaSets, ReplicaSets own Pods, and how cascading deletion works.
-- Lab: Apply the sample Deployment, inspect owner references, then delete the parent object.
+## Intro
 
-## Assets
+**ownerReferences** drive garbage collection: Deployment → ReplicaSet → Pod.
 
-- `scripts/show-owner-references.sh`
-- `yamls/owner-reference-demo.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** `show-owner-references.sh` expects namespace **`owner-demo`**.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Apply demo (namespace + Deployment).  
+- Wait for available.  
+- Script prints RS/Pod → owner chain via jsonpath.
 
 ```bash
 kubectl apply -f yamls/owner-reference-demo.yaml
 kubectl wait --for=condition=available deployment/owner-demo -n owner-demo --timeout=120s
+chmod +x scripts/*.sh
 ./scripts/show-owner-references.sh
 ```
 
-## Expected output
+**Expected:**  
+Owners point up to Deployment / ReplicaSet as designed.
 
-- ReplicaSet and Pods in `owner-demo` show `ownerReferences` pointing up to the Deployment (and RS for Pods).
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+`custom-columns` owner view; **delete** full manifest (cascade).
 
 ```bash
 kubectl get rs,pods -n owner-demo -o custom-columns=KIND:.kind,NAME:.metadata.name,OWNER:.metadata.ownerReferences[*].name 2>/dev/null | head -n 15
 kubectl delete -f yamls/owner-reference-demo.yaml --ignore-not-found
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common orphan resources, unexpected cascading deletes, and garbage collection timing.
+| Path | Purpose |
+|------|---------|
+| `scripts/show-owner-references.sh` | Owner jsonpath |
+| `yamls/owner-reference-demo.yaml` | Demo deployment |
+| `yamls/failure-troubleshooting.yaml` | Orphan / cascade issues |
+
+## Next
+
+[2.1.2.9 Recommended labels](../2.1.2.9-recommended-labels/README.md)

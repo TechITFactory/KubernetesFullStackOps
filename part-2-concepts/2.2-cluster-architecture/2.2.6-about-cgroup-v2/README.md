@@ -1,29 +1,33 @@
-# 2.2.6 About cgroup v2
+# 2.2.6 About cgroup v2 — teaching transcript
 
-- Summary: cgroup v2 changes how Linux resource control is structured and matters for modern kubelet and runtime behavior.
-- Content: Teach the cgroup driver story, unified hierarchy, and why `systemd` alignment across kubelet and runtime matters.
-- Lab: Check whether a node uses cgroup v2 and compare runtime settings with kubelet expectations.
+## Intro
 
-## Assets
+**cgroup v2** unified hierarchy — kubelet + runtime **cgroup driver** should align (usually `systemd`).
 
-- `scripts/check-cgroup-version.sh`
-- `yamls/cgroup-v2-notes.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** `check-cgroup-version.sh` reads **the local machine’s** `/sys/fs/cgroup` — run on a **node** (SSH), not only from your laptop unless your laptop is the node.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Host script prints v1 vs v2 detection.  
+- `kubectl` shows nodes and describe snippets for runtime/kubelet version.
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/check-cgroup-version.sh
 kubectl get nodes -o wide
 kubectl describe node "$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')" | grep -i -E 'container runtime|kubelet version' || true
 ```
 
-## Expected output
+**Expected:**  
+Clear cgroup mode message; node info lines for cross-check.
 
-- Host cgroup mode is identified, and kubelet/runtime alignment can be verified.
-- Node runtime details are visible for cross-checking cgroup driver expectations.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+`stat` cgroup fs type; nodes; recent events.
 
 ```bash
 stat -fc %T /sys/fs/cgroup
@@ -31,6 +35,14 @@ kubectl get nodes -o wide
 kubectl get events -A --sort-by=.lastTimestamp | tail -n 20
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common cgroup driver mismatch and kubelet/runtime alignment failures.
+| Path | Purpose |
+|------|---------|
+| `scripts/check-cgroup-version.sh` | Local cgroup detect |
+| `yamls/cgroup-v2-notes.yaml` | Notes |
+| `yamls/failure-troubleshooting.yaml` | Driver mismatch |
+
+## Next
+
+[2.2.7 Kubernetes self-healing](../2.2.7-kubernetes-self-healing/README.md)

@@ -10,6 +10,16 @@
   - Use Linux shell commands for all practicals.
   - Apply practices locally first, then reuse on EKS.
 
+## Topics in this module
+
+```mermaid
+flowchart LR
+  S[1.3.1 Scale readiness] --> Z[1.3.2 Multi-zone]
+  Z --> N[1.3.3 Node validation]
+  N --> P[1.3.4 Pod Security Standards]
+  P --> K[1.3.5 PKI health]
+```
+
 ## Children (work in order)
 
 - [1.3.1 Considerations for large clusters](1.3.1-considerations-for-large-clusters/README.md)

@@ -1,36 +1,53 @@
-# 2.2.7 Kubernetes Self-Healing
+# 2.2.7 Kubernetes Self-Healing — teaching transcript
 
-- Summary: Kubernetes self-healing is not magic; it is a combination of probes, controllers, scheduling, and reconciliation.
-- Content: Focus on restarts, rescheduling, replica restoration, and how readiness/liveness tie into availability.
-- Lab: Delete a pod from a Deployment and watch the controller restore it.
+## Intro
 
-## Assets
+Self-healing = controllers + probes + scheduling, not magic.
 
-- `scripts/self-healing-demo.sh`
-- `yamls/self-healing-demo.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** `self-healing-demo.sh` **applies** the YAML — no second apply needed.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Script applies **`self-healing-demo`** namespace + Deployment.  
+- Lists deploy + pods with label in that namespace.
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/self-healing-demo.sh
-kubectl apply -f yamls/self-healing-demo.yaml
-kubectl get deploy,pods -l app=self-healing-demo
+kubectl get deploy,pods -n self-healing-demo -l app=self-healing-demo
 ```
 
-## Expected output
+**Expected:**  
+Replicas stay at desired count; deleting a pod recreates it.
 
-- Deployment stays at desired replica count.
-- Deleting one pod results in a replacement pod automatically.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+Delete one pod (`--wait=false`); `kubectl get pods -w` until replacement shows (Ctrl+C to stop watch).
 
 ```bash
-kubectl get deploy,pods -l app=self-healing-demo -o wide
-kubectl delete pod -l app=self-healing-demo --wait=false
-kubectl get pods -l app=self-healing-demo -w
+kubectl get deploy,pods -n self-healing-demo -l app=self-healing-demo -o wide
+kubectl delete pod -n self-healing-demo -l app=self-healing-demo --wait=false
+kubectl get pods -n self-healing-demo -l app=self-healing-demo -w
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common probe, rollout, and controller recovery failures.
+| Path | Purpose |
+|------|---------|
+| `scripts/self-healing-demo.sh` | Apply + get |
+| `yamls/self-healing-demo.yaml` | Demo |
+| `yamls/failure-troubleshooting.yaml` | Probes / rollout |
+
+## Cleanup
+
+```bash
+kubectl delete namespace self-healing-demo --ignore-not-found
+```
+
+## Next
+
+[2.2.8 Garbage collection](../2.2.8-garbage-collection/README.md)

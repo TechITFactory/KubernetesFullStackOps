@@ -1,32 +1,42 @@
-# 2.1.2.5 Annotations
+# 2.1.2.5 Annotations — teaching transcript
 
-- Summary: Annotations store non-query metadata that tools and operators use for context, traceability, and behavior hints.
-- Content: This subsection contrasts annotations with labels and shows common annotation-style metadata.
-- Lab: Apply an annotated object and inspect its metadata.
+## Intro
 
-## Assets
+Annotations: **non-identifying** metadata (tooling, git SHAs, hints). Not for selectors.
 
-- `yamls/annotations-demo.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
-## Quick Start
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Apply ConfigMap with annotations.  
+- `jsonpath` prints `metadata.annotations` (truncated in terminal).
 
 ```bash
 kubectl apply -f yamls/annotations-demo.yaml
 kubectl get cm annotations-demo -n default -o jsonpath='{.metadata.annotations}' | head -c 200; echo
 ```
 
-## Expected output
+**Expected:**  
+Custom keys under `metadata.annotations`.
 
-- ConfigMap `annotations-demo` in `default` shows custom annotations under `metadata.annotations`.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+`describe` annotation section; **delete** ConfigMap.
 
 ```bash
 kubectl describe cm annotations-demo -n default | sed -n '/Annotations:/,/Data/p'
 kubectl delete cm annotations-demo -n default --ignore-not-found
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common annotation size limits, confusing labels vs annotations, and tooling that ignores unknown keys.
+| Path | Purpose |
+|------|---------|
+| `yamls/annotations-demo.yaml` | Annotated object |
+| `yamls/failure-troubleshooting.yaml` | Size limits / confusion with labels |
+
+## Next
+
+[2.1.2.6 Field selectors](../2.1.2.6-field-selectors/README.md)

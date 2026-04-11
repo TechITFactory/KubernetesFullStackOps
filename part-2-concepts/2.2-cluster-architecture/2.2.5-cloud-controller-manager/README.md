@@ -1,29 +1,32 @@
-# 2.2.5 Cloud Controller Manager
+# 2.2.5 Cloud Controller Manager — teaching transcript
 
-- Summary: The cloud controller manager isolates cloud-provider-specific logic from the core Kubernetes control plane.
-- Content: Explain node initialization, route reconciliation, load balancer integration, and why self-managed clusters often do not use it.
-- Lab: Review the responsibilities map and inspect whether your cluster is running a cloud controller manager.
+## Intro
 
-## Assets
+**CCM** splits cloud-provider logic from core control plane. Many bare-metal / kind clusters have **no** CCM pod — that is normal.
 
-- `scripts/inspect-cloud-controller-manager.sh`
-- `yamls/cloud-controller-manager-responsibilities.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Script greps `kube-system` for cloud-controller patterns.  
+- You grep all namespaces (broader).  
+- Apply responsibilities reference manifest.
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/inspect-cloud-controller-manager.sh
 kubectl get pods -A | grep -i cloud-controller || true
 kubectl apply -f yamls/cloud-controller-manager-responsibilities.yaml
 ```
 
-## Expected output
+**Expected:**  
+You can state whether CCM appears; ConfigMap/notes apply for teaching review.
 
-- You can determine whether CCM is present in the current cluster.
-- Responsibilities map is available for architecture review and provider comparison.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+Nodes; CCM grep; all Services (can be long).
 
 ```bash
 kubectl get nodes -o wide
@@ -31,6 +34,14 @@ kubectl get pods -A | grep -Ei 'cloud-controller|ccm' || true
 kubectl get svc -A
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common CCM absence, provider-integration, and node-initialization issues.
+| Path | Purpose |
+|------|---------|
+| `scripts/inspect-cloud-controller-manager.sh` | CCM discovery |
+| `yamls/cloud-controller-manager-responsibilities.yaml` | Reference |
+| `yamls/failure-troubleshooting.yaml` | Provider integration |
+
+## Next
+
+[2.2.6 About cgroup v2](../2.2.6-about-cgroup-v2/README.md)

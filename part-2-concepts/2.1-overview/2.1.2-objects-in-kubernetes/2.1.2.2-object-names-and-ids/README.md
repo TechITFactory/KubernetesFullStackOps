@@ -1,33 +1,46 @@
-# 2.1.2.2 Object Names and IDs
+# 2.1.2.2 Object Names and IDs — teaching transcript
 
-- Summary: Object names are human-facing identifiers; UIDs are immutable identity values used internally for object lifetime.
-- Content: This subsection shows the difference between `metadata.name`, `generateName`, and `metadata.uid`.
-- Lab: Create example objects and compare names versus UIDs.
+## Intro
 
-## Assets
+`metadata.name` vs `generateName` vs immutable **`metadata.uid`**.
 
-- `yamls/object-name-and-uid-demo.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** `create` may run twice in Video close — second run can fail if object exists; use delete between takes.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- `kubectl create -f` — creates ConfigMap(s) using `generateName` (name gets random suffix).  
+- `kubectl get ... custom-columns` — prints **name** and **uid** side by side.
 
 ```bash
 kubectl create -f yamls/object-name-and-uid-demo.yaml
 kubectl get cm -n default -l training.k8sops.io/lesson=object-names-and-ids -o custom-columns=NAME:.metadata.name,UID:.metadata.uid
 ```
 
-## Expected output
+**Expected:**  
+Name prefix `generated-object-...`; UID non-empty.
 
-- One ConfigMap whose `metadata.name` starts with `generated-object-` and a non-empty `metadata.uid`.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+Recreate (fails if already exists — delete first), show YAML head, **delete by label** (cleanup).
 
 ```bash
+kubectl delete cm -n default -l training.k8sops.io/lesson=object-names-and-ids --ignore-not-found
 kubectl create -f yamls/object-name-and-uid-demo.yaml
 kubectl get cm -n default -l training.k8sops.io/lesson=object-names-and-ids -o yaml | head -n 40
 kubectl delete cm -n default -l training.k8sops.io/lesson=object-names-and-ids
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common `generateName` surprises, UID confusion, and invalid name characters.
+| Path | Purpose |
+|------|---------|
+| `yamls/object-name-and-uid-demo.yaml` | generateName demo |
+| `yamls/failure-troubleshooting.yaml` | Name / UID issues |
+
+## Next
+
+[2.1.2.3 Labels and selectors](../2.1.2.3-labels-and-selectors/README.md)

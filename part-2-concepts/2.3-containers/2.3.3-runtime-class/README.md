@@ -1,15 +1,18 @@
-# 2.3.3 Runtime Class
+# 2.3.3 Runtime Class — teaching transcript
 
-- Summary: RuntimeClass lets you choose different runtime handlers for pods when the node environment supports them.
-- Content: Explain why RuntimeClass matters for sandboxed runtimes, performance profiles, and specialized execution environments.
-- Lab: Review the RuntimeClass manifest and trace how a pod would reference it.
+## Intro
 
-## Assets
+**RuntimeClass** maps a pod’s `runtimeClassName` to a **handler** the node’s runtime must support (sandboxed runtimes, different OCI stacks, etc.).
 
-- `yamls/runtimeclass-demo.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** This lesson creates a **cluster-scoped** `RuntimeClass` object. **Scheduling a Pod** with `runtimeClassName: sandboxed-runtime` only works if nodes advertise that handler — many labs have no such runtime; treat apply here as **API learning**, not guaranteed pod success.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Apply `RuntimeClass` `sandboxed-runtime` with handler `sandboxed`.  
+- List and describe that object — no workload required.
 
 ```bash
 kubectl apply -f yamls/runtimeclass-demo.yaml
@@ -17,18 +20,32 @@ kubectl get runtimeclass
 kubectl describe runtimeclass sandboxed-runtime
 ```
 
-## Expected output
+**Expected:**  
+`sandboxed-runtime` exists; handler `sandboxed` in spec.
 
-- `RuntimeClass` `sandboxed-runtime` exists with handler `sandboxed`.
-- **Note:** Scheduling a pod with `runtimeClassName: sandboxed-runtime` requires a node/runtime that registers that handler; use this lesson to understand the API, not assume every cluster runs it.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+RuntimeClass wide; nodes wide (compare to whether your platform actually supports the handler).
 
 ```bash
 kubectl get runtimeclass -o wide
 kubectl get nodes -o wide
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common RuntimeClass handler mismatch and scheduling failures.
+| Path | Purpose |
+|------|---------|
+| `yamls/runtimeclass-demo.yaml` | RuntimeClass manifest |
+| `yamls/failure-troubleshooting.yaml` | Handler mismatch / scheduling |
+
+## Cleanup
+
+```bash
+kubectl delete runtimeclass sandboxed-runtime --ignore-not-found
+```
+
+## Next
+
+[2.3.4 Container lifecycle hooks](../2.3.4-container-lifecycle-hooks/README.md)

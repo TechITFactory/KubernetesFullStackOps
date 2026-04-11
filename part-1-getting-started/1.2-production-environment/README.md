@@ -10,6 +10,20 @@ This module covers the full production setup path: choosing and installing a con
 - **Outcomes**: Container runtime installed and CRI-verified, kubeadm cluster bootstrapped from config files, HA topology understood, managed services evaluated.
 - **Note**: Complete 1.2.1 (runtime install) before 1.2.2 (kubeadm). Section 1.2.3 is independent and can be read at any point to inform your architecture decision.
 
+## Production path vs managed
+
+```mermaid
+flowchart LR
+  subgraph Self[Self-managed]
+    R[1.2.1 CRI on each node] --> K[1.2.2 kubeadm init and join]
+  end
+  subgraph Alt[Alternative]
+    M[1.2.3 EKS GKE AKS etc]
+  end
+  Self -.->|same Kubernetes API| Workloads[Your apps and kubectl]
+  Alt --> Workloads
+```
+
 ## Sections
 
 ### 1.2.1 Container Runtimes

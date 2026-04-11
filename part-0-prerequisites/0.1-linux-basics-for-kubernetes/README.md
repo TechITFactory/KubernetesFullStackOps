@@ -28,6 +28,15 @@ If this feels overwhelming — do the first steps and come back later.
 
 **Teaching tip:** Each step includes **What happens when you run this** so you know the effect *before* you paste. **Say** is optional camera talk. The shell scripts in `scripts/` repeat the same story in a comment header at the top of each file.
 
+## Flow of this lesson
+
+```mermaid
+flowchart LR
+  A[Lesson folder] --> B[Setup lab workspace]
+  B --> C[ls grep find]
+  C --> D[verify-linux-basics.sh]
+```
+
 ---
 
 ## Step 1 — Move into the lesson folder

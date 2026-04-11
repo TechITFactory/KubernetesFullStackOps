@@ -1,15 +1,17 @@
-# 2.1.2.9 Recommended Labels
+# 2.1.2.9 Recommended Labels — teaching transcript
 
-- Summary: Recommended labels make applications easier to operate, query, and understand across teams and tooling.
-- Content: This subsection teaches the common `app.kubernetes.io/*` label set and why consistent metadata pays off over time.
-- Lab: Apply the sample manifest and query objects by recommended labels.
+## Intro
 
-## Assets
+Use **`app.kubernetes.io/*`** consistently so tools and humans agree on app identity.
 
-- `yamls/recommended-labels-demo.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
-## Quick Start
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Apply Deployment with recommended labels.  
+- Wait available.  
+- Show labels; query by `part-of`.
 
 ```bash
 kubectl apply -f yamls/recommended-labels-demo.yaml
@@ -18,17 +20,26 @@ kubectl get deploy labels-demo -n default --show-labels
 kubectl get deploy -n default -l 'app.kubernetes.io/part-of=overview-module'
 ```
 
-## Expected output
+**Expected:**  
+`labels-demo` shows standard labels; selector query returns it.
 
-- Deployment carries `app.kubernetes.io/*` labels from the manifest; queries by `app.kubernetes.io/part-of` return `labels-demo`.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+jsonpath label dump; **delete** demo.
 
 ```bash
 kubectl get deploy labels-demo -n default -o jsonpath='{range $k,$v := .metadata.labels}{$k}={$v}{"\n"}{end}' | grep app.kubernetes.io
 kubectl delete -f yamls/recommended-labels-demo.yaml --ignore-not-found
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common inconsistent label keys, selector drift from labels, and tooling that expects recommended names.
+| Path | Purpose |
+|------|---------|
+| `yamls/recommended-labels-demo.yaml` | Labeled Deployment |
+| `yamls/failure-troubleshooting.yaml` | Label drift |
+
+## Next
+
+[2.1.2.10 Storage versions](../2.1.2.10-storage-versions/README.md)

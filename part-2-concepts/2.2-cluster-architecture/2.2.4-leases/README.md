@@ -1,29 +1,33 @@
-# 2.2.4 Leases
+# 2.2.4 Leases — teaching transcript
 
-- Summary: Leases reduce heartbeat churn and support leader election, making them an important but often overlooked control-plane primitive.
-- Content: Show how node heartbeats use Lease objects and how leader election uses similar mechanisms for coordination.
-- Lab: Inspect leases in the cluster and correlate them with nodes or control-plane components.
+## Intro
 
-## Assets
+**Lease** objects back node heartbeats and **leader election** for controllers.
 
-- `scripts/inspect-leases.sh`
-- `yamls/lease-notes.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** `inspect-leases.sh` lists all namespaces’ leases — output can be wide.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Script: `kubectl get lease -A`.  
+- You repeat and **describe** one lease in `kube-node-lease` (first by jsonpath).
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/inspect-leases.sh
 kubectl get lease -A
 kubectl describe lease -n kube-node-lease "$(kubectl get lease -n kube-node-lease -o jsonpath='{.items[0].metadata.name}')"
 ```
 
-## Expected output
+**Expected:**  
+`renewTime` present; correlates with heartbeat activity.
 
-- Lease objects appear for nodes (and leader-election participants where used).
-- `renewTime` changes over time, reflecting heartbeat/leadership refresh.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+Focused lease list + nodes — read-only.
 
 ```bash
 kubectl get lease -n kube-node-lease
@@ -31,6 +35,14 @@ kubectl get lease -A | head -n 20
 kubectl get nodes
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common missing-lease, stale-renewTime, and node-heartbeat issues.
+| Path | Purpose |
+|------|---------|
+| `scripts/inspect-leases.sh` | All leases |
+| `yamls/lease-notes.yaml` | Notes |
+| `yamls/failure-troubleshooting.yaml` | Stale renewTime |
+
+## Next
+
+[2.2.5 Cloud controller manager](../2.2.5-cloud-controller-manager/README.md)

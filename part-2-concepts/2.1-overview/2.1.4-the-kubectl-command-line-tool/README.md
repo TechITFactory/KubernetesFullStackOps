@@ -1,29 +1,37 @@
-# 2.1.4 The kubectl Command-Line Tool
+# 2.1.4 The kubectl Command-Line Tool — teaching transcript
 
-- Summary: `kubectl` is the primary operational interface for Kubernetes and should be taught as an inspection and reconciliation tool, not just a command list.
-- Content: This section covers context management, imperative vs declarative workflows, output shaping, and safe day-to-day inspection commands.
-- Lab: Switch contexts, inspect objects with custom output, and apply a manifest declaratively.
+## Intro
 
-## Assets
+`kubectl` is your **inspection and reconciliation** tool: contexts, namespaces, output shapes, and declarative apply.
 
-- `scripts/kubectl-essentials.sh`
-- `yamls/kubectl-practice-namespace.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** **WHAT THIS DOES WHEN YOU RUN IT** — `scripts/kubectl-essentials.sh`.
+
+**Say:**  
+I always know *which cluster* (`current-context`) before I change anything.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- `kubectl-essentials.sh` — prints context, namespaces, sample `api-resources`, custom-columns node view.  
+- `kubectl apply kubectl-practice-namespace.yaml` — creates the practice namespace.  
+- `kubectl get ns kubectl-practice` — confirms it exists.
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/kubectl-essentials.sh
 kubectl apply -f yamls/kubectl-practice-namespace.yaml
 kubectl get ns kubectl-practice
 ```
 
-## Expected output
+**Expected:**  
+No client/auth errors; namespace `kubectl-practice` listed.
 
-- `kubectl` context and output formatting commands run without client/auth errors.
-- Practice namespace is created and visible with `kubectl get ns`.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+Context name; nodes; grep for practice namespace — read-only.
 
 ```bash
 kubectl config current-context
@@ -31,6 +39,14 @@ kubectl get nodes
 kubectl get ns | grep kubectl-practice || true
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common context, RBAC, and command/output troubleshooting steps.
+| Path | Purpose |
+|------|---------|
+| `scripts/kubectl-essentials.sh` | Context + formatting demo |
+| `yamls/kubectl-practice-namespace.yaml` | Practice namespace |
+| `yamls/failure-troubleshooting.yaml` | Context / RBAC / output issues |
+
+## Next
+
+[2.2 Cluster architecture](../../2.2-cluster-architecture/README.md)

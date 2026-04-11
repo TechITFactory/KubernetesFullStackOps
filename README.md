@@ -2,6 +2,18 @@
 
 Course structure generated from the table of contents in `k8s-toc.pdf`.
 
+## Course flow (diagram)
+
+```mermaid
+flowchart LR
+  P0[Phase 0: Prerequisites] --> P1[Part 1: Getting started]
+  P1 --> P2[Part 2: Concepts]
+  P2 --> P3[Part 3: Tasks]
+  P3 --> P4[Part 4: Tutorials]
+  P4 --> P5[Part 5: Reference]
+  P5 --> P6[Part 6: Contribute]
+```
+
 ## Layout
 
 - `part-0-prerequisites` is Phase 1 (Linux + Docker) before Part 1; lessons follow the same practical README pattern as the Kubernetes track.

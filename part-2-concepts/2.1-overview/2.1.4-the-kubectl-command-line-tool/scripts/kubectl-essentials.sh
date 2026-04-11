@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: kubectl-essentials.sh
+# Lesson: part-2-concepts/2.1-overview/2.1.4-the-kubectl-command-line-tool (README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. Prints current context, namespaces, first 20 api-resources, custom-columns node table.
+#
+# Exit: 0; 1 if kubectl missing.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 command -v kubectl >/dev/null 2>&1 || {

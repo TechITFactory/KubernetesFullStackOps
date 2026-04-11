@@ -1,29 +1,36 @@
-# 2.1.3 The Kubernetes API
+# 2.1.3 The Kubernetes API — teaching transcript
 
-- Summary: The Kubernetes API is the cluster’s source of truth and the only supported way to read or change desired state.
-- Content: This section introduces discovery, API groups, verbs, versioning, raw endpoint access, and the relationship between the API server and controllers.
-- Lab: Use `kubectl proxy` and raw API queries to inspect available groups, resources, and object payloads.
+## Intro
 
-## Assets
+The API server is the **source of truth**. This lesson uses **discovery** (`/api`, `/apis`) and `kubectl` helpers to see groups, resources, and versions.
 
-- `scripts/explore-k8s-api.sh`
-- `yamls/api-discovery-notes.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** Script header in `scripts/explore-k8s-api.sh` matches the **What happens** bullets below.
+
+**Say:**  
+Nothing in the cluster “remembers” state except through the API; discovery tells me what verbs exist.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- `explore-k8s-api.sh` — `api-versions`, `api-resources`, `kubectl get --raw /`.  
+- `kubectl get --raw /api` and `/apis` — first 300 bytes of JSON (truncated) so your terminal does not flood.
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/explore-k8s-api.sh
 kubectl get --raw /api | head -c 300 && echo
 kubectl get --raw /apis | head -c 300 && echo
 ```
 
-## Expected output
+**Expected:**  
+JSON discovery payloads; script completes without auth errors.
 
-- API discovery endpoints return version/group payloads.
-- Script output shows accessible resources and confirms cluster API reachability.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+Control-plane endpoint summary; samples of resource types and API versions — read-only.
 
 ```bash
 kubectl cluster-info
@@ -31,6 +38,14 @@ kubectl api-resources | head -n 25
 kubectl api-versions | head -n 20
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common API auth, discovery, and endpoint query failures.
+| Path | Purpose |
+|------|---------|
+| `scripts/explore-k8s-api.sh` | Discovery bundle |
+| `yamls/api-discovery-notes.yaml` | Reference notes |
+| `yamls/failure-troubleshooting.yaml` | Auth / discovery failures |
+
+## Next
+
+[2.1.4 The kubectl command-line tool](../2.1.4-the-kubectl-command-line-tool/README.md)

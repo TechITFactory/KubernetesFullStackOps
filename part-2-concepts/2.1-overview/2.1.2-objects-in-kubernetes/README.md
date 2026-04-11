@@ -1,36 +1,55 @@
-# 2.1.2 Objects In Kubernetes
+# 2.1.2 Objects In Kubernetes — teaching transcript
 
-- Summary: Kubernetes objects are the declarative records that define cluster intent, ownership, metadata, and lifecycle behavior.
-- Content: This section drills into object management, metadata, selectors, namespaces, ownership, and storage-version concepts with concrete examples.
-- Lab: Create and inspect example objects, then observe how labels, annotations, owners, and finalizers affect behavior.
+## Intro
 
-## Children
+Kubernetes **objects** are declarative records: metadata, spec, status, ownership, and lifecycle hooks (finalizers). This module breaks that down into teachable slices.
 
-- `2.1.2.1 Kubernetes Object Management`
-- `2.1.2.2 Object Names and IDs`
-- `2.1.2.3 Labels and Selectors`
-- `2.1.2.4 Namespaces`
-- `2.1.2.5 Annotations`
-- `2.1.2.6 Field Selectors`
-- `2.1.2.7 Finalizers`
-- `2.1.2.8 Owners and Dependents`
-- `2.1.2.9 Recommended Labels`
-- `2.1.2.10 Storage Versions`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** Run subsection lessons **in order** when possible; each has **What happens** before commands.
+
+## Object lifecycle (mental model)
+
+```mermaid
+flowchart TD
+  M[Manifest YAML] --> A[kubectl apply]
+  A --> API[API server validates and stores]
+  API --> ETCD[(etcd)]
+  CTRL[Controllers] -->|reconcile| API
+  API -->|desired state| NODE[Node agents]
+```
+
+## Children (work in order)
+
+- [2.1.2.1 Kubernetes object management](2.1.2.1-kubernetes-object-management/README.md)
+- [2.1.2.2 Object names and IDs](2.1.2.2-object-names-and-ids/README.md)
+- [2.1.2.3 Labels and selectors](2.1.2.3-labels-and-selectors/README.md)
+- [2.1.2.4 Namespaces](2.1.2.4-namespaces/README.md)
+- [2.1.2.5 Annotations](2.1.2.5-annotations/README.md)
+- [2.1.2.6 Field selectors](2.1.2.6-field-selectors/README.md)
+- [2.1.2.7 Finalizers](2.1.2.7-finalizers/README.md)
+- [2.1.2.8 Owners and dependents](2.1.2.8-owners-and-dependents/README.md)
+- [2.1.2.9 Recommended labels](2.1.2.9-recommended-labels/README.md)
+- [2.1.2.10 Storage versions](2.1.2.10-storage-versions/README.md)
+
+## Cross-module lab (labels demo)
+
+**What happens when you run this:**  
+Applies the **2.1.2.3** demo manifest from this directory’s path, lists pod labels cluster-wide for that demo, then deletes the demo (cleanup).
 
 ```bash
 kubectl apply -f 2.1.2.3-labels-and-selectors/yamls/labels-and-selectors-demo.yaml
-kubectl get pods --show-labels
+kubectl get pods --show-labels -A | head -n 30
 kubectl delete -f 2.1.2.3-labels-and-selectors/yamls/labels-and-selectors-demo.yaml --ignore-not-found
 ```
 
-## Expected output
+**Expected:**  
+Objects create cleanly; label columns visible; delete succeeds.
 
-- Sample objects are created and can be queried with labels/selectors.
-- Metadata fields (labels/annotations/owner refs/finalizers) become inspectable with `kubectl get -o yaml`.
+## Module wrap — quick validation
 
-## Module wrap - quick validation
+**What happens when you run this:**  
+API resource grep, namespaces, short cross-namespace list — read-only.
 
 ```bash
 kubectl api-resources | grep -E "^configmaps|^pods|^deployments" || true
@@ -38,6 +57,10 @@ kubectl get ns
 kubectl get all -A | head -n 20
 ```
 
-## Failure Troubleshooting Asset
+## Failure troubleshooting
 
-- Each lesson `2.1.2.*` includes `yamls/failure-troubleshooting.yaml` with topic-specific symptoms (apply, selectors, namespaces, finalizers, ownership, and API version drift).
+Each `2.1.2.*` lesson includes `yamls/failure-troubleshooting.yaml` for apply conflicts, selectors, namespaces, finalizers, ownership, and version drift.
+
+## Next
+
+[2.1.3 The Kubernetes API](../2.1.3-the-kubernetes-api/README.md)

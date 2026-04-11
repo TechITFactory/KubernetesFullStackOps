@@ -8,6 +8,17 @@ You will **either** use **Minikube (1.1.1)** **or** **Kind (1.1.2)** — pick on
 
 Lessons **1.1.1–1.1.3** use the same format as Part 0: **teaching transcript** with **Say → Run → Expected** in numbered steps.
 
+## Pick your local stack
+
+```mermaid
+flowchart TD
+  Start[Need a local cluster] --> Choice{Pick one}
+  Choice -->|Single node addons| MK[1.1.1 Minikube]
+  Choice -->|Multi-node in Docker| KD[1.1.2 Kind]
+  MK --> DL[1.1.3 dev-local namespace]
+  KD --> DL
+```
+
 ## Sections
 
 | Lesson | Link | Choose if… |

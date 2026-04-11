@@ -1,33 +1,46 @@
-# 2.1.2.1 Kubernetes Object Management
+# 2.1.2.1 Kubernetes Object Management — teaching transcript
 
-- Summary: Object management is about reconciling desired state safely, not just creating YAML files.
-- Content: This subsection demonstrates create/apply/delete flows and why declarative management is usually the better long-term approach.
-- Lab: Apply a Deployment, modify it declaratively, and observe the live object state.
+## Intro
 
-## Assets
+**Declarative** `apply` vs one-off **create**: reconcile desired state safely and repeatably.
 
-- `scripts/object-management-demo.sh`
-- `yamls/object-management-demo.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** `scripts/object-management-demo.sh` header describes exact API calls.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Script **applies** `object-management-demo.yaml` (namespace `object-management-demo` + Deployment).  
+- Second line shows deploy + pods in that namespace.
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/object-management-demo.sh
 kubectl get deploy,pods -n object-management-demo -o wide
 ```
 
-## Expected output
+**Expected:**  
+Namespace exists; Deployment available; Pods `Running`.
 
-- Namespace `object-management-demo` exists; Deployment `demo-nginx` reports available replicas and Pods are `Running`.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+Recap then **delete** manifest (removes namespace and contents).
 
 ```bash
 kubectl get deploy,pods -n object-management-demo
 kubectl delete -f yamls/object-management-demo.yaml --ignore-not-found
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common apply conflicts, immutable fields, and stuck Terminating objects.
+| Path | Purpose |
+|------|---------|
+| `scripts/object-management-demo.sh` | Apply + get |
+| `yamls/object-management-demo.yaml` | Demo namespace + Deployment |
+| `yamls/failure-troubleshooting.yaml` | Apply / immutable field issues |
+
+## Next
+
+[2.1.2.2 Object names and IDs](../2.1.2.2-object-names-and-ids/README.md)

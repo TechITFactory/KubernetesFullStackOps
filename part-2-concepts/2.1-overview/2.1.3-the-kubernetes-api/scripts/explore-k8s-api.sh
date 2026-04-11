@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: explore-k8s-api.sh
+# Lesson: part-2-concepts/2.1-overview/2.1.3-the-kubernetes-api (README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. kubectl api-versions, api-resources, get --raw / — read-only API discovery.
+#
+# Exit: 0; 1 if kubectl missing.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 command -v kubectl >/dev/null 2>&1 || {

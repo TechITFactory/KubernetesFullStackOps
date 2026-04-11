@@ -4,6 +4,30 @@
 
 Hands-on path: **1.1** (local cluster + `dev-local` workspace) → **1.2** (production-style runtime + kubeadm + cloud trade-offs) → **1.3** (operational habits: scale, zones, nodes, security, PKI).
 
+## Part 1 map
+
+```mermaid
+flowchart TB
+  subgraph Local[On your laptop]
+    A[1.1 Local cluster Minikube or Kind]
+    B[1.1.3 dev-local workspace]
+    A --> B
+  end
+  subgraph Prod[Production-style path]
+    C[1.2.1 CRI runtime on Linux nodes]
+    D[1.2.2 kubeadm lifecycle]
+    E[1.2.3 Managed K8s trade-offs]
+    C --> D
+    D --- E
+  end
+  subgraph Ops[Habits]
+    F[1.3 Best practices]
+  end
+  B --> C
+  B --> F
+  D --> F
+```
+
 ## Recommended order (sequential)
 
 Follow this when you want a single clean track from zero to “Part 1 done”:

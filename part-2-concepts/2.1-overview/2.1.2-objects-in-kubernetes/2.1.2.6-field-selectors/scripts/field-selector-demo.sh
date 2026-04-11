@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Script: field-selector-demo.sh
+# Lesson: 2.1.2.6-field-selectors (README)
+#
+# WHAT THIS DOES WHEN YOU RUN IT
+#   1. kubectl get pods -A --field-selector=status.phase=Running
+#   2. kubectl get events -A --field-selector=type=Warning
+#
+# Exit: 0; 1 if kubectl missing.
+# ------------------------------------------------------------------------------
 set -euo pipefail
 
 command -v kubectl >/dev/null 2>&1 || {

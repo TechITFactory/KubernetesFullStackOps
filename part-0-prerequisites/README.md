@@ -2,6 +2,14 @@
 
 Complete this phase **before** [Part 1: Getting Started](../part-1-getting-started/README.md). Kubernetes assumes you are comfortable on the Linux command line and understand what containers are and how images run.
 
+## Phase flow
+
+```mermaid
+flowchart LR
+  L[0.1 Linux basics] --> D[0.2 Docker basics]
+  D --> P1[Part 1: Cluster on your machine]
+```
+
 ## Modules
 
 Each lesson is a **teaching transcript**: numbered steps with **Say → Run → Expected** (same style as **0.1** and **0.2**).

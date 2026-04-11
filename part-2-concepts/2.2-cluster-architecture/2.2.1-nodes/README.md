@@ -1,29 +1,34 @@
-# 2.2.1 Nodes
+# 2.2.1 Nodes — teaching transcript
 
-- Summary: Nodes are the execution boundary for Kubernetes workloads and the place where kubelet, kube-proxy, and the runtime turn desired state into running containers.
-- Content: Focus on node roles, conditions, allocatable resources, taints, labels, and the operational difference between control-plane and worker nodes.
-- Lab: Inspect nodes, conditions, capacity, allocatable resources, and runtime metadata.
+## Intro
 
-## Assets
+Nodes: kubelet, kube-proxy, runtime; **capacity**, **allocatable**, **conditions**, roles.
 
-- `scripts/inspect-nodes.sh`
-- `yamls/node-observation-notes.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** `scripts/inspect-nodes.sh` — see file header.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Script: wide nodes + truncated multi-node describe.  
+- You repeat wide get.  
+- You describe **first** node (by jsonpath), first 80 lines.
 
 ```bash
+chmod +x scripts/*.sh
 ./scripts/inspect-nodes.sh
 kubectl get nodes -o wide
 kubectl describe node "$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')" | sed -n '1,80p'
 ```
 
-## Expected output
+**Expected:**  
+`Ready`, roles, runtime/version strings visible; capacity/allocatable in describe.
 
-- Node `Ready` state, roles, and runtime details are visible.
-- Capacity/allocatable and condition blocks are inspectable from `kubectl describe node`.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+`kubectl top nodes` if metrics-server installed (`|| true`); recent events.
 
 ```bash
 kubectl get nodes -o wide
@@ -31,6 +36,14 @@ kubectl top nodes 2>/dev/null || true
 kubectl get events -A --sort-by=.lastTimestamp | tail -n 20
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common node readiness, kubelet, and resource-reporting failures.
+| Path | Purpose |
+|------|---------|
+| `scripts/inspect-nodes.sh` | Node inspection |
+| `yamls/node-observation-notes.yaml` | Notes |
+| `yamls/failure-troubleshooting.yaml` | Node readiness |
+
+## Next
+
+[2.2.2 Communication between nodes and the control plane](../2.2.2-communication-between-nodes-and-the-control-plane/README.md)

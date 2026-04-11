@@ -22,6 +22,15 @@ If pulls or builds are slow — do **Steps 1–4**, take a break, then do **5–
 
 **Teaching tip:** Each step includes **What happens when you run this** so you know the effect *before* you paste. **Say** is optional camera talk. `scripts/verify-docker-basics.sh` has the same explanation in a comment header at the top of the file.
 
+## Image to container (same vocabulary as Kubernetes)
+
+```mermaid
+flowchart LR
+  R[Registry] -->|docker pull| I[Image local]
+  I -->|docker run| C[Container]
+  C -->|logs stop rm| OPS[Operate]
+```
+
 ---
 
 ## Step 1 — Move into the lesson folder

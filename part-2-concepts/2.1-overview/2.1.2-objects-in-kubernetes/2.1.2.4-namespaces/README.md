@@ -1,32 +1,42 @@
-# 2.1.2.4 Namespaces
+# 2.1.2.4 Namespaces — teaching transcript
 
-- Summary: Namespaces provide a first-level partitioning boundary for names, policy, quotas, and access control.
-- Content: This subsection demonstrates namespace creation, scoping, and why `default` should not be your long-term home for everything.
-- Lab: Apply the namespace manifest and deploy a namespaced object into it.
+## Intro
 
-## Assets
+Namespaces partition **names**, RBAC, quotas — and your default context.
 
-- `yamls/namespace-demo.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
-## Quick Start
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Apply namespace manifest.  
+- Show labels on `overview-lab`.
 
 ```bash
 kubectl apply -f yamls/namespace-demo.yaml
 kubectl get ns overview-lab --show-labels
 ```
 
-## Expected output
+**Expected:**  
+Namespace `overview-lab` with `purpose=training` (or labels from your YAML).
 
-- Namespace `overview-lab` exists with label `purpose=training`.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+YAML snippet then **delete namespace** (cascades contents).
 
 ```bash
 kubectl get ns overview-lab -o yaml | head -n 30
 kubectl delete ns overview-lab --ignore-not-found
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common context/namespace scoping mistakes, finalizer stuck namespaces, and RBAC denials.
+| Path | Purpose |
+|------|---------|
+| `yamls/namespace-demo.yaml` | Demo namespace |
+| `yamls/failure-troubleshooting.yaml` | Context / finalizer issues |
+
+## Next
+
+[2.1.2.5 Annotations](../2.1.2.5-annotations/README.md)

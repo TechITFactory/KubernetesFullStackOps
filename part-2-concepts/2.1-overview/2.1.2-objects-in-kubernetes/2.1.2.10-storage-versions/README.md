@@ -1,26 +1,31 @@
-# 2.1.2.10 Storage Versions
+# 2.1.2.10 Storage Versions — teaching transcript
 
-- Summary: Storage versions determine how objects are persisted in etcd and matter when APIs evolve across releases.
-- Content: This subsection explains served versions versus storage versions and why storage-version migration exists.
-- Lab: Review the notes manifest and trace one example resource across API version transitions.
+## Intro
 
-## Assets
+**Served** API versions vs **stored** representation in etcd — matters for upgrades and deprecations.
 
-- `yamls/storage-version-notes.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../../part-1-getting-started/README.md).
 
-## Quick Start
+**Teaching tip:** Applying to **`kube-system`** needs permission; on locked-down clusters, apply to another namespace and copy notes locally instead.
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Creates/updates ConfigMap **`storage-version-notes`** in `kube-system` (if RBAC allows).  
+- Prints first lines of embedded `data.notes`.
 
 ```bash
 kubectl apply -f yamls/storage-version-notes.yaml
 kubectl get cm storage-version-notes -n kube-system -o jsonpath='{.data.notes}' | head -n 5
 ```
 
-## Expected output
+**Expected:**  
+Notes text visible, or clear RBAC denial (documented in troubleshooting YAML).
 
-- ConfigMap `storage-version-notes` in `kube-system` contains the embedded explanation text (requires RBAC to create/update objects in `kube-system` on your cluster).
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+API versions; raw `/apis/apps/v1` snippet; **delete** ConfigMap.
 
 ```bash
 kubectl api-versions | head -n 20
@@ -28,6 +33,13 @@ kubectl get --raw /apis/apps/v1 2>/dev/null | head -c 120; echo
 kubectl delete cm storage-version-notes -n kube-system --ignore-not-found
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common served vs stored version confusion, migration job failures, and deprecated API removals.
+| Path | Purpose |
+|------|---------|
+| `yamls/storage-version-notes.yaml` | Embedded explanation |
+| `yamls/failure-troubleshooting.yaml` | Version / migration confusion |
+
+## Next
+
+[2.1.3 The Kubernetes API](../../2.1.3-the-kubernetes-api/README.md)

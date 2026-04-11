@@ -1,15 +1,19 @@
-# 2.3.2 Container Environment
+# 2.3.2 Container Environment — teaching transcript
 
-- Summary: A container's environment is assembled from image defaults, command overrides, env vars, and injected Kubernetes metadata.
-- Content: Show how args, env, downward API, DNS, and mounted data shape the process environment inside the container.
-- Lab: Run the environment demo and inspect variables and mounted metadata.
+## Intro
 
-## Assets
+Inside the container, the process sees **image defaults**, **command/args**, **`env`**, **downward API** (`fieldRef`), DNS, and mounts — all driven from the Pod spec.
 
-- `yamls/container-environment-demo.yaml`
-- `yamls/failure-troubleshooting.yaml`
+**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md); cluster can pull `busybox:1.36`.
 
-## Quick Start
+**Teaching tip:** Manifest has no `namespace:` → Pod is created in your **current** context’s default namespace (usually `default`).
+
+## Lab — Quick Start
+
+**What happens when you run this:**  
+- Apply Pod `container-environment-demo` (`env-demo` container runs `env && sleep 3600`).  
+- Wait until Ready.  
+- `exec printenv` shows `TRAINING_MODULE`, `POD_NAME` (from fieldRef), plus Kubernetes-injected vars.
 
 ```bash
 kubectl apply -f yamls/container-environment-demo.yaml
@@ -17,17 +21,32 @@ kubectl wait --for=condition=Ready pod/container-environment-demo --timeout=120s
 kubectl exec pod/container-environment-demo -c env-demo -- printenv | head -n 30
 ```
 
-## Expected output
+**Expected:**  
+`TRAINING_MODULE=2.3.2`, `POD_NAME=container-environment-demo`, plus standard K8s env where injected.
 
-- Pod is `Running` and env vars from the manifest (and downward API where used) appear in `printenv`.
+## Video close — fast validation
 
-## Video close - fast validation
+**What happens when you run this:**  
+Wide pod; describe excerpt between Environment and Mounts — read-only.
 
 ```bash
 kubectl get pod container-environment-demo -o wide
 kubectl describe pod container-environment-demo | sed -n '/Environment:/,/Mounts:/p'
 ```
 
-## Failure Troubleshooting Asset
+## Repo files (reference)
 
-- `yamls/failure-troubleshooting.yaml` - common env, command, volume mount, and downward API failures.
+| Path | Purpose |
+|------|---------|
+| `yamls/container-environment-demo.yaml` | env + fieldRef demo |
+| `yamls/failure-troubleshooting.yaml` | env / downward API issues |
+
+## Cleanup
+
+```bash
+kubectl delete pod container-environment-demo --ignore-not-found
+```
+
+## Next
+
+[2.3.3 Runtime class](../2.3.3-runtime-class/README.md)
