@@ -1,0 +1,9 @@
+﻿C:\src\K8sOps\00-Prerequisites\0.1-linux-basics-for-kubernetes
+C:\src\K8sOps\00-Prerequisites\0.2-docker-basics-for-kubernetes
+C:\src\K8sOps\00-Prerequisites\0.1-linux-basics-for-kubernetes\lab-files
+C:\src\K8sOps\00-Prerequisites\0.1-linux-basics-for-kubernetes\scripts
+C:\src\K8sOps\00-Prerequisites\0.1-linux-basics-for-kubernetes\yamls
+C:\src\K8sOps\00-Prerequisites\0.1-linux-basics-for-kubernetes\lab-files\nested
+C:\src\K8sOps\00-Prerequisites\0.2-docker-basics-for-kubernetes\docker
+C:\src\K8sOps\00-Prerequisites\0.2-docker-basics-for-kubernetes\scripts
+C:\src\K8sOps\00-Prerequisites\0.2-docker-basics-for-kubernetes\yamls
