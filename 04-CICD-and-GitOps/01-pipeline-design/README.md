@@ -1,64 +1,125 @@
-# 01 Pipeline Design
+# Pipeline design — teaching transcript
 
-## Metadata
-- Duration: `15 minutes`
-- Difficulty: `Beginner`
-- Practical/Theory: `30/70`
-- Tested on Kubernetes: `v1.30`
+## Intro
 
-## Learning Objective
-By the end of this lesson, you will be able to:
-- Identify the core stages of a secure Continuous Integration (CI) pipeline.
-- Verify container payloads against structural and security thresholds before they ever touch a cluster.
+**A** **CI** **pipeline** **is** **the** **contract** **between** **developers** **and** **production:** **every** **merge** **runs** **the** **same** **steps** **(checkout**, **lint**, **build**, **vulnerability** **scan**, **push** **to** **a** **trusted** **registry)** **so** **bad** **images** **never** **earn** **a** **digest** **operators** **would** **deploy**. **This** **lesson** **uses** **a** **GitHub** **Actions-style** **workflow** **file** **in** **`yamls/ci-pipeline.yaml`** **as** **a** **readable** **blueprint** **—** **you** **do** **not** **have** **to** **run** **it** **on** **GitHub** **to** **learn** **the** **stages**.
 
-## Why This Matters in Real Jobs
-If you build container images manually on your laptop and push them to production, you are a security breach waiting to happen. In the enterprise, nobody deploys locally. Code must pass automated Linting, Building, and Vulnerability Scanning (CVE checks) inside a structured pipeline before it is certified for release.
+**Prerequisites:** [Track 4 module](../README.md); [Track 3: Packaging](../../03-Packaging-and-Environments/README.md) **(Helm** **charts** **mentioned** **in** **the** **sample** **lint** **step)**.
 
-## Concepts (Short Theory)
-- **Lint:** Checking Helm charts or Kustomize files for syntax errors without deploying them.
-- **Build:** Compiling code and packaging it rigidly inside a Docker container.
-- **Scan:** Utilizing security tools (like Trivy or Grype) to check the generated image for known hacks or vulnerabilities.
-- **Publish:** Pushing the certified image rigidly to a central registry (Harbor, ECR, GCR).
+## Flow of this lesson
 
-## Visual: CI Workflow
-
-```mermaid
-flowchart LR
-    Push[Code Push] --> L[Lint Helm/YAML]
-    L -->|Pass| B[Docker Build]
-    B --> S[Trivy Vulnerability Scan]
-    S -->|Secure| P[Push to Registry]
-    
-    L -.->|Fail| F((Halt))
-    S -.->|Fail| F
 ```
-
-## Lab: Step-by-Step Practical
-
-### Step 1 - Open directory
-**Run:**
-```bash
-cd "$COURSE_DIR/04-CICD-and-GitOps/01-pipeline-design"
+  git push → workflow triggers
+              │
+              ▼
+  lint (helm lint) → build image → trivy scan → push
+              │
+              ▼
+  any failure stops the line before registry push
 ```
-
-### Step 2 - Inspect the CI Blueprint
-
-**What happens when you run this:**
-You examine an industry-standard GitHub Actions workflow. Rather than executing it natively, we evaluate its structure to understand the required gates.
 
 **Say:**
-Notice that the pipeline strictly enforces a Security Scan directly after the Build. If `trivy` detects high-severity CVEs, the pipeline crashes and the image is permanently blocked from reaching the registry.
+
+**The** **scan** **sits** **between** **build** **and** **push** **on** **purpose** **—** **once** **the** **image** **is** **in** **the** **registry**, **every** **consumer** **treats** **it** **as** **trusted**.
+
+## Learning objective
+
+- **Identify** **lint**, **build**, **security** **scan**, **and** **publish** **stages** **in** **the** **sample** **workflow**.
+- **Explain** **why** **scanning** **after** **build** **but** **before** **push** **reduces** **risk**.
+
+## Why this matters
+
+**Pushing** **unscanned** **images** **means** **your** **registry** **becomes** **a** **cache** **of** **known** **vulnerable** **layers** **—** **GitOps** **will** **happily** **sync** **them** **everywhere**.
+
+## One-time setup
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/04-CICD-and-GitOps/01-pipeline-design" 2>/dev/null || cd .
+```
+
+## Step 1 — Inspect the CI blueprint
+
+**What happens when you run this:**
+
+You **read** **a** **structured** **workflow** **with** **jobs** **and** **steps** **that** **mirror** **common** **enterprise** **gates**.
+
+**Say:**
+
+**Point** **out** **`helm lint charts/my-app`** **—** **it** **is** **cheap** **and** **catches** **chart** **errors** **before** **Docker** **even** **runs**.
 
 **Run:**
+
 ```bash
 cat yamls/ci-pipeline.yaml
 ```
 
-## Expected Output
-A fully structured YAML file displaying consecutive logical jobs corresponding directly to the Mermaid diagram.
+**Expected:** **`on: push`**, **job** **`build-and-push`**, **steps** **checkout** **→** **lint** **→** **build** **→** **`trivy image`** **→** **`docker push`**.
 
-## Conclusion
-Once a CI pipeline reaches "Push to Registry", the application is ready. But how does that container actually get onto the Kubernetes cluster? That enters the domain of **GitOps**, covered next.
+---
 
-## Next Lesson
-[02 GitOps with Argo CD](../02-gitops-with-argocd/README.md)
+## Step 2 — Trace failure modes (desk exercise)
+
+**What happens when you run this:**
+
+**No** **commands** **required** **—** **walk** **the** **YAML** **and** **state** **what** **fails** **closed** **if** **lint**, **build**, **or** **Trivy** **exits** **non-zero**.
+
+**Say:**
+
+**If** **`trivy`** **fails**, **the** **push** **step** **never** **runs** **—** **that** **is** **the** **whole** **point** **of** **ordering**.
+
+**Run:**
+
+*(Optional)* **Open** **the** **file** **in** **your** **editor** **and** **annotate** **each** **step** **with** **“blocks** **release”** **or** **“does** **not** **block”**.
+
+**Expected:** **Clear** **narrative** **that** **only** **a** **green** **pipeline** **reaches** **registry** **push**.
+
+---
+
+## Step 3 — Optional local smoke (if tools exist)
+
+**What happens when you run this:**
+
+**If** **you** **have** **a** **chart** **at** **`charts/my-app`** **and** **Helm** **installed**, **`helm lint`** **validates** **the** **same** **class** **of** **gate** **as** **the** **workflow** **—** **skip** **if** **paths** **do** **not** **exist** **in** **this** **repo**.
+
+**Run:**
+
+```bash
+helm version 2>/dev/null || true
+test -d charts/my-app && helm lint charts/my-app || echo "Skip: no charts/my-app in this repo (sample workflow only)"
+```
+
+**Expected:** **Helm** **version** **or** **skip** **message**.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+**Re-read** **the** **trigger** **and** **branch** **filter** **—** **quick** **mental** **check** **before** **ending** **the** **segment**.
+
+**Run:**
+
+```bash
+grep -E '^(name:|on:|jobs:)' yamls/ci-pipeline.yaml 2>/dev/null || true
+```
+
+**Expected:** **`name: CI Pipeline Example`**, **`on: push`**, **`jobs:`** **visible**.
+
+## Troubleshooting
+
+- **Workflow** **references** **paths** **you** **do** **not** **have** → **normal** **for** **a** **sample** **—** **fork** **paths** **for** **your** **repo** **or** **teach** **read-only**
+- **`trivy` not** **installed** → **install** **from** **[Aqua** **Security** **docs](https://aquasecurity.github.io/trivy/)** **or** **use** **CI** **only**
+- **Different** **CI** **platform** → **same** **stages** **map** **to** **Jenkins**, **GitLab** **CI**, **Azure** **Pipelines**, **etc.**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/ci-pipeline.yaml` | **Example** **GitHub** **Actions-style** **CI** **workflow** |
+
+## Cleanup
+
+— **none** **(this** **lesson** **does** **not** **apply** **cluster** **objects)** —
+
+## Next
+
+[4.2 GitOps with Argo CD](../02-gitops-with-argocd/README.md)

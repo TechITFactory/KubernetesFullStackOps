@@ -1,4 +1,4 @@
-# 2.12 Windows in Kubernetes — teaching transcript
+# Windows in Kubernetes — teaching transcript
 
 ## Intro
 

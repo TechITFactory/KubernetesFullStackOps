@@ -1,4 +1,4 @@
-# 2.6.14 Volume Health Monitoring — teaching transcript
+# Volume Health Monitoring — teaching transcript
 
 ## Intro
 

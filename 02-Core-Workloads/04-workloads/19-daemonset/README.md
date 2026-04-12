@@ -1,8 +1,8 @@
-﻿# 2.4.3.4 DaemonSet â€” teaching transcript
+# DaemonSet — teaching transcript
 
 ## Intro
 
-A **DaemonSet** runs **one pod per eligible node** (matching **nodeSelector**, **affinity**, and **tolerations**), not a fixed **`replicas:`** count like a Deployment. **Platform agents**â€”log collectors, **node exporters**, **CNI** helpers, even **kube-proxy** historicallyâ€”are classic DaemonSets. **Control-plane nodes** are often **tainted**; DaemonSets that must run there need explicit **tolerations**. **`updateStrategy`** is **`RollingUpdate`** (default on supported versions) or **`OnDelete`** (replace pods only when node deletes pod or you delete manually)â€”choose based on how tightly you must control blast radius during upgrades.
+A **DaemonSet** runs **one pod per eligible node** (matching **nodeSelector**, **affinity**, and **tolerations**), not a fixed **`replicas:`** count like a Deployment. **Platform agents**—log collectors, **node exporters**, **CNI** helpers, even **kube-proxy** historically—are classic DaemonSets. **Control-plane nodes** are often **tainted**; DaemonSets that must run there need explicit **tolerations**. **`updateStrategy`** is **`RollingUpdate`** (default on supported versions) or **`OnDelete`** (replace pods only when node deletes pod or you delete manually)—choose based on how tightly you must control blast radius during upgrades.
 
 **Prerequisites:** [2.4.3.3 StatefulSet](../18-statefulsets/README.md).
 
@@ -20,23 +20,23 @@ Platform teams ship many add-ons as DaemonSets. When a node taints or goes **Not
 
 ```
   DaemonSet
-      â”‚
-      â”œâ”€â”€ Node A â†’ Pod
-      â”œâ”€â”€ Node B â†’ Pod
-      â””â”€â”€ Node C â†’ Pod   (if schedulable + matches policy)
+      │
+      ├── Node A → Pod
+      ├── Node B → Pod
+      └── Node C → Pod   (if schedulable + matches policy)
 ```
 
 **Say:**
 
-On **Minikube**, expect **one** podâ€”**desiredNumberScheduled** follows your node list, not your gut.
+On **Minikube**, expect **one** pod—**desiredNumberScheduled** follows your node list, not your gut.
 
 ## Concepts (short theory)
 
-- **maxUnavailable** / **maxSurge** for DaemonSet rolling updates depend on API versionâ€”consult `kubectl explain daemonset.spec.updateStrategy`.
+- **maxUnavailable** / **maxSurge** for DaemonSet rolling updates depend on API version—consult `kubectl explain daemonset.spec.updateStrategy`.
 
 ---
 
-## Step 1 â€” Apply DaemonSet and wait
+## Step 1 — Apply DaemonSet and wait
 
 **What happens when you run this:**
 
@@ -58,11 +58,11 @@ kubectl get pods -l app=daemonset-demo -o wide
 
 ---
 
-## Step 2 â€” Verify script
+## Step 2 — Verify script
 
 **What happens when you run this:**
 
-Asserts **desired**, **current**, and **ready** matchâ€”portable across cluster sizes.
+Asserts **desired**, **current**, and **ready** match—portable across cluster sizes.
 
 **Run:**
 
@@ -75,18 +75,18 @@ chmod +x scripts/verify-daemonset-lesson.sh
 
 ## Troubleshooting
 
-- **Fewer pods than nodes** â†’ **taints/tolerations**, **nodeSelector**, or **Pod topology** constraints
-- **DaemonSet not updating** â†’ **`OnDelete`** strategyâ€”delete pods to pick up new template
-- **CrashLoop on every node** â†’ bad **hostPath** or **privilege**â€”affects whole fleet instantly
-- **Control-plane missing agent** â†’ add **tolerations** for **control-plane** / **master** taints
-- **Rollout stuck** â†’ describe DaemonSet; check **maxUnavailable** and pod **Events**
-- **Verify script â€œwrong countâ€** â†’ reread scriptâ€”it compares **counters**, not â€œmust be 3â€
+- **Fewer pods than nodes** → **taints/tolerations**, **nodeSelector**, or **Pod topology** constraints
+- **DaemonSet not updating** → **`OnDelete`** strategy—delete pods to pick up new template
+- **CrashLoop on every node** → bad **hostPath** or **privilege**—affects whole fleet instantly
+- **Control-plane missing agent** → add **tolerations** for **control-plane** / **master** taints
+- **Rollout stuck** → describe DaemonSet; check **maxUnavailable** and pod **Events**
+- **Verify script “wrong count”** → reread script—it compares **counters**, not “must be 3”
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **Say:**
 
-I show **nodes** beside **pods** so the â€œone per nodeâ€ story clicks.
+I show **nodes** beside **pods** so the “one per node” story clicks.
 
 ```bash
 kubectl get ds daemonset-demo

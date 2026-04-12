@@ -1,10 +1,10 @@
-﻿# 02 Kind (Kubernetes in Docker) â€” teaching transcript
+# 02 Kind (Kubernetes in Docker) — teaching transcript
 
 ## Intro
 
-This lesson builds a **multi-node Kubernetes cluster** where each node runs as a **Docker container** â€” that is **Kind** (Kubernetes in Docker). Fast to create, great for **CI-style** workflows and testing scheduling across nodes.
+This lesson builds a **multi-node Kubernetes cluster** where each node runs as a **Docker container** — that is **Kind** (Kubernetes in Docker). Fast to create, great for **CI-style** workflows and testing scheduling across nodes.
 
-**You need:** Docker running; [Part 0](../../../part-0-prerequisites/README.md)â€“level terminal comfort. **Kind requires Docker** â€” no Docker, no Kind.
+**You need:** Docker running; [Part 0](../../../00-Prerequisites/README.md)–level terminal comfort. **Kind requires Docker** — no Docker, no Kind.
 
 **Context:** This course names the cluster **`kfsops-kind`**. Most `kubectl` commands below use **`--context kind-kfsops-kind`** so you do not accidentally hit another cluster.
 
@@ -25,7 +25,7 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/01-learning-environment/
 
 ```
   [ Step 2 ]      [ Step 3 ]       [ Step 4 ]         [ Step 5 ]        [ Step 6 ]       [ Step 7 ]      [ Step 8 ]
-  chmod +    â†’    install kind  â†’  create cluster  â†’  apply workload â†’  wait + curl â†’  read-only     â†’  tear down
+  chmod +    →    install kind  →  create cluster  →  apply workload →  wait + curl →  read-only     →  tear down
   scripts                          kfsops-kind         sample YAML        NodePort        recap           (optional)
 ```
 
@@ -35,10 +35,10 @@ We make scripts executable, install Kind and kubectl if needed, create or reuse 
 
 ---
 
-## Step 1 â€” Open this lesson in the terminal
+## Step 1 — Open this lesson in the terminal
 
 **What happens when you run this:**  
-`cd` into the lesson; `pwd` confirms path â€” no cluster created yet.
+`cd` into the lesson; `pwd` confirms path — no cluster created yet.
 
 **Say:**  
 I work from the lesson folder so scripts and YAML paths resolve correctly. `pwd` just confirms we're in the right place.
@@ -55,13 +55,13 @@ Path ending in `01.2-kind-kubernetes-in-docker`.
 
 ---
 
-## Step 2 â€” Make scripts executable
+## Step 2 — Make scripts executable
 
 **What happens when you run this:**  
-`chmod +x scripts/*.sh` marks course scripts executable â€” metadata only.
+`chmod +x scripts/*.sh` marks course scripts executable — metadata only.
 
 **Say:**  
-Same as every lesson â€” git doesn't always preserve the execute bit. One command, all scripts in this folder are fixed.
+Same as every lesson — git doesn't always preserve the execute bit. One command, all scripts in this folder are fixed.
 
 **Run:**
 
@@ -74,13 +74,13 @@ No errors.
 
 ---
 
-## Step 3 â€” Install Kind and kubectl (idempotent)
+## Step 3 — Install Kind and kubectl (idempotent)
 
 **What happens when you run this:**  
-`install-kind.sh` downloads `kind` and optionally `kubectl` to `/usr/local/bin` with `sudo` when versions differ â€” see script header for defaults and `SKIP_KUBECTL`.
+`install-kind.sh` downloads `kind` and optionally `kubectl` to `/usr/local/bin` with `sudo` when versions differ — see script header for defaults and `SKIP_KUBECTL`.
 
 **Say:**  
-Same idea as Minikubeâ€™s installer: checks version, skips if already correct. May use `sudo` for `/usr/local/bin`.
+Same idea as Minikube’s installer: checks version, skips if already correct. May use `sudo` for `/usr/local/bin`.
 
 **Run:**
 
@@ -93,13 +93,13 @@ Same idea as Minikubeâ€™s installer: checks version, skips if already corre
 
 ---
 
-## Step 4 â€” Create the Kind cluster (idempotent)
+## Step 4 — Create the Kind cluster (idempotent)
 
 **What happens when you run this:**  
-`create-kind-cluster.sh` runs `kind create cluster` with `kind-cluster-config.yaml` (or skips if `kfsops-kind` exists), then `kubectl cluster-info` / `get nodes` on context `kind-kfsops-kind`. Creates Docker â€œnodeâ€ containers and installs Kubernetes inside them.
+`create-kind-cluster.sh` runs `kind create cluster` with `kind-cluster-config.yaml` (or skips if `kfsops-kind` exists), then `kubectl cluster-info` / `get nodes` on context `kind-kfsops-kind`. Creates Docker “node” containers and installs Kubernetes inside them.
 
 **Say:**  
-The script uses `yamls/kind-cluster-config.yaml` â€” one control-plane node, one worker, and **host port 8888 â†’ node port 30080** so we can `curl` from the laptop. If the cluster already exists, the script reuses it.
+The script uses `yamls/kind-cluster-config.yaml` — one control-plane node, one worker, and **host port 8888 → node port 30080** so we can `curl` from the laptop. If the cluster already exists, the script reuses it.
 
 **Run:**
 
@@ -108,17 +108,17 @@ The script uses `yamls/kind-cluster-config.yaml` â€” one control-plane node
 ```
 
 **Expected:**  
-Cluster created or â€œalready existsâ€; `kubectl get nodes --context kind-kfsops-kind` shows **two** nodes `Ready` (control-plane + worker).
+Cluster created or “already exists”; `kubectl get nodes --context kind-kfsops-kind` shows **two** nodes `Ready` (control-plane + worker).
 
 ---
 
-## Step 5 â€” Apply the sample workload
+## Step 5 — Apply the sample workload
 
 **What happens when you run this:**  
 `kubectl apply ... --context kind-kfsops-kind` creates/updates Namespace `kind-lab`, Deployment `echoserver`, and NodePort Service (port **30080** on nodes, mapped to host **8888** per Kind config).
 
 **Say:**  
-This creates namespace `kind-lab`, an `echoserver` Deployment, and a **NodePort** Service on **30080** â€” matching the Kind config mapping to **localhost:8888** on the host.
+This creates namespace `kind-lab`, an `echoserver` Deployment, and a **NodePort** Service on **30080** — matching the Kind config mapping to **localhost:8888** on the host.
 
 **Run:**
 
@@ -131,13 +131,13 @@ Resources created or unchanged.
 
 ---
 
-## Step 6 â€” Wait for the pod, then curl
+## Step 6 — Wait for the pod, then curl
 
 **What happens when you run this:**  
-`rollout status` waits for the Deployment; `get pods` shows placement; `curl` to `localhost:8888` hits the host-mapped NodePort â†’ Service â†’ Pod (HTTP body is the echo response).
+`rollout status` waits for the Deployment; `get pods` shows placement; `curl` to `localhost:8888` hits the host-mapped NodePort → Service → Pod (HTTP body is the echo response).
 
 **Say:**  
-I wait for the rollout first â€” if I curl before the pod is ready I'll get a connection refused and think something broke. Once the rollout succeeds I check pod placement with `get pods -o wide`, then curl to confirm the full path from my laptop through the Kind port mapping to the container is working.
+I wait for the rollout first — if I curl before the pod is ready I'll get a connection refused and think something broke. Once the rollout succeeds I check pod placement with `get pods -o wide`, then curl to confirm the full path from my laptop through the Kind port mapping to the container is working.
 
 **Run:**
 
@@ -152,14 +152,14 @@ Rollout success; pod `Running`; `curl` returns echo output (HTTP body with reque
 
 ---
 
-## Step 7 â€” Fast validation
+## Step 7 — Fast validation
 
 **What happens when you run this:**  
-Read-only: node list, short pod list across namespaces, HTTP status code probe to `:8888` â€” no object changes.
+Read-only: node list, short pod list across namespaces, HTTP status code probe to `:8888` — no object changes.
 
 **Say:**
 
-I double-check nodes, sample pods, and an HTTP status code on the mapped host port before calling the lesson done â€” still no writes to the API.
+I double-check nodes, sample pods, and an HTTP status code on the mapped host port before calling the lesson done — still no writes to the API.
 
 **Run:**
 
@@ -174,10 +174,10 @@ Two Ready nodes; `kind-lab` pod listed; HTTP **200** (or success code).
 
 ---
 
-## Step 8 â€” Tear down (optional)
+## Step 8 — Tear down (optional)
 
 **What happens when you run this:**  
-`teardown.sh` runs `kind delete cluster` for `kfsops-kind` if present â€” removes node containers and Kindâ€™s kubeconfig entry for that cluster.
+`teardown.sh` runs `kind delete cluster` for `kfsops-kind` if present — removes node containers and Kind’s kubeconfig entry for that cluster.
 
 **Say:**
 
@@ -196,11 +196,11 @@ Kind cluster deleted or already absent.
 
 ## Troubleshooting
 
-- **`docker: command not found`** â†’ start Docker Desktop or the Linux daemon; Kind requires Docker
-- **`bind: address already in use` on port 8888** â†’ edit `hostPort` in `yamls/kind-cluster-config.yaml`, align Service `nodePort`, recreate the cluster, or stop the conflicting host process
-- **`kubectl` hits the wrong cluster** â†’ `kubectl config current-context`; add `--context kind-kfsops-kind` to every command in this lesson
-- **`Failed to pull image` for Kubernetes or pause images** â†’ check outbound network and registry allow lists for `registry.k8s.io`
-- **`ERROR: failed to create cluster`** â†’ `docker info`; on WSL2 allocate enough RAM/disk to Docker
+- **`docker: command not found`** → start Docker Desktop or the Linux daemon; Kind requires Docker
+- **`bind: address already in use` on port 8888** → edit `hostPort` in `yamls/kind-cluster-config.yaml`, align Service `nodePort`, recreate the cluster, or stop the conflicting host process
+- **`kubectl` hits the wrong cluster** → `kubectl config current-context`; add `--context kind-kfsops-kind` to every command in this lesson
+- **`Failed to pull image` for Kubernetes or pause images** → check outbound network and registry allow lists for `registry.k8s.io`
+- **`ERROR: failed to create cluster`** → `docker info`; on WSL2 allocate enough RAM/disk to Docker
 
 ---
 
@@ -212,7 +212,7 @@ Kind cluster deleted or already absent.
 
 Kind is the default answer for **throwaway clusters in CI** and for **multi-node** behavior on a laptop.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 
@@ -220,7 +220,7 @@ Read-only checks on the Kind context: nodes, a slice of pods, HTTP status on `:8
 
 **Say:**
 
-This is the same recap as Step 7 â€” I use it as the closing beat so the camera sees green checks without re-applying YAML.
+This is the same recap as Step 7 — I use it as the closing beat so the camera sees green checks without re-applying YAML.
 
 **Run:**
 
@@ -251,4 +251,4 @@ Two Ready nodes; pods listed; HTTP **200**.
 
 ## Next
 
-[03 Local development clusters](../03-local-development-clusters/README.md) â€” add `dev-local` namespace, quota, and limit range on **this** cluster (keep `kubectl` context on `kind-kfsops-kind`).
+[03 Local development clusters](../03-local-development-clusters/README.md) — add `dev-local` namespace, quota, and limit range on **this** cluster (keep `kubectl` context on `kind-kfsops-kind`).

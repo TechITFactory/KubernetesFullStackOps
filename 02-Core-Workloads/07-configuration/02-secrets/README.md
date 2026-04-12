@@ -1,4 +1,4 @@
-# 2.7.2 Secrets — teaching transcript
+# Secrets — teaching transcript
 
 ## Intro
 

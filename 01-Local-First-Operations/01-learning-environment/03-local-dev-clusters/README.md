@@ -1,4 +1,4 @@
-﻿# 03 Local Development Clusters â€” teaching transcript
+# 03 Local Development Clusters — teaching transcript
 
 ## Intro
 
@@ -23,7 +23,7 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/01-learning-environment/
 
 ```
   [ Step 2 ]        [ Step 3 ]           [ Step 4 ]          [ Step 5 ]              [ Step 6 ]        [ Step 7 ]
-  check context  â†’  bootstrap          â†’  inspect quota   â†’  port-forward +     â†’  recap gets    â†’  delete ns
+  check context  →  bootstrap          →  inspect quota   →  port-forward +     →  recap gets    →  delete ns
   + tools           dev-local             + limits            curl (two terminals)   (read-only)      (optional)
 ```
 
@@ -33,10 +33,10 @@ We confirm kubectl points at the local cluster, run the bootstrap script that ap
 
 ---
 
-## Step 1 â€” Open this lesson in the terminal
+## Step 1 — Open this lesson in the terminal
 
 **What happens when you run this:**  
-`cd` into the lesson; `pwd` prints path; `chmod +x scripts/*.sh` makes scripts runnable â€” no cluster objects changed.
+`cd` into the lesson; `pwd` prints path; `chmod +x scripts/*.sh` makes scripts runnable — no cluster objects changed.
 
 **Say:**  
 I move into this lesson folder and make all scripts executable before doing anything with the cluster.
@@ -54,13 +54,13 @@ Path ends with `03-local-development-clusters`.
 
 ---
 
-## Step 2 â€” Check tools and current context
+## Step 2 — Check tools and current context
 
 **What happens when you run this:**  
-`check-local-prereqs.sh` prints which CLIs exist and shows current context (read-only). `kubectl config current-context` prints the active context name â€” **this** cluster receives later applies.
+`check-local-prereqs.sh` prints which CLIs exist and shows current context (read-only). `kubectl config current-context` prints the active context name — **this** cluster receives later applies.
 
 **Say:**  
-I verify `kubectl` and see **which cluster** will get `dev-local` â€” not production.
+I verify `kubectl` and see **which cluster** will get `dev-local` — not production.
 
 **Run:**
 
@@ -74,10 +74,10 @@ kubectl config current-context
 
 ---
 
-## Step 3 â€” Bootstrap `dev-local`
+## Step 3 — Bootstrap `dev-local`
 
 **What happens when you run this:**  
-`bootstrap-dev-workspace.sh` `kubectl apply`s namespace, ResourceQuota, LimitRange, and whoami Deployment/Service, then `kubectl rollout status` until ready â€” all in namespace `dev-local` on the current context.
+`bootstrap-dev-workspace.sh` `kubectl apply`s namespace, ResourceQuota, LimitRange, and whoami Deployment/Service, then `kubectl rollout status` until ready — all in namespace `dev-local` on the current context.
 
 **Say:**  
 The script applies namespace, quota, limit range, and whoami; it waits for rollout. Uses your **current** kubectl context.
@@ -93,10 +93,10 @@ The script applies namespace, quota, limit range, and whoami; it waits for rollo
 
 ---
 
-## Step 4 â€” Inspect quota and limits
+## Step 4 — Inspect quota and limits
 
 **What happens when you run this:**  
-`kubectl get` / `describe` read ResourceQuota and LimitRange objects from the API â€” no mutations.
+`kubectl get` / `describe` read ResourceQuota and LimitRange objects from the API — no mutations.
 
 **Say:**  
 These objects are what platform teams use to keep one team from starving others.
@@ -114,10 +114,10 @@ Quota and LimitRange listed; describe shows hard limits / defaults.
 
 ---
 
-## Step 5 â€” Hit whoami via port-forward
+## Step 5 — Hit whoami via port-forward
 
 **What happens when you run this:**  
-First terminal: `kubectl port-forward` opens a local TCP listener on **8080** and proxies to the Serviceâ€™s port **80** inside the cluster (process runs until Ctrl+C). Second terminal: `curl` sends one HTTP request to localhost and prints only the status code.
+First terminal: `kubectl port-forward` opens a local TCP listener on **8080** and proxies to the Service’s port **80** inside the cluster (process runs until Ctrl+C). Second terminal: `curl` sends one HTTP request to localhost and prints only the status code.
 
 **Say:**  
 The Service is ClusterIP only, so I forward **local 8080** to **service port 80** to test without Ingress. Port-forward binds on my laptop; `curl` proves the tunnel works. On WSL2 with Docker Desktop, if `127.0.0.1` fails, I use the first address from `hostname -I` as the host in the URL instead.
@@ -141,10 +141,10 @@ Port-forward stays running; `curl` prints **200** (stop port-forward with Ctrl+C
 
 ---
 
-## Step 6 â€” Module wrap commands
+## Step 6 — Module wrap commands
 
 **What happens when you run this:**  
-Three read-only `kubectl get` calls: namespace existence, quota + limitrange, pods â€” recap only.
+Three read-only `kubectl get` calls: namespace existence, quota + limitrange, pods — recap only.
 
 **Say:**
 
@@ -163,10 +163,10 @@ Namespace exists; quota and limit range bound; pod(s) Running.
 
 ---
 
-## Step 7 â€” Tear down `dev-local` (optional)
+## Step 7 — Tear down `dev-local` (optional)
 
 **What happens when you run this:**  
-`teardown.sh` runs `kubectl delete namespace dev-local` if it exists â€” removes all objects in that namespace (cascade delete).
+`teardown.sh` runs `kubectl delete namespace dev-local` if it exists — removes all objects in that namespace (cascade delete).
 
 **Say:**
 
@@ -185,12 +185,12 @@ Namespace deleted or already gone.
 
 ## Troubleshooting
 
-- **`error: the server doesn't have a resource type "quota"`** (or commands hit wrong cluster) â†’ `kubectl config current-context`; switch to Minikube or `kind-kfsops-kind` before Step 3
-- **`Unable to connect to the server`** â†’ start Minikube or Kind; confirm `kubectl cluster-info`
-- **`exceeded quota`** when creating pods â†’ `kubectl describe quota -n dev-local`; lower other lab objects or temporarily widen YAML for learning only
-- **`timed out waiting for the condition` on rollout** â†’ `kubectl describe pod -n dev-local` for `Events:` â€” often image pull or quota
-- **`unable to listen on 127.0.0.1:8080: bind: address already in use`** â†’ `kubectl port-forward svc/whoami 8081:80 -n dev-local` and curl port **8081**
-- **`curl` connection refused on WSL2** â†’ use `$(hostname -I | awk '{print $1}')` as the host in the URL while port-forward runs
+- **`error: the server doesn't have a resource type "quota"`** (or commands hit wrong cluster) → `kubectl config current-context`; switch to Minikube or `kind-kfsops-kind` before Step 3
+- **`Unable to connect to the server`** → start Minikube or Kind; confirm `kubectl cluster-info`
+- **`exceeded quota`** when creating pods → `kubectl describe quota -n dev-local`; lower other lab objects or temporarily widen YAML for learning only
+- **`timed out waiting for the condition` on rollout** → `kubectl describe pod -n dev-local` for `Events:` — often image pull or quota
+- **`unable to listen on 127.0.0.1:8080: bind: address already in use`** → `kubectl port-forward svc/whoami 8081:80 -n dev-local` and curl port **8081**
+- **`curl` connection refused on WSL2** → use `$(hostname -I | awk '{print $1}')` as the host in the URL while port-forward runs
 
 ---
 
@@ -202,11 +202,11 @@ Namespace deleted or already gone.
 
 Shared clusters use this **three-layer** pattern everywhere: isolate by namespace, cap totals, default per-container resources.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 
-Read-only: namespace, quota and limit range, pods wide â€” no port-forward required.
+Read-only: namespace, quota and limit range, pods wide — no port-forward required.
 
 **Say:**
 
@@ -243,4 +243,4 @@ kubectl get pods -n dev-local -o wide
 
 ## Next
 
-Continue with [1.2 Production environment](../../02-production-environment/README.md) or [Part 2 Concepts](../../../part-2-concepts/README.md) when your course path says so.
+Continue with [1.2 Production environment](../../02-production-environment/README.md) or [Part 2 Concepts](../../../02-Core-Workloads/README.md) when your course path says so.

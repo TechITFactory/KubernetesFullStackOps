@@ -1,8 +1,8 @@
-﻿# 2.4.1.3 Sidecar Containers â€” teaching transcript
+# Sidecar Containers — teaching transcript
 
 ## Intro
 
-A **sidecar** is a container that **runs alongside** the main workload in the **same Pod**, sharing the **network namespace** (loopback between containers) and **volumes** (emptyDir, config mounts). Sidecars implement **cross-cutting** concerns: **log shipping**, **Envoy** or other **proxies**, **config reloaders**, or small **health** helpers. Since Kubernetes **1.29**, **native sidecar** containers use **`restartPolicy: Always`** on an init-style container so the sidecar starts before app containers and **restarts** if it exitsâ€”check your cluster version before relying on that field. Without **resource requests and limits**, a noisy sidecar can **starve** the main container for CPU or memory on the same cgroup boundary.
+A **sidecar** is a container that **runs alongside** the main workload in the **same Pod**, sharing the **network namespace** (loopback between containers) and **volumes** (emptyDir, config mounts). Sidecars implement **cross-cutting** concerns: **log shipping**, **Envoy** or other **proxies**, **config reloaders**, or small **health** helpers. Since Kubernetes **1.29**, **native sidecar** containers use **`restartPolicy: Always`** on an init-style container so the sidecar starts before app containers and **restarts** if it exits—check your cluster version before relying on that field. Without **resource requests and limits**, a noisy sidecar can **starve** the main container for CPU or memory on the same cgroup boundary.
 
 **Prerequisites:** [2.4.1.2 Init Containers](../03-init-containers/README.md) recommended.
 
@@ -10,13 +10,13 @@ A **sidecar** is a container that **runs alongside** the main workload in the **
 
 ```
   Pod
-   â”œâ”€â”€ main container (app)
-   â””â”€â”€ sidecar container (helper)  â”€â”€ shares network + volumes
+   ├── main container (app)
+   └── sidecar container (helper)  ── shares network + volumes
 ```
 
 **Say:**
 
-Sidecars trade **deployment independence** for **low latency** IPC and shared diskâ€”too many sidecars is a design smell.
+Sidecars trade **deployment independence** for **low latency** IPC and shared disk—too many sidecars is a design smell.
 
 ## Learning objective
 
@@ -31,10 +31,10 @@ Platform charts often inject sidecars; unexplained CPU throttling is frequently 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/01-pods/04-sidecar-containers" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/02-Core-Workloads/04-workloads/04-sidecar-containers" 2>/dev/null || cd .
 ```
 
-## Step 1 â€” Apply and confirm multiple containers
+## Step 1 — Apply and confirm multiple containers
 
 **What happens when you run this:**
 
@@ -56,11 +56,11 @@ kubectl get pod sidecar-demo -o jsonpath='{.spec.containers[*].name}{"\n"}'
 
 ---
 
-## Step 2 â€” Wide status and combined logs
+## Step 2 — Wide status and combined logs
 
 **What happens when you run this:**
 
-`kubectl logs --all-containers` multiplexes recent lines from each containerâ€”useful for quick demos.
+`kubectl logs --all-containers` multiplexes recent lines from each container—useful for quick demos.
 
 **Say:**
 
@@ -75,7 +75,7 @@ kubectl logs sidecar-demo --all-containers=true --tail=20
 
 **Expected:** Both containers contributing lines or clean sleep loops; `READY` reflects all containers.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 ```bash
 kubectl get pod sidecar-demo -o jsonpath='{.spec.containers[*].name}{"\n"}'
@@ -84,12 +84,12 @@ kubectl get pod sidecar-demo -o wide
 
 ## Troubleshooting
 
-- **`READY 1/2`** â†’ one container not ready; `kubectl describe` for probe or crash reasons
-- **Sidecar OOMKills app** â†’ set **requests/limits** on **every** container in the Pod
-- **Native sidecar ignored** â†’ cluster older than 1.29 or feature not enabled; validate server version
-- **Port conflict on localhost** â†’ two containers bind same port in shared network namespace
-- **Volume permission issues** â†’ sidecar and app UIDs differ; align **securityContext** or `fsGroup`
-- **Image pull only on one container** â†’ `describe` shows which `container` failed
+- **`READY 1/2`** → one container not ready; `kubectl describe` for probe or crash reasons
+- **Sidecar OOMKills app** → set **requests/limits** on **every** container in the Pod
+- **Native sidecar ignored** → cluster older than 1.29 or feature not enabled; validate server version
+- **Port conflict on localhost** → two containers bind same port in shared network namespace
+- **Volume permission issues** → sidecar and app UIDs differ; align **securityContext** or `fsGroup`
+- **Image pull only on one container** → `describe` shows which `container` failed
 
 ## Repo files (reference)
 

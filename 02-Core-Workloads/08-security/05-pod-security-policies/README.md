@@ -1,4 +1,4 @@
-# 2.8.5 Pod Security Policies — teaching transcript
+# Pod Security Policies — teaching transcript
 
 ## Intro
 

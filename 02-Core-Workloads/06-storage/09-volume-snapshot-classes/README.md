@@ -1,4 +1,4 @@
-# 2.6.9 Volume Snapshot Classes — teaching transcript
+# Volume Snapshot Classes — teaching transcript
 
 ## Intro
 

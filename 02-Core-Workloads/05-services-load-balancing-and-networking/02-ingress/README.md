@@ -1,20 +1,20 @@
-﻿# 2.5.2 Ingress â€” teaching transcript
+# Ingress — teaching transcript
 
 ## Intro
 
-An **Ingress** object describes **HTTP and HTTPS** routing rules: **hostnames**, **paths**, and **backend Services** (name + port). Ingress is **only configuration**â€”something in the cluster must **implement** it. That implementation is an **Ingress controller** ([2.5.3](02-ingress-controllers/README.md)), which typically watches Ingress resources, configures a reverse proxy (NGINX, Envoy, Traefik, â€¦), and obtains **external** connectivity via **LoadBalancer** or **NodePort** Services. **TLS** references **Secrets** containing certificates; **ingressClassName** (or legacy annotations) selects which controller reconciles the object. Without a matching controller, **`kubectl get ingress`** shows objects but **no traffic** flows.
+An **Ingress** object describes **HTTP and HTTPS** routing rules: **hostnames**, **paths**, and **backend Services** (name + port). Ingress is **only configuration**—something in the cluster must **implement** it. That implementation is an **Ingress controller** ([2.5.3](02-ingress-controllers/README.md)), which typically watches Ingress resources, configures a reverse proxy (NGINX, Envoy, Traefik, …), and obtains **external** connectivity via **LoadBalancer** or **NodePort** Services. **TLS** references **Secrets** containing certificates; **ingressClassName** (or legacy annotations) selects which controller reconciles the object. Without a matching controller, **`kubectl get ingress`** shows objects but **no traffic** flows.
 
 **Prerequisites:** [2.5.1 Service](../01-service/README.md) so **Service backends** and **ports** are familiar.
 
 ## Flow of this lesson
 
 ```
-  Ingress rules (host/path â†’ Service:port)
-              â”‚
-              â–¼
+  Ingress rules (host/path → Service:port)
+              │
+              ▼
   Ingress controller (separate install)
-              â”‚
-              â–¼
+              │
+              ▼
   Data path to Pods (via Service endpoints)
 ```
 
@@ -30,15 +30,15 @@ I never debug Ingress YAML before confirming **endpoints exist** on the backend 
 
 ## Why this matters
 
-â€œIngress created but 404 foreverâ€ usually means **no controller**, **wrong class**, or **backend Service** mismatchâ€”this lesson names those buckets.
+“Ingress created but 404 forever” usually means **no controller**, **wrong class**, or **backend Service** mismatch—this lesson names those buckets.
 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/02-ingress" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/02-Core-Workloads/2.5-services-load-balancing-and-networking/02-ingress" 2>/dev/null || cd .
 ```
 
-## Step 1 â€” Apply notes ConfigMap
+## Step 1 — Apply notes ConfigMap
 
 **What happens when you run this:**
 
@@ -58,11 +58,11 @@ kubectl apply -f yamls/2-5-2-ingress-notes.yaml
 
 ---
 
-## Step 2 â€” Run inspect script
+## Step 2 — Run inspect script
 
 **What happens when you run this:**
 
-Lists Ingress across namespaces and related contextâ€”may be **empty** on a minimal cluster.
+Lists Ingress across namespaces and related context—may be **empty** on a minimal cluster.
 
 **Say:**
 
@@ -76,7 +76,7 @@ bash scripts/inspect-2-5-2-ingress.sh
 
 **Expected:** Script completes; `kubectl get ingress -A` output shown (possibly empty).
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 ```bash
 bash scripts/inspect-2-5-2-ingress.sh
@@ -84,12 +84,12 @@ bash scripts/inspect-2-5-2-ingress.sh
 
 ## Troubleshooting
 
-- **Ingress exists, no routing** â†’ install or fix **Ingress controller**; check **ingressClassName**
-- **`default backend` responses** â†’ path/host mismatch or Service port wrong
-- **TLS errors** â†’ Secret namespace, key names, or cert SANs do not match **host**
-- **502 from controller** â†’ **Endpoints** empty on backend Service
-- **Webhook / admission errors** â†’ some controllers validate Ingress; check controller logs
-- **`Forbidden` applying notes** â†’ skip kube-system apply; use local file
+- **Ingress exists, no routing** → install or fix **Ingress controller**; check **ingressClassName**
+- **`default backend` responses** → path/host mismatch or Service port wrong
+- **TLS errors** → Secret namespace, key names, or cert SANs do not match **host**
+- **502 from controller** → **Endpoints** empty on backend Service
+- **Webhook / admission errors** → some controllers validate Ingress; check controller logs
+- **`Forbidden` applying notes** → skip kube-system apply; use local file
 
 ## Repo files (reference)
 

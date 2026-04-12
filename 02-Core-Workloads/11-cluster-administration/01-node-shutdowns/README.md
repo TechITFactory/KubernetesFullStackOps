@@ -1,4 +1,4 @@
-# 2.11.1 Node shutdowns — teaching transcript
+# Node shutdowns — teaching transcript
 
 ## Intro
 

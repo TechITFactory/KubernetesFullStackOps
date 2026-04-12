@@ -1,4 +1,4 @@
-# 2.6.12 Node-specific Volume Limits — teaching transcript
+# Node-specific Volume Limits — teaching transcript
 
 ## Intro
 

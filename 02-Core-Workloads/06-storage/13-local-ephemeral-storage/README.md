@@ -1,4 +1,4 @@
-# 2.6.13 Local Ephemeral Storage — teaching transcript
+# Local Ephemeral Storage — teaching transcript
 
 ## Intro
 

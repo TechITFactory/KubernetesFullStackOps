@@ -1,4 +1,4 @@
-# 2.11 Cluster administration — teaching transcript
+# Cluster administration — teaching transcript
 
 ## Intro
 

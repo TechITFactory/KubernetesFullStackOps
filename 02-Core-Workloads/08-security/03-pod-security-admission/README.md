@@ -1,4 +1,4 @@
-# 2.8.3 Pod Security Admission — teaching transcript
+# Pod Security Admission — teaching transcript
 
 ## Intro
 

@@ -1,4 +1,4 @@
-# 2.10.3 Pod Overhead — teaching transcript
+# Pod Overhead — teaching transcript
 
 ## Intro
 

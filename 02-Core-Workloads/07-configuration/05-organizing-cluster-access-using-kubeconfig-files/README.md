@@ -1,4 +1,4 @@
-# 2.7.5 Organizing Cluster Access Using kubeconfig Files — teaching transcript
+# Organizing Cluster Access Using kubeconfig Files — teaching transcript
 
 ## Intro
 

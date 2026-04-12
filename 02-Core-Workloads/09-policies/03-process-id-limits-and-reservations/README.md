@@ -1,4 +1,4 @@
-# 2.9.3 Process ID Limits and Reservations — teaching transcript
+# Process ID Limits and Reservations — teaching transcript
 
 ## Intro
 

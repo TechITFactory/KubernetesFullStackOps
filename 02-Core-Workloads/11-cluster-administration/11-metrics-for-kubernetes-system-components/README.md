@@ -1,4 +1,4 @@
-# 2.11.11 Metrics for Kubernetes system components — teaching transcript
+# Metrics for Kubernetes system components — teaching transcript
 
 ## Intro
 

@@ -1,56 +1,109 @@
-# 05 Incident Handling
+# Incident handling — teaching transcript
 
-## Metadata
-- Duration: `20 minutes`
-- Difficulty: `Intermediate`
-- Practical/Theory: `80/20`
-- Tested on Kubernetes: `v1.30`
+## Intro
 
-## Learning Objective
-By the end of this lesson, you will be able to:
-- Extract hidden failure states utilizing `kubectl describe` events.
-- Formulate a structural troubleshooting path when hitting `ImagePullBackOff`.
+**Most** **production** **triage** **starts** **with** **`kubectl get`** **and** **`kubectl describe`** **because** **Events** **embed** **kubelet**, **scheduler**, **and** **controller** **messages** **close** **to** **the** **object** **they** **refer** **to**. **`ImagePullBackOff`** **is** **a** **classic** **symptom** **with** **a** **short** **list** **of** **root** **causes** **(bad** **tag**, **private** **registry** **auth**, **rate** **limits**, **arch/os** **mismatch)**. **This** **lesson** **applies** **`crashing-pod`** **with** **a** **non-existent** **image** **tag** **and** **reads** **Events**.
 
-## Why This Matters in Real Jobs
-You will spend 70% of your career troubleshooting why someone else's code didn't deploy. The absolute fastest way to resolve an incident is pulling the raw cluster physical events. The `describe` function is the SRE's greatest weapon for reading exact kubelet operational errors.
+**Prerequisites:** [6.4 Backup and DR](../04-backup-and-dr/README.md); [Track 2: Core workloads](../../02-Core-Workloads/README.md) **(Pod** **lifecycle)**.
 
-## Lab: Step-by-Step Practical
+## Flow of this lesson
 
-### Step 1 - Open directory
-**Run:**
-```bash
-cd "$COURSE_DIR/06-Observability-and-Reliability/05-incident-handling"
 ```
-
-### Step 2 - Launch the Broken Application
-
-**What happens when you run this:**
-We intentionally launch a Pod aggressively configured to ask DockerHub for an image tag that structurally does not exist.
-
-**Run:**
-```bash
-kubectl apply -f yamls/broken-image-pod.yaml
-kubectl get pods
+  Pod stuck in ImagePullBackOff / ErrImagePull
+              │
+              ▼
+  kubectl describe pod → Events section
+              │
+              ▼
+  Fix image, secret, or network → Pod recovers or replace workload
 ```
-
-### Step 3 - Extract the Post-Mortem
-
-**What happens when you run this:**
-You isolate the incident string natively. Skip the YAML footprint at the top of the command output, and scroll entirely to the bottom "Events" table.
 
 **Say:**
-The Events tell the exact micro-second truth: "Failed to pull image... repository does not exist or may require 'docker login'". The incident is instantly solved!
+
+**Scroll** **to** **the** **bottom** **of** **`describe` first** **—** **the** **top** **is** **often** **stale** **desired** **state**.
+
+## Learning objective
+
+- **Use** **`kubectl describe pod`** **to** **extract** **failure** **events** **for** **a** **broken** **image** **reference**.
+- **Outline** **a** **minimal** **triage** **order** **(events** **→** **image** **→** **pull** **secret** **→** **registry)**.
+
+## Why this matters
+
+**Mean** **time** **to** **recovery** **dominates** **SLOs** **during** **outages** **—** **fast** **`describe` habits** **save** **money**.
+
+## One-time setup
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/06-Observability-and-Reliability/05-incident-handling" 2>/dev/null || cd .
+```
+
+## Step 1 — Create the failing Pod
+
+**What happens when you run this:**
+
+**Applies** **`crashing-pod`** **using** **`nginx:non_existent_tag`**.
 
 **Run:**
+
+```bash
+kubectl apply -f yamls/broken-image-pod.yaml
+kubectl get pod crashing-pod
+```
+
+**Expected:** **Pod** **in** **`ImagePullBackOff`** **or** **`ErrImagePull`** **(names** **may** **vary** **by** **generator** **—** **manifest** **sets** **`metadata.name: crashing-pod`)**.
+
+---
+
+## Step 2 — Read Events on the Pod
+
+**What happens when you run this:**
+
+**Shows** **kubelet** **and** **container** **runtime** **errors** **at** **the** **bottom** **of** **`describe`**.
+
+**Say:**
+
+**Copy** **the** **exact** **`Failed`** **message** **into** **the** **incident** **ticket** **—** **future** **you** **will** **thank** **present** **you**.
+
+**Run:**
+
 ```bash
 kubectl describe pod crashing-pod
 ```
 
+**Expected:** **Events** **mention** **failed** **pull**, **not** **found**, **or** **manifest** **unknown**.
+
 ## Video close — fast validation
+
+**What happens when you run this:**
+
+**Deletes** **the** **lab** **Pod**.
+
 **Run:**
+
 ```bash
 kubectl delete pod crashing-pod --ignore-not-found
 ```
 
-## Next Lesson
-[Track 07: Capstone Project](../../07-Capstone-Project/README.md)
+**Expected:** **Pod** **gone**.
+
+## Troubleshooting
+
+- **No** **`crashing-pod`** → **wrong** **namespace** **—** **add** **`-n`**
+- **Events** **empty** → **API** **server** **clock**, **event** **TTL**, **or** **RBAC** **to** **events**
+- **Real** **registry** **auth** **issues** → **`kubectl create secret docker-registry`** **and** **`imagePullSecrets`**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/broken-image-pod.yaml` | **Pod** **with** **invalid** **image** **tag** |
+
+## Cleanup
+
+```bash
+kubectl delete pod crashing-pod --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[Track 7: Capstone project](../../07-Capstone-Project/README.md)

@@ -1,4 +1,4 @@
-# 2.10.9 Gang Scheduling — teaching transcript
+# Gang Scheduling — teaching transcript
 
 ## Intro
 

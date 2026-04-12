@@ -1,8 +1,8 @@
-﻿# 2.4.1 Pods â€” teaching transcript
+# Pods — teaching transcript
 
 ## Intro
 
-A **Pod** is the smallest deployable unit on Kubernetes: one or more containers that **share a network namespace** (one IP, shared `localhost` policy between containers) and **mount the same volumes** on a single node. Everything higher levelâ€”**Deployments**, **StatefulSets**, **Jobs**, and so onâ€”**creates or replaces Pods**; it does not run containers by magic outside that contract. The **Pod spec** is the **contract between the scheduler and kubelet**: scheduling decisions use the specâ€™s resources, affinity, and tolerations; kubelet uses the same spec to start containers and run probes. When you debug â€œwhy is this not running,â€ you still end at the Pod object even when a controller owns it.
+A **Pod** is the smallest deployable unit on Kubernetes: one or more containers that **share a network namespace** (one IP, shared `localhost` policy between containers) and **mount the same volumes** on a single node. Everything higher level—**Deployments**, **StatefulSets**, **Jobs**, and so on—**creates or replaces Pods**; it does not run containers by magic outside that contract. The **Pod spec** is the **contract between the scheduler and kubelet**: scheduling decisions use the spec’s resources, affinity, and tolerations; kubelet uses the same spec to start containers and run probes. When you debug “why is this not running,” you still end at the Pod object even when a controller owns it.
 
 **Prerequisites:** [2.4 module](../README.md); working cluster.
 
@@ -10,14 +10,14 @@ A **Pod** is the smallest deployable unit on Kubernetes: one or more containers 
 
 ```
   kubectl / CI applies workload API object
-              â”‚
-              â–¼
+              │
+              ▼
         Controller reconciles
-              â”‚
-              â–¼
+              │
+              ▼
         Pod spec bound to a node
-              â”‚
-              â–¼
+              │
+              ▼
         Containers + volumes on that node
 ```
 
@@ -36,7 +36,7 @@ Misconfigured **affinity**, **volumes**, or **probes** show up as Pod status; bl
 
 ## Children (suggested order)
 
-1. [2.4.1.1 Pod Lifecycle](02-pod-lifecycle/README.md) â€” **start here** (phases, conditions, verify script).
+1. [2.4.1.1 Pod Lifecycle](02-pod-lifecycle/README.md) — **start here** (phases, conditions, verify script).
 2. [2.4.1.2 Init Containers](03-init-containers/README.md)
 3. [2.4.1.3 Sidecar Containers](04-sidecar-containers/README.md)
 4. [2.4.1.4 Ephemeral Containers](05-ephemeral-containers/README.md)
@@ -48,7 +48,7 @@ Misconfigured **affinity**, **volumes**, or **probes** show up as Pod status; bl
 10. [2.4.1.10 Downward API](11-downward-api/README.md)
 11. [2.4.1.11 Advanced Pod Configuration](12-advanced-pod-configuration/README.md)
 
-## Module wrap â€” quick validation
+## Module wrap — quick validation
 
 **Say:**
 
@@ -62,11 +62,11 @@ kubectl get events -A --sort-by=.lastTimestamp | tail -n 20
 
 ## Troubleshooting
 
-- **No PDBs listed** â†’ normal if you have not applied disruption demos; `|| true` suppresses errors on empty API
-- **Many pods `Pending`** â†’ cluster capacity or scheduling constraints; continue with [2.4.1.11](12-advanced-pod-configuration/README.md) topics
-- **Events truncated** â†’ raise `tail -n` or filter with `--field-selector`
-- **`kubectl get pods -A` slow** â†’ large clusters; add `-l` or `-n` for teaching
-- **Permission errors** â†’ use namespace your kubeconfig can read
+- **No PDBs listed** → normal if you have not applied disruption demos; `|| true` suppresses errors on empty API
+- **Many pods `Pending`** → cluster capacity or scheduling constraints; continue with [2.4.1.11](12-advanced-pod-configuration/README.md) topics
+- **Events truncated** → raise `tail -n` or filter with `--field-selector`
+- **`kubectl get pods -A` slow** → large clusters; add `-l` or `-n` for teaching
+- **Permission errors** → use namespace your kubeconfig can read
 
 ## Next subsection
 

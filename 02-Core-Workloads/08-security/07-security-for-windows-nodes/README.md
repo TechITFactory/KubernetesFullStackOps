@@ -1,4 +1,4 @@
-# 2.8.7 Security for Windows Nodes — teaching transcript
+# Security for Windows Nodes — teaching transcript
 
 ## Intro
 

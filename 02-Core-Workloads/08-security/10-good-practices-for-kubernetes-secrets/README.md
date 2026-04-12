@@ -1,4 +1,4 @@
-# 2.8.10 Good Practices for Kubernetes Secrets — teaching transcript
+# Good Practices for Kubernetes Secrets — teaching transcript
 
 ## Intro
 

@@ -1,4 +1,4 @@
-# 2.8.14 Kubernetes API Server Bypass Risks — teaching transcript
+# Kubernetes API Server Bypass Risks — teaching transcript
 
 ## Intro
 

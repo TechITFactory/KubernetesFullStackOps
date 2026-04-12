@@ -1,4 +1,4 @@
-# 2.8.2 Pod Security Standards — teaching transcript
+# Pod Security Standards — teaching transcript
 
 ## Intro
 

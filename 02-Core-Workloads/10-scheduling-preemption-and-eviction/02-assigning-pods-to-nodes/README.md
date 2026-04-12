@@ -1,4 +1,4 @@
-# 2.10.2 Assigning Pods to Nodes — teaching transcript
+# Assigning Pods to Nodes — teaching transcript
 
 ## Intro
 

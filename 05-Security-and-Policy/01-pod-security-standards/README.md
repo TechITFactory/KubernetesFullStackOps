@@ -1,68 +1,128 @@
-# 01 Pod Security Standards
+# Pod security standards — teaching transcript
 
-## Metadata
-- Duration: `15 minutes`
-- Difficulty: `Beginner`
-- Practical/Theory: `60/40`
-- Tested on Kubernetes: `v1.30`
+## Intro
 
-## Learning Objective
-By the end of this lesson, you will be able to:
-- Enforce cluster-wide restricted parameters to permanently reject vulnerable workloads.
-- Prove that privileged escalations are blocked structurally inside Kubernetes natively.
+**Pod** **Security** **Standards** **(PSS)** **define** **three** **profiles** **(`privileged`**, **`baseline`**, **`restricted`)** **that** **encode** **Linux** **hardening** **expectations**. **Pod** **Security** **Admission** **(PSA)** **reads** **namespace** **labels** **such** **as** **`pod-security.kubernetes.io/enforce: restricted`** **and** **rejects** **Pods** **that** **violate** **the** **profile** **at** **admission** **time**. **This** **lesson** **creates** **`hardened-env`**, **attempts** **a** **privileged** **Pod**, **then** **applies** **a** **restricted-compliant** **Pod**.
 
-## Why This Matters in Real Jobs
-If a hacker exploits a frontend container, their next move is "Privilege Escalation"—trying to break out of the container to control the literal worker node. Pod Security Standards (PSS) act as an automated bouncer, refusing to schedule any Pod that requests dangerous Linux capabilities (like running as Root or capturing Host networks).
+**Prerequisites:** [Track 5 module](../README.md); [Track 2 workloads](../../02-Core-Workloads/README.md) **(Pod** **spec** **basics)**.
 
-## Concepts (Short Theory)
-- **Privileged Pod:** A container running with nearly unlimited access to the host operating system. Extremely dangerous.
-- **Pod Security Standards (PSS):** Built-in Kubernetes profiles (`Privileged`, `Baseline`, `Restricted`).
-- **Enforce Mode:** The namespace label that strictly rejects any non-compliant pods during API submission.
+## Flow of this lesson
 
-## Lab: Step-by-Step Practical
-
-### Step 1 - Open directory
-**Run:**
-```bash
-cd "$COURSE_DIR/05-Security-and-Policy/01-pod-security-standards"
 ```
-
-### Step 2 - Create the Hardened Environment
-
-**What happens when you run this:**
-You apply a `Namespace` that has specific `pod-security.kubernetes.io/enforce: restricted` labels natively attached.
-
-**Run:**
-```bash
-kubectl apply -f yamls/secure-namespace.yaml
+  Namespace with enforce=restricted
+              │
+              ▼
+  kubectl apply bad-pod → Forbidden (PSS)
+              │
+              ▼
+  kubectl apply good-pod → Accepted
 ```
-
-### Step 3 - Attempt a Malicious Deployment
-
-**What happens when you run this:**
-You try to launch `bad-pod.yaml`. It requests `privileged: true` and `runAsUser: 0` (root).
 
 **Say:**
-Because the namespace is strictly restricted, the Kubernetes API Server physically refuses to allow this Pod into the system.
+
+**The** **error** **message** **names** **`PodSecurity`** **and** **`restricted:latest`** **—** **that** **string** **is** **what** **you** **paste** **into** **runbooks**.
+
+## Learning objective
+
+- **Apply** **`secure-namespace.yaml`** **and** **interpret** **PSS** **labels** **on** **a** **namespace**.
+- **Contrast** **rejected** **vs** **accepted** **Pod** **specs** **using** **live** **`kubectl apply`**.
+
+## Why this matters
+
+**One** **privileged** **Pod** **on** **a** **shared** **node** **is** **a** **lateral** **movement** **stepping** **stone** **—** **PSS** **turns** **that** **class** **of** **mistake** **into** **an** **immediate** **API** **denial**.
+
+## One-time setup
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/05-Security-and-Policy/01-pod-security-standards" 2>/dev/null || cd .
+```
+
+## Step 1 — Create the hardened namespace
+
+**What happens when you run this:**
+
+**Creates** **`hardened-env`** **with** **`pod-security.kubernetes.io/enforce: restricted`** **and** **`enforce-version: latest`**.
 
 **Run:**
+
+```bash
+kubectl apply -f yamls/secure-namespace.yaml
+kubectl get ns hardened-env --show-labels
+```
+
+**Expected:** **Namespace** **exists** **with** **PSS** **labels** **visible**.
+
+---
+
+## Step 2 — Attempt a non-compliant Pod
+
+**What happens when you run this:**
+
+**Applies** **`highly-dangerous-pod`** **with** **`privileged: true`** **and** **root** **context** **—** **the** **API** **should** **reject** **it**.
+
+**Say:**
+
+**Read** **the** **`Forbidden`** **body** **out** **loud** **—** **it** **lists** **which** **PSS** **checks** **failed**.
+
+**Run:**
+
 ```bash
 kubectl apply -f yamls/bad-pod.yaml
 ```
 
-### Step 4 - Validate Compliance
+**Expected:** **Error** **similar** **to** **`violates PodSecurity "restricted:latest"`** **(wording** **depends** **on** **cluster** **version)**.
+
+---
+
+## Step 3 — Apply a compliant Pod
 
 **What happens when you run this:**
-You apply `good-pod.yaml`. This Pod explicitly drops ALL unused Linux capabilities and runs strictly as a non-root user. The API accepts it seamlessly.
+
+**Applies** **`compliant-pod`** **with** **`runAsNonRoot`**, **`seccompProfile: RuntimeDefault`**, **dropped** **capabilities**, **and** **a** **non-root** **image**.
 
 **Run:**
+
 ```bash
 kubectl apply -f yamls/good-pod.yaml
-kubectl get pods -n hardened-env
+kubectl get pods -n hardened-env -o wide
 ```
 
-## Expected Output
-Applying the bad pod must result in a fatal `Error from server (Forbidden): violates PodSecurity "restricted:latest"`. Applying the good pod must yield `compliant-pod created`.
+**Expected:** **`compliant-pod`** **reaches** **`Running`** **(after** **image** **pull)**.
 
-## Next Lesson
-[02 RBAC Design Patterns](../02-rbac-design-patterns/README.md)
+## Video close — fast validation
+
+**What happens when you run this:**
+
+**Deletes** **the** **namespace** **and** **all** **Pods** **inside** **it**.
+
+**Run:**
+
+```bash
+kubectl delete namespace hardened-env --ignore-not-found
+```
+
+**Expected:** **Namespace** **terminates**.
+
+## Troubleshooting
+
+- **Bad** **Pod** **accepted** → **PSA** **not** **enabled**, **wrong** **label**, **or** **exempt** **namespace** **configuration**
+- **Good** **Pod** **rejected** → **image** **pull**, **seccomp** **profile** **not** **supported** **on** **node**, **or** **stricter** **policy** **overlay**
+- **Version** **skew** → **check** **`enforce-version`** **against** **cluster** **docs**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/secure-namespace.yaml` | **`hardened-env`** **+** **PSS** **enforce** **labels** |
+| `yamls/bad-pod.yaml` | **Privileged** **Pod** **(should** **fail)** |
+| `yamls/good-pod.yaml` | **Restricted-friendly** **Pod** |
+
+## Cleanup
+
+```bash
+kubectl delete namespace hardened-env --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[5.2 RBAC design patterns](../02-rbac-design-patterns/README.md)

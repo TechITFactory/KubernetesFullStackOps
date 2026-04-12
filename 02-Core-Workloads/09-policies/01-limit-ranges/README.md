@@ -1,4 +1,4 @@
-# 2.9.1 Limit Ranges — teaching transcript
+# Limit Ranges — teaching transcript
 
 ## Intro
 

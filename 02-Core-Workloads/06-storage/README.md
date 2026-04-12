@@ -1,4 +1,4 @@
-# 2.6 Storage — teaching transcript
+# Storage — teaching transcript
 
 ## Intro
 

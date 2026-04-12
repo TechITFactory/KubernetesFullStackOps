@@ -1,4 +1,4 @@
-# 2.8.16 Security Checklist — teaching transcript
+# Security Checklist — teaching transcript
 
 ## Intro
 

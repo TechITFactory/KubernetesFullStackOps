@@ -1,26 +1,26 @@
-﻿# 2.5.9 Topology Aware Routing â€” teaching transcript
+# Topology Aware Routing — teaching transcript
 
 ## Intro
 
-**Topology-aware routing** steers Service traffic toward endpoints **closer** in **topology**â€”zones, regions, or nodesâ€”when possible to cut **cross-AZ** charges and latency. Kubernetes has evolved fields and hints across releases (**`service.kubernetes.io/topology-aware-hints`**, **`trafficDistribution`** on **Service**, relationship to **EndpointSlice** **hints**). The precise field names and default behavior depend on **server version** and whether **kube-proxy** (or a replacement) honors hintsâ€”use **`kubectl explain service.spec`** on your cluster rather than memorizing one release snapshot. Even when hints exist, **insufficient endpoints in-zone** forces **fallback** to other zones; this is **preference**, not strict affinity.
+**Topology-aware routing** steers Service traffic toward endpoints **closer** in **topology**—zones, regions, or nodes—when possible to cut **cross-AZ** charges and latency. Kubernetes has evolved fields and hints across releases (**`service.kubernetes.io/topology-aware-hints`**, **`trafficDistribution`** on **Service**, relationship to **EndpointSlice** **hints**). The precise field names and default behavior depend on **server version** and whether **kube-proxy** (or a replacement) honors hints—use **`kubectl explain service.spec`** on your cluster rather than memorizing one release snapshot. Even when hints exist, **insufficient endpoints in-zone** forces **fallback** to other zones; this is **preference**, not strict affinity.
 
 **Prerequisites:** [2.5.5 EndpointSlices](../05-endpointslices/README.md); [2.5.1 Service](../01-service/README.md).
 
 ## Flow of this lesson
 
 ```
-  Nodes labeled (topology.kubernetes.io/zone, â€¦)
-              â”‚
-              â–¼
+  Nodes labeled (topology.kubernetes.io/zone, …)
+              │
+              ▼
   EndpointSlice hints + Service trafficDistribution / annotations
-              â”‚
-              â–¼
+              │
+              ▼
   Datapath prefers same-zone endpoints when healthy
 ```
 
 **Say:**
 
-I correlate **node labels** with **EndpointSlice** outputâ€”if zones are unlabeled, topology routing cannot work.
+I correlate **node labels** with **EndpointSlice** output—if zones are unlabeled, topology routing cannot work.
 
 ## Learning objective
 
@@ -30,15 +30,15 @@ I correlate **node labels** with **EndpointSlice** outputâ€”if zones are un
 
 ## Why this matters
 
-Surprise **cross-zone** bills after enabling â€œsmartâ€ routing usually mean **hints ignored** or **imbalanced** replica placementâ€”not Kubernetes magic.
+Surprise **cross-zone** bills after enabling “smart” routing usually mean **hints ignored** or **imbalanced** replica placement—not Kubernetes magic.
 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/09-topology-aware-routing" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/02-Core-Workloads/2.5-services-load-balancing-and-networking/09-topology-aware-routing" 2>/dev/null || cd .
 ```
 
-## Step 1 â€” Apply notes ConfigMap
+## Step 1 — Apply notes ConfigMap
 
 **What happens when you run this:**
 
@@ -55,7 +55,7 @@ kubectl get cm -n kube-system 2-5-9-topology-aware-routing-notes -o name
 
 ---
 
-## Step 2 â€” Explain Service spec fields (version-dependent)
+## Step 2 — Explain Service spec fields (version-dependent)
 
 **What happens when you run this:**
 
@@ -69,7 +69,7 @@ kubectl explain service.spec.trafficDistribution 2>/dev/null | head -n 15 || kub
 
 **Expected:** Field documentation for your server version (names shifted across releases).
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 ```bash
 kubectl get svc -A -o wide 2>/dev/null | head -n 20
@@ -78,12 +78,12 @@ kubectl get endpointslices -A 2>/dev/null | head -n 15
 
 ## Troubleshooting
 
-- **No effect after setting annotations** â†’ kube-proxy version or mode ignores hints
-- **Uneven zone traffic** â†’ not enough **ready** pods per zoneâ€”scale or fix PDBs
-- **Missing topology labels** â†’ label nodes **`topology.kubernetes.io/zone`**
-- **Hints disabled globally** â†’ feature gate or controller flagâ€”check platform docs
-- **Confusion with internal traffic policy** â†’ see [2.5.12](../01-service-internal-traffic-policy/README.md) for **Local** semantics
-- **Explain returns empty** â†’ upgrade cluster or consult docs for your minor version
+- **No effect after setting annotations** → kube-proxy version or mode ignores hints
+- **Uneven zone traffic** → not enough **ready** pods per zone—scale or fix PDBs
+- **Missing topology labels** → label nodes **`topology.kubernetes.io/zone`**
+- **Hints disabled globally** → feature gate or controller flag—check platform docs
+- **Confusion with internal traffic policy** → see [2.5.12](../01-service-internal-traffic-policy/README.md) for **Local** semantics
+- **Explain returns empty** → upgrade cluster or consult docs for your minor version
 
 ## Repo files (reference)
 

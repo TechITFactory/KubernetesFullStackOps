@@ -1,10 +1,10 @@
-﻿# 01 Minikube Setup and Configuration â€” teaching transcript
+# 01 Minikube Setup and Configuration — teaching transcript
 
 ## Intro
 
-This lesson gives you a **real Kubernetes cluster on your laptop** using **Minikube** â€” one node, same `kubectl` as production-style clusters, good for learning and add-ons.
+This lesson gives you a **real Kubernetes cluster on your laptop** using **Minikube** — one node, same `kubectl` as production-style clusters, good for learning and add-ons.
 
-**You need:** [Part 0](../../../part-0-prerequisites/README.md) (or equivalent terminal + Docker skills); **Docker** (or another Minikube driver you configure). Minikube can use the **Docker driver** (common) or a VM â€” the scripts default toward Docker-style setups.
+**You need:** [Part 0](../../../00-Prerequisites/README.md) (or equivalent terminal + Docker skills); **Docker** (or another Minikube driver you configure). Minikube can use the **Docker driver** (common) or a VM — the scripts default toward Docker-style setups.
 
 **Note:** If you use **Kind** instead, skip this lesson and do [02](../02-kind-kubernetes-in-docker/README.md). Do **not** run both for the same course track unless you know why.
 
@@ -22,8 +22,8 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/01-learning-environment/
 ## Flow of this lesson
 
 ```
-  [ Step 2 ]     [ Step 3 ]      [ Steps 4â€“6 ]        [ Step 7 ]       [ Step 8 ]      [ Step 9 ]
-  chmod +   â†’    install CLI  â†’  start cluster   â†’   apply + wait  â†’  open service â†’ recap (opt)
+  [ Step 2 ]     [ Step 3 ]      [ Steps 4–6 ]        [ Step 7 ]       [ Step 8 ]      [ Step 9 ]
+  chmod +   →    install CLI  →  start cluster   →   apply + wait  →  open service → recap (opt)
   scripts                        + ingress           smoke test                        tear down
 ```
 
@@ -33,10 +33,10 @@ We make scripts runnable, install or refresh Minikube and kubectl, start the cou
 
 ---
 
-## Step 1 â€” Open this lesson in the terminal
+## Step 1 — Open this lesson in the terminal
 
 **What happens when you run this:**  
-`cd` moves into this lesson; `pwd` prints the path â€” no cluster or Docker changes.
+`cd` moves into this lesson; `pwd` prints the path — no cluster or Docker changes.
 
 **Say:**  
 I work from the lesson directory so `./scripts` and `./yamls` paths work.
@@ -53,13 +53,13 @@ Path ending in `01.1-minikube-setup-and-configuration`.
 
 ---
 
-## Step 2 â€” Make scripts executable
+## Step 2 — Make scripts executable
 
 **What happens when you run this:**  
-`chmod +x scripts/*.sh` sets the execute permission on every script in `scripts/` â€” filesystem metadata only.
+`chmod +x scripts/*.sh` sets the execute permission on every script in `scripts/` — filesystem metadata only.
 
 **Say:**  
-Shell scripts shipped in a git repo don't always have the execute bit set. This one command fixes all of them in one go â€” nothing is downloaded or changed on the cluster.
+Shell scripts shipped in a git repo don't always have the execute bit set. This one command fixes all of them in one go — nothing is downloaded or changed on the cluster.
 
 **Run:**
 
@@ -72,13 +72,13 @@ No errors.
 
 ---
 
-## Step 3 â€” Install Minikube and kubectl (idempotent)
+## Step 3 — Install Minikube and kubectl (idempotent)
 
 **What happens when you run this:**  
 `install-minikube.sh` may download Minikube and kubectl from the network, then `sudo install` them into `/usr/local/bin` (skips if versions already match). See the script header for OS/arch and env vars.
 
 **Say:**  
-The install script checks what is already installed â€” safe to run more than once. It may use `sudo` to place binaries under `/usr/local/bin`.
+The install script checks what is already installed — safe to run more than once. It may use `sudo` to place binaries under `/usr/local/bin`.
 
 **Run:**
 
@@ -91,7 +91,7 @@ Success messages; `minikube version` and `kubectl version --client` work afterwa
 
 ---
 
-## Step 4 â€” Start the Minikube cluster (idempotent)
+## Step 4 — Start the Minikube cluster (idempotent)
 
 **What happens when you run this:**  
 `start-minikube.sh` runs `minikube start` for profile `kfsops-minikube` (or reuses if already Running), enables the **ingress** addon, then `kubectl get nodes`. Creates/starts a local VM or Docker-backed node depending on driver.
@@ -106,11 +106,11 @@ The start script uses a **profile** (this course uses `kfsops-minikube`). If the
 ```
 
 **Expected:**  
-Cluster starts or â€œalready runningâ€; `kubectl get nodes` shows one node `Ready`.
+Cluster starts or “already running”; `kubectl get nodes` shows one node `Ready`.
 
 ---
 
-## Step 5 â€” Apply the smoke test (namespace + app + service)
+## Step 5 — Apply the smoke test (namespace + app + service)
 
 **What happens when you run this:**  
 `kubectl apply -f yamls/smoke-test.yaml` sends the manifest to the API server: creates or updates Namespace `minikube-lab`, Deployment `hello-nginx`, and its Service (declarative; safe to re-run).
@@ -129,13 +129,13 @@ kubectl apply -f yamls/smoke-test.yaml
 
 ---
 
-## Step 6 â€” Wait until the pod is ready
+## Step 6 — Wait until the pod is ready
 
 **What happens when you run this:**  
-`kubectl rollout status` blocks until the Deploymentâ€™s ReplicaSet reports success or times out. `kubectl get pods` lists pod name, phase, and node â€” read-only after objects exist.
+`kubectl rollout status` blocks until the Deployment’s ReplicaSet reports success or times out. `kubectl get pods` lists pod name, phase, and node — read-only after objects exist.
 
 **Say:**  
-I wait for the Deployment to roll out before I open the service â€” otherwise I might hit an empty endpoint.
+I wait for the Deployment to roll out before I open the service — otherwise I might hit an empty endpoint.
 
 **Run:**
 
@@ -149,13 +149,13 @@ kubectl get pods -n minikube-lab -o wide
 
 ---
 
-## Step 7 â€” Reach the app from your machine
+## Step 7 — Reach the app from your machine
 
 **What happens when you run this:**  
-`minikube service` starts a tunnel from your host to the cluster Service URL (and may open a browser). Traffic flows host â†’ minikube network â†’ Service â†’ Pod â€” blocks until you interrupt in some setups.
+`minikube service` starts a tunnel from your host to the cluster Service URL (and may open a browser). Traffic flows host → minikube network → Service → Pod — blocks until you interrupt in some setups.
 
 **Say:**  
-`minikube service` opens a tunnel and often launches a browser to the Nginx welcome page. That confirms the full path from laptop â†’ cluster â†’ pod.
+`minikube service` opens a tunnel and often launches a browser to the Nginx welcome page. That confirms the full path from laptop → cluster → pod.
 
 **Run:**
 
@@ -168,10 +168,10 @@ URL printed and/or browser shows Nginx; or use the URL with `curl` in another te
 
 ---
 
-## Step 8 â€” Quick validation (optional recap)
+## Step 8 — Quick validation (optional recap)
 
 **What happens when you run this:**  
-Three read-only `kubectl get` calls: nodes, pods in `minikube-lab`, Services â€” confirms API and workload state.
+Three read-only `kubectl get` calls: nodes, pods in `minikube-lab`, Services — confirms API and workload state.
 
 **Say:**  
 These three commands are my fast health check before moving on.
@@ -189,13 +189,13 @@ One Ready node; pod Running; `hello-nginx` Service present.
 
 ---
 
-## Step 9 â€” Tear down when you are done (optional)
+## Step 9 — Tear down when you are done (optional)
 
 **What happens when you run this:**  
-`teardown.sh` runs `minikube delete` for profile `kfsops-minikube` if it exists â€” frees CPU/RAM/disk; kubeconfig context for that profile may be removed.
+`teardown.sh` runs `minikube delete` for profile `kfsops-minikube` if it exists — frees CPU/RAM/disk; kubeconfig context for that profile may be removed.
 
 **Say:**  
-Teardown deletes the Minikube profile for this course. Idempotent â€” safe if already deleted.
+Teardown deletes the Minikube profile for this course. Idempotent — safe if already deleted.
 
 **Run:**
 
@@ -210,11 +210,11 @@ Profile removed or script reports nothing to do.
 
 ## Troubleshooting
 
-- **`Unable to connect to the server: dial tcp ... connection refused`** â†’ `minikube status`; re-run `./scripts/start-minikube.sh`
-- **`ErrImagePull` or `ImagePullBackOff` on hello-nginx** â†’ `kubectl describe pod -n minikube-lab`; fix network, proxy, or registry access
-- **`minikube: command not found`** â†’ re-run `./scripts/install-minikube.sh`; ensure `/usr/local/bin` is on `PATH`
-- **`Permission denied` running `./scripts/...`** â†’ Step 2 `chmod +x scripts/*.sh`
-- **`Exiting due to DRV_NOT_DETECTED` or driver errors** â†’ follow Minikube docs for `docker` vs `virtualbox` / `hyperv` / `kvm2`
+- **`Unable to connect to the server: dial tcp ... connection refused`** → `minikube status`; re-run `./scripts/start-minikube.sh`
+- **`ErrImagePull` or `ImagePullBackOff` on hello-nginx** → `kubectl describe pod -n minikube-lab`; fix network, proxy, or registry access
+- **`minikube: command not found`** → re-run `./scripts/install-minikube.sh`; ensure `/usr/local/bin` is on `PATH`
+- **`Permission denied` running `./scripts/...`** → Step 2 `chmod +x scripts/*.sh`
+- **`Exiting due to DRV_NOT_DETECTED` or driver errors** → follow Minikube docs for `docker` vs `virtualbox` / `hyperv` / `kvm2`
 
 ---
 
@@ -224,9 +224,9 @@ Profile removed or script reports nothing to do.
 
 ## Why this matters
 
-Local clusters are how teams reproduce Kubernetes bugs before staging. Minikube is a common â€œflight simulatorâ€ for real clusters.
+Local clusters are how teams reproduce Kubernetes bugs before staging. Minikube is a common “flight simulator” for real clusters.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 

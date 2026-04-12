@@ -1,10 +1,10 @@
-# 2.1 Overview
+# Overview
 
 ## Intro
 
 This module builds the mental model for how Kubernetes stores desired state, how the API exposes it, and how `kubectl` reads and changes that state without surprises.
 
-**Prerequisites:** [Part 1](../../part-1-getting-started/README.md) — you need a reachable cluster and working `kubectl`.
+**Prerequisites:** [Part 1](../../01-Local-First-Operations/README.md) — you need a reachable cluster and working `kubectl`.
 
 **Teaching tip:** Sub-lessons use **What happens when you run this** before command blocks; each `scripts/*.sh` repeats the behavior in a file header.
 
@@ -84,7 +84,7 @@ _(Open the **Children** links.)_
 
 **Expected:**
 
-You are ready to start [2.1.1 Kubernetes components](2.1.1-kubernetes-components/README.md).
+You are ready to start [2.1.1 Kubernetes components](01-overview/01-kubernetes-components/README.md).
 
 ---
 
@@ -136,22 +136,22 @@ Matching api-resource rows; namespace list; first lines of cross-namespace objec
 
 | Path | Purpose |
 |------|---------|
-| `2.1.1-kubernetes-components/` | Control-plane visibility script + YAML |
-| `2.1.2-objects-in-kubernetes/` | Object metadata subsection lessons |
-| `2.1.3-the-kubernetes-api/` | Discovery / raw API exploration |
-| `2.1.4-the-kubectl-command-line-tool/` | Context and formatting habits |
+| `01-overview/01-kubernetes-components/` | Control-plane visibility script + YAML |
+| `01-overview/02-objects-in-kubernetes/` | Object metadata subsection lessons |
+| `01-overview/13-the-kubernetes-api/` | Discovery / raw API exploration |
+| `01-overview/14-the-kubectl-command-line-tool/` | Context and formatting habits |
 
 ---
 
 ## Children (work in order)
 
-1. [2.1.1 Kubernetes components](2.1.1-kubernetes-components/README.md)
-2. [2.1.2 Objects in Kubernetes](2.1.2-objects-in-kubernetes/README.md) — subsection lessons 2.1.2.1–2.1.2.10 inside
-3. [2.1.3 The Kubernetes API](2.1.3-the-kubernetes-api/README.md)
-4. [2.1.4 The kubectl command-line tool](2.1.4-the-kubectl-command-line-tool/README.md)
+1. [2.1.1 Kubernetes components](01-overview/01-kubernetes-components/README.md)
+2. [2.1.2 Objects in Kubernetes](01-overview/02-objects-in-kubernetes/README.md) — subsection lessons 2.1.2.1–2.1.2.10 inside
+3. [2.1.3 The Kubernetes API](01-overview/13-the-kubernetes-api/README.md)
+4. [2.1.4 The kubectl command-line tool](01-overview/14-the-kubectl-command-line-tool/README.md)
 
 ---
 
 ## Next module
 
-Continue to [2.2 Cluster architecture](../2.2-cluster-architecture/README.md).
+Continue to [2.2 Cluster architecture](../02-cluster-architecture/README.md).

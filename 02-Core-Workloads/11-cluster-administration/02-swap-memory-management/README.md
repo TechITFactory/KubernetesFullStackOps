@@ -1,4 +1,4 @@
-# 2.11.2 Swap memory management — teaching transcript
+# Swap memory management — teaching transcript
 
 ## Intro
 

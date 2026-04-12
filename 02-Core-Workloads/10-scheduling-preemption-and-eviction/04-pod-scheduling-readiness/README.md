@@ -1,4 +1,4 @@
-# 2.10.4 Pod Scheduling Readiness — teaching transcript
+# Pod Scheduling Readiness — teaching transcript
 
 ## Intro
 

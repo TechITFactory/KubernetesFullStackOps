@@ -1,4 +1,4 @@
-# 2.7.1 ConfigMaps — teaching transcript
+# ConfigMaps — teaching transcript
 
 ## Intro
 

@@ -1,4 +1,4 @@
-# 2.10.10 Scheduler Performance Tuning — teaching transcript
+# Scheduler Performance Tuning — teaching transcript
 
 ## Intro
 

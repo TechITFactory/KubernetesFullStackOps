@@ -1,4 +1,4 @@
-# 3.1 Kustomize bases and overlays — teaching transcript
+# Kustomize bases and overlays — teaching transcript
 
 ## Intro
 

@@ -1,4 +1,4 @@
-# 2.6.3 Projected Volumes — teaching transcript
+# Projected Volumes — teaching transcript
 
 ## Intro
 

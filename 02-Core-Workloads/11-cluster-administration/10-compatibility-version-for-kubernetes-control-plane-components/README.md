@@ -1,4 +1,4 @@
-# 2.11.10 Compatibility version for Kubernetes control plane components — teaching transcript
+# Compatibility version for Kubernetes control plane components — teaching transcript
 
 ## Intro
 

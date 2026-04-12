@@ -1,4 +1,4 @@
-# 2.13.3 Operator pattern — teaching transcript
+# Operator pattern — teaching transcript
 
 ## Intro
 

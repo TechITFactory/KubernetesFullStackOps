@@ -1,8 +1,8 @@
-﻿# 2.4.2.1 Pod Group Policies â€” teaching transcript
+# Pod Group Policies — teaching transcript
 
 ## Intro
 
-This lesson focuses on **namespace-scoped policy objects** that shape how Pods are **sized** and **counted**. A **LimitRange** sets **defaults**, **minimums**, and **maximums** for **CPU/memory** (and other resources) **per Pod or per container** in a namespaceâ€”when a Pod omits requests/limits, LimitRange can fill them in at admission time. A **ResourceQuota** caps **namespace totals**: aggregate **CPU/memory requests or limits**, **object counts**, and sometimes **storage**. The **interaction** matters: if LimitRange **defaults** would make a new Pod exceed **ResourceQuota**, admission **rejects** the Pod even though each field looked legal in isolation.
+This lesson focuses on **namespace-scoped policy objects** that shape how Pods are **sized** and **counted**. A **LimitRange** sets **defaults**, **minimums**, and **maximums** for **CPU/memory** (and other resources) **per Pod or per container** in a namespace—when a Pod omits requests/limits, LimitRange can fill them in at admission time. A **ResourceQuota** caps **namespace totals**: aggregate **CPU/memory requests or limits**, **object counts**, and sometimes **storage**. The **interaction** matters: if LimitRange **defaults** would make a new Pod exceed **ResourceQuota**, admission **rejects** the Pod even though each field looked legal in isolation.
 
 **Prerequisites:** [2.4.2 Workload API](../README.md); [2.4.1.7 QoS](../../01-pods/08-pod-quality-of-service-classes/README.md) helpful.
 
@@ -10,16 +10,16 @@ This lesson focuses on **namespace-scoped policy objects** that shape how Pods a
 
 ```
   Namespace
-    â”œâ”€â”€ LimitRange  â†’ defaults / min / max per pod/container
-    â””â”€â”€ ResourceQuota â†’ total requests/limits/objects
-              â”‚
-              â–¼
+    ├── LimitRange  → defaults / min / max per pod/container
+    └── ResourceQuota → total requests/limits/objects
+              │
+              ▼
   Admission: default + quota must both pass
 ```
 
 **Say:**
 
-Platform teams pair **LimitRange** (â€œno BestEffort by accidentâ€) with **Quota** (â€œthis team gets 20 cores maxâ€).
+Platform teams pair **LimitRange** (“no BestEffort by accident”) with **Quota** (“this team gets 20 cores max”).
 
 ## Learning objective
 
@@ -29,15 +29,15 @@ Platform teams pair **LimitRange** (â€œno BestEffort by accidentâ€) wit
 
 ## Why this matters
 
-â€œWorks on my laptopâ€ Pods fail first integration test when the shared dev namespace enforces quota.
+“Works on my laptop” Pods fail first integration test when the shared dev namespace enforces quota.
 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/13-workload-api/14-pod-group-policies" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/02-Core-Workloads/04-workloads/13-workload-api/14-pod-group-policies" 2>/dev/null || cd .
 ```
 
-## Step 1 â€” Apply notes ConfigMap
+## Step 1 — Apply notes ConfigMap
 
 **What happens when you run this:**
 
@@ -45,7 +45,7 @@ The bundled ConfigMap carries high-level **group scheduling** notes; pair it ver
 
 **Say:**
 
-The YAML body still mentions affinity-style groupingâ€”use your narration to pivot to **quota** mechanics.
+The YAML body still mentions affinity-style grouping—use your narration to pivot to **quota** mechanics.
 
 **Run:**
 
@@ -58,15 +58,15 @@ kubectl get configmap pod-group-policies-notes -n kube-system
 
 ---
 
-## Step 2 â€” Discover LimitRange and ResourceQuota in the cluster
+## Step 2 — Discover LimitRange and ResourceQuota in the cluster
 
 **What happens when you run this:**
 
-Lists real policiesâ€”often empty on toy clusters, which is itself a teaching moment.
+Lists real policies—often empty on toy clusters, which is itself a teaching moment.
 
 **Say:**
 
-Empty output means â€œno automatic defaultsâ€â€”Pods may remain **BestEffort** until someone adds LimitRange.
+Empty output means “no automatic defaults”—Pods may remain **BestEffort** until someone adds LimitRange.
 
 **Run:**
 
@@ -79,7 +79,7 @@ kubectl get resourcequota -A 2>/dev/null || true
 
 ---
 
-## Step 3 â€” Sample pod scheduling inventory
+## Step 3 — Sample pod scheduling inventory
 
 **What happens when you run this:**
 
@@ -98,7 +98,7 @@ kubectl api-resources | grep -i scheduling || true
 
 **Expected:** Short pod list; optional scheduling-related API kinds.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 ```bash
 kubectl get limitrange -A 2>/dev/null || true
@@ -107,12 +107,12 @@ kubectl get resourcequota -A 2>/dev/null || true
 
 ## Troubleshooting
 
-- **`exceeded quota` on create** â†’ check **ResourceQuota** `used` vs `hard`; remember LimitRange **defaults** count toward quota
-- **Pod rejected with no obvious quota line** â†’ inspect **LimitRange** default **memory** spike
-- **`Forbidden` listing kube-system** â†’ run without `-n kube-system` or widen RBAC
-- **LimitRange not applied** â†’ wrong **namespace**; LimitRange is namespaced
-- **Burstable surprise** â†’ LimitRange set **defaultRequest** without matching **default limit**â€”map to [QoS lesson](../../01-pods/08-pod-quality-of-service-classes/README.md)
-- **Storage quota** â†’ separate from CPU; check `requests.storage` in **ResourceQuota**
+- **`exceeded quota` on create** → check **ResourceQuota** `used` vs `hard`; remember LimitRange **defaults** count toward quota
+- **Pod rejected with no obvious quota line** → inspect **LimitRange** default **memory** spike
+- **`Forbidden` listing kube-system** → run without `-n kube-system` or widen RBAC
+- **LimitRange not applied** → wrong **namespace**; LimitRange is namespaced
+- **Burstable surprise** → LimitRange set **defaultRequest** without matching **default limit**—map to [QoS lesson](../../01-pods/08-pod-quality-of-service-classes/README.md)
+- **Storage quota** → separate from CPU; check `requests.storage` in **ResourceQuota**
 
 ## Repo files (reference)
 

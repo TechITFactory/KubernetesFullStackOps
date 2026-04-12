@@ -1,4 +1,4 @@
-# 2.7.6 Resource Management for Windows Nodes — teaching transcript
+# Resource Management for Windows Nodes — teaching transcript
 
 ## Intro
 

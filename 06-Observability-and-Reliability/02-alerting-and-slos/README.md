@@ -1,50 +1,104 @@
-# 02 Alerting and SLOs
+# Alerting and SLOs — teaching transcript
 
-## Metadata
-- Duration: `10 minutes`
-- Difficulty: `Intermediate`
-- Practical/Theory: `40/60`
-- Tested on Kubernetes: `v1.30`
+## Intro
 
-## Learning Objective
-By the end of this lesson, you will be able to:
-- Read PromQL syntax embedded inside an alerting matrix.
-- Understand the concept of "Time-duration" gating to prevent alert fatigue.
+**Alerts** **encode** **symptoms** **(PromQL** **or** **vendor** **query)** **plus** **timing** **gates** **`for:`** **so** **brief** **spikes** **do** **not** **page** **on-call**. **SLOs** **tie** **those** **symptoms** **to** **user-visible** **reliability** **budgets**. **The** **sample** **`PrometheusRule`** **declares** **`HighCPUUsage`** **with** **`for: 5m`** **over** **a** **placeholder** **expression** **—** **tune** **`expr`** **to** **your** **metric** **names** **before** **production** **use**.
 
-## Why This Matters in Real Jobs
-Engineers ignore alerts if their phone buzzes every time CPU spikes for 3 seconds. Real operational alerting enforces time gates (`for: 5m`) ensuring that the pager only fires if the condition is a sustained failure impacting the Service Level Objective (SLO).
+**Prerequisites:** [6.1 Metrics, logs, and traces](../01-metrics-logs-traces/README.md); **Prometheus** **Operator** **(optional** **for** **`kubectl apply`)**.
 
-## Visual: Alert Pipeline
+## Flow of this lesson
 
-```mermaid
-flowchart LR
-    P[Prometheus: Scrapes Metrics] --> R{Rule Evaluation}
-    R -->|CPU > 80% for 1m| I[Pending State]
-    I -->|Reaches 5m| F[Fired State]
-    F --> A[Alertmanager]
-    A --> PagerDuty/Slack
 ```
-
-## Lab: Step-by-Step Practical
-
-### Step 1 - Open directory
-**Run:**
-```bash
-cd "$COURSE_DIR/06-Observability-and-Reliability/02-alerting-and-slos"
+  Prometheus evaluates recording + alert rules on interval
+              │
+              ▼
+  Alert transitions Pending → Firing after `for` duration
+              │
+              ▼
+  Alertmanager routes to PagerDuty / Slack / etc.
 ```
-
-### Step 2 - Inspect an Alerting Rule
-
-**What happens when you run this:**
-We read a custom `PrometheusRule` Custom Resource. Notice the PromQL math calculating physical container CPU seconds and comparing it to `> 80`. 
 
 **Say:**
-The golden rule of SRE alerting is the `for: 5m` block. The alert suppresses itself until the condition has mathematically remained dangerously high for 5 unbroken minutes.
+
+**The** **`for: 5m` line** **is** **the** **difference** **between** **SRE** **and** **noise** **factory**.
+
+## Learning objective
+
+- **Read** **`PrometheusRule`** **YAML** **and** **identify** **`alert`**, **`expr`**, **`for`**, **and** **`annotations`**.
+- **Explain** **why** **alert** **queries** **should** **target** **symptoms**, **not** **causes** **(CPU** **is** **a** **symptom** **example** **here)**.
+
+## Why this matters
+
+**Pager** **fatigue** **kills** **response** **quality** **—** **time** **gates** **and** **SLOs** **protect** **humans**.
+
+## One-time setup
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/06-Observability-and-Reliability/02-alerting-and-slos" 2>/dev/null || cd .
+```
+
+## Step 1 — Inspect the PrometheusRule
+
+**What happens when you run this:**
+
+**You** **study** **`high-cpu-alert`**: **group** **`general-alerts`**, **rule** **`HighCPUUsage`**, **`expr`** **summing** **container** **CPU** **rates**, **`for: 5m`**, **annotations**.
 
 **Run:**
+
 ```bash
 cat yamls/alert-rule.yaml
 ```
 
-## Next Lesson
-[03 Autoscaling Decisions](../03-autoscaling-decisions/README.md)
+**Expected:** **`kind: PrometheusRule`**, **`alert:`**, **`expr:`**, **`for: 5m`**.
+
+---
+
+## Step 2 — Optional apply
+
+**What happens when you run this:**
+
+**Registers** **the** **rule** **in** **clusters** **with** **the** **CRD** **installed**.
+
+**Run:**
+
+```bash
+kubectl apply -f yamls/alert-rule.yaml 2>/dev/null || echo "Skip: PrometheusRule CRD not installed"
+```
+
+**Expected:** **Created** **or** **skip** **message**.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+**Deletes** **the** **rule** **if** **applied**.
+
+**Run:**
+
+```bash
+kubectl delete -f yamls/alert-rule.yaml --ignore-not-found 2>/dev/null || true
+```
+
+**Expected:** **Rule** **removed**.
+
+## Troubleshooting
+
+- **`expr` references** **missing** **metrics** → **rule** **never** **fires** **or** **errors** **in** **Prometheus** **UI**
+- **Wrong** **`namespace=` label** **in** **`expr`** → **edit** **to** **match** **your** **workloads**
+- **No** **`PrometheusRule` CRD** → **install** **Prometheus** **Operator** **stack**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/alert-rule.yaml` | **`PrometheusRule`** **with** **`HighCPUUsage`** |
+
+## Cleanup
+
+```bash
+kubectl delete -f yamls/alert-rule.yaml --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[6.3 Autoscaling decisions](../03-autoscaling-decisions/README.md)

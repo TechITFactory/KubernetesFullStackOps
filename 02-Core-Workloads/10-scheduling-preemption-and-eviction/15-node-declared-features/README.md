@@ -1,4 +1,4 @@
-# 2.10.15 Node Declared Features — teaching transcript
+# Node Declared Features — teaching transcript
 
 ## Intro
 

@@ -1,4 +1,4 @@
-# 2.10.13 Node-pressure Eviction — teaching transcript
+# Node-pressure Eviction — teaching transcript
 
 ## Intro
 

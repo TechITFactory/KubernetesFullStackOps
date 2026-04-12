@@ -1,4 +1,4 @@
-# 3.2 Helm charting strategies — teaching transcript
+# Helm charting strategies — teaching transcript
 
 ## Intro
 

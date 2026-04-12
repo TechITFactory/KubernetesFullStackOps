@@ -1,4 +1,4 @@
-# 2.6.1 Volumes — teaching transcript
+# Volumes — teaching transcript
 
 ## Intro
 

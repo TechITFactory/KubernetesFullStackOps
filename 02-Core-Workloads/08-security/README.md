@@ -1,4 +1,4 @@
-# 2.8 Security — teaching transcript
+# Security — teaching transcript
 
 ## Intro
 

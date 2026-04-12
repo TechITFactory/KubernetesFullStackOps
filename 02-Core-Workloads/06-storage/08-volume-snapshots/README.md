@@ -1,4 +1,4 @@
-# 2.6.8 Volume Snapshots — teaching transcript
+# Volume Snapshots — teaching transcript
 
 ## Intro
 

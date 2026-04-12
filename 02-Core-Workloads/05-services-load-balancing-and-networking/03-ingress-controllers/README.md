@@ -1,8 +1,8 @@
-﻿# 2.5.3 Ingress Controllers â€” teaching transcript
+# Ingress Controllers — teaching transcript
 
 ## Intro
 
-The **Ingress API** is declarative; an **Ingress controller** is a **running** component that **watches** Ingress (and often related) objects and programs a **datapath**â€”commonly an in-cluster reverse proxy exposed via **Service** type **LoadBalancer** or **NodePort**. Examples include **ingress-nginx**, **Traefik**, **Contour**, **HAProxy Ingress**, and cloud-specific controllers. Controllers differ by **annotations**, **CRDs**, **admission webhooks**, and **certificate** automation (for example ACME). If **no controller** matches your **ingressClassName**, Ingress resources sit idle. **Validating admission webhooks** can reject bad Ingress YAML; **cert-manager** often sits beside the controller for TLS.
+The **Ingress API** is declarative; an **Ingress controller** is a **running** component that **watches** Ingress (and often related) objects and programs a **datapath**—commonly an in-cluster reverse proxy exposed via **Service** type **LoadBalancer** or **NodePort**. Examples include **ingress-nginx**, **Traefik**, **Contour**, **HAProxy Ingress**, and cloud-specific controllers. Controllers differ by **annotations**, **CRDs**, **admission webhooks**, and **certificate** automation (for example ACME). If **no controller** matches your **ingressClassName**, Ingress resources sit idle. **Validating admission webhooks** can reject bad Ingress YAML; **cert-manager** often sits beside the controller for TLS.
 
 **Prerequisites:** [2.5.2 Ingress](../02-ingress/README.md).
 
@@ -10,17 +10,17 @@ The **Ingress API** is declarative; an **Ingress controller** is a **running** c
 
 ```
   Helm/chart installs controller Deployment + Service + RBAC
-              â”‚
-              â–¼
+              │
+              ▼
   Controller watches Ingress objects
-              â”‚
-              â–¼
+              │
+              ▼
   Proxy config + external Service front door
 ```
 
 **Say:**
 
-Platform teams own **one** default Ingress class per cluster to avoid â€œwhich controller got this?â€ confusion.
+Platform teams own **one** default Ingress class per cluster to avoid “which controller got this?” confusion.
 
 ## Learning objective
 
@@ -30,15 +30,15 @@ Platform teams own **one** default Ingress class per cluster to avoid â€œwhi
 
 ## Why this matters
 
-Half of â€œIngress brokenâ€ tickets are **missing or mismatched controller**, not bad app YAML.
+Half of “Ingress broken” tickets are **missing or mismatched controller**, not bad app YAML.
 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/02-ingress-controllers" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/02-Core-Workloads/2.5-services-load-balancing-and-networking/02-ingress-controllers" 2>/dev/null || cd .
 ```
 
-## Step 1 â€” Apply notes ConfigMap
+## Step 1 — Apply notes ConfigMap
 
 **What happens when you run this:**
 
@@ -46,7 +46,7 @@ In-cluster notes for controller concepts.
 
 **Say:**
 
-Managed clusters may already ship a controllerâ€”point at **`kubectl get pods -n ingress-nginx`** (or vendor namespace) live.
+Managed clusters may already ship a controller—point at **`kubectl get pods -n ingress-nginx`** (or vendor namespace) live.
 
 **Run:**
 
@@ -58,11 +58,11 @@ kubectl apply -f yamls/2-5-3-ingress-controllers-notes.yaml
 
 ---
 
-## Step 2 â€” Inspect controller footprint
+## Step 2 — Inspect controller footprint
 
 **What happens when you run this:**
 
-Script lists controller-related workloads and Ingressâ€”output varies by installation.
+Script lists controller-related workloads and Ingress—output varies by installation.
 
 **Run:**
 
@@ -72,7 +72,7 @@ bash scripts/inspect-2-5-3-ingress-controllers.sh
 
 **Expected:** ConfigMap confirmed; Ingress controller pods **visible** if an addon or chart is installed.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 ```bash
 bash scripts/inspect-2-5-3-ingress-controllers.sh
@@ -80,12 +80,12 @@ bash scripts/inspect-2-5-3-ingress-controllers.sh
 
 ## Troubleshooting
 
-- **No controller pods** â†’ install one; verify **IngressClass** exists (`kubectl get ingressclass`)
-- **LoadBalancer `<pending>`** â†’ cloud integration or MetalLB not configured
-- **Webhook timeout** â†’ controller admission service unreachable; check **Service** and **endpoints**
-- **Wrong controller picks up Ingress** â†’ fix **ingressClassName** and default class annotations
-- **Certificate not issued** â†’ separate **cert-manager** / TLS story; check **Challenge** CRs
-- **`Forbidden` notes apply** â†’ read YAML offline
+- **No controller pods** → install one; verify **IngressClass** exists (`kubectl get ingressclass`)
+- **LoadBalancer `<pending>`** → cloud integration or MetalLB not configured
+- **Webhook timeout** → controller admission service unreachable; check **Service** and **endpoints**
+- **Wrong controller picks up Ingress** → fix **ingressClassName** and default class annotations
+- **Certificate not issued** → separate **cert-manager** / TLS story; check **Challenge** CRs
+- **`Forbidden` notes apply** → read YAML offline
 
 ## Repo files (reference)
 

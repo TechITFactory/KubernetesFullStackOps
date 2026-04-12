@@ -1,4 +1,4 @@
-# 2.10.7 Scheduling Framework — teaching transcript
+# Scheduling Framework — teaching transcript
 
 ## Intro
 

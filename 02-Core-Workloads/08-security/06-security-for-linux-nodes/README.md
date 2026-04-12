@@ -1,4 +1,4 @@
-# 2.8.6 Security for Linux Nodes — teaching transcript
+# Security for Linux Nodes — teaching transcript
 
 ## Intro
 

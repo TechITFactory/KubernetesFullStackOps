@@ -1,4 +1,4 @@
-# 2.6.11 Storage Capacity — teaching transcript
+# Storage Capacity — teaching transcript
 
 ## Intro
 

@@ -1,4 +1,4 @@
-# 2.11.3 Node autoscaling — teaching transcript
+# Node autoscaling — teaching transcript
 
 ## Intro
 

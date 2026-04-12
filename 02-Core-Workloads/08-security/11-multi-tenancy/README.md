@@ -1,4 +1,4 @@
-# 2.8.11 Multi-tenancy — teaching transcript
+# Multi-tenancy — teaching transcript
 
 ## Intro
 

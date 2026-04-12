@@ -1,4 +1,4 @@
-# 2.11.12 Metrics for Kubernetes object states — teaching transcript
+# Metrics for Kubernetes object states — teaching transcript
 
 ## Intro
 

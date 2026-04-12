@@ -1,4 +1,4 @@
-# 0.2 Docker Basics for Kubernetes — teaching transcript
+# Docker Basics for Kubernetes — teaching transcript
 
 ## Intro
 

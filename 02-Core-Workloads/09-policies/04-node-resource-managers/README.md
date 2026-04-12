@@ -1,4 +1,4 @@
-# 2.9.4 Node Resource Managers — teaching transcript
+# Node Resource Managers — teaching transcript
 
 ## Intro
 

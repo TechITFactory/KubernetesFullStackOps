@@ -1,4 +1,4 @@
-# 2.6.7 Dynamic Volume Provisioning — teaching transcript
+# Dynamic Volume Provisioning — teaching transcript
 
 ## Intro
 

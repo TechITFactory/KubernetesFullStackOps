@@ -1,4 +1,4 @@
-# 2.6.6 Volume Attributes Classes — teaching transcript
+# Volume Attributes Classes — teaching transcript
 
 ## Intro
 

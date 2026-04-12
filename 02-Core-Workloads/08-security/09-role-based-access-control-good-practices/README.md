@@ -1,4 +1,4 @@
-# 2.8.9 Role Based Access Control Good Practices — teaching transcript
+# Role Based Access Control Good Practices — teaching transcript
 
 ## Intro
 

@@ -1,4 +1,4 @@
-# 2.11.15 Proxies in Kubernetes — teaching transcript
+# Proxies in Kubernetes — teaching transcript
 
 ## Intro
 

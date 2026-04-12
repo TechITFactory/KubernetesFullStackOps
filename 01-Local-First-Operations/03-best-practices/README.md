@@ -1,4 +1,4 @@
-﻿# 03 Best Practices
+# 03 Best Practices
 
 ## Intro
 
@@ -17,7 +17,7 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/03-best-practices"
 
 ```
   03.1               02              03            03.4              03.5
-  Scale           â†’   Multi-zone     â†’   Node         â†’   Pod Security   â†’   PKI
+  Scale           →   Multi-zone     →   Node         →   Pod Security   →   PKI
   readiness           resilience         validation        Standards          health
 ```
 
@@ -27,11 +27,11 @@ Five lessons in order: large-cluster readiness, spreading work across zones, val
 
 ---
 
-## Step 1 â€” Run module readiness (read-only)
+## Step 1 — Run module readiness (read-only)
 
 **What happens when you run this:**
 
-The script in `scripts/verify-1-3-module-readiness.sh` checks whatever prerequisites the authors encoded (kubectl context, cluster reachability, etc.) â€” read-only aside from whatever the script prints.
+The script in `scripts/verify-1-3-module-readiness.sh` checks whatever prerequisites the authors encoded (kubectl context, cluster reachability, etc.) — read-only aside from whatever the script prints.
 
 **Say:**
 
@@ -50,7 +50,7 @@ Script exits `0` with OK-style output (wording depends on script version).
 
 ---
 
-## Step 2 â€” Open the first child lesson (reading step)
+## Step 2 — Open the first child lesson (reading step)
 
 **What happens when you run this:**
 
@@ -58,7 +58,7 @@ You open [01 Considerations for large clusters](03.1-considerations-for-large-cl
 
 **Say:**
 
-I read **03.1** first for scheduling and API habits, then zones, then node validation â€” unless I am about to join a real node, in which case I jump to **03** early.
+I read **03.1** first for scheduling and API habits, then zones, then node validation — unless I am about to join a real node, in which case I jump to **03** early.
 
 **Run:**
 
@@ -72,11 +72,11 @@ You are in lesson **03.1** with a plan to reach **03.5**.
 
 ## Troubleshooting
 
-- **`verify-1-3-module-readiness.sh: No such file or directory`** â†’ `cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/03-best-practices"` first
-- **`error: You must be logged in to the server`** â†’ refresh kubeconfig credentials before any **03** lab
-- **Lessons reference files not found** â†’ confirm `COURSE_DIR` points at your clone root
-- **`Forbidden` applying **03.4** or **03.5** manifests** â†’ your user may lack cluster-admin; use a lab cluster or ask for elevated RBAC
-- **Skipping straight to Part 2 without **03**** â†’ allowed, but you miss operational guardrails that Part 2 assumes you have heard once
+- **`verify-1-3-module-readiness.sh: No such file or directory`** → `cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/03-best-practices"` first
+- **`error: You must be logged in to the server`** → refresh kubeconfig credentials before any **03** lab
+- **Lessons reference files not found** → confirm `COURSE_DIR` points at your clone root
+- **`Forbidden` applying **03.4** or **03.5** manifests** → your user may lack cluster-admin; use a lab cluster or ask for elevated RBAC
+- **Skipping straight to Part 2 without **03**** → allowed, but you miss operational guardrails that Part 2 assumes you have heard once
 
 ---
 
@@ -90,15 +90,15 @@ You are in lesson **03.1** with a plan to reach **03.5**.
 
 Teams that skip these habits discover them as outages: thundering herds on one node, zone-wide surprises, bad sysctl defaults, permissive pods, or expired API certificates. The module turns those into planned checks instead of surprises.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 
-Wide node list, all pods, then the newest cluster events â€” a read-only triage picture.
+Wide node list, all pods, then the newest cluster events — a read-only triage picture.
 
 **Say:**
 
-After **03.5** I still run this snapshot after any node, CNI, or admission change â€” nodes wide, every pod, last events.
+After **03.5** I still run this snapshot after any node, CNI, or admission change — nodes wide, every pod, last events.
 
 **Run:**
 
@@ -134,11 +134,11 @@ After this module you should be able to:
 - Explain why **large clusters**, **multi-zone**, and **node validation** matter before you add workloads.
 - Apply **Pod Security Standards** labels at the namespace level and know where to look when admission blocks a pod.
 - Read **PKI layout** on a control-plane node and know when cert rotation is urgent.
-- Run a **verify-before-change** habit: nodes â†’ system pods â†’ events â†’ targeted `describe`.
+- Run a **verify-before-change** habit: nodes → system pods → events → targeted `describe`.
 
 ## Cross-cutting topics (where to learn them)
 
-This module focuses on **cluster-level** habits. Several â€œday-2 workloadâ€ topics appear again in Part 2 â€” use the table so you know what 03 covers vs what comes next.
+This module focuses on **cluster-level** habits. Several “day-2 workload” topics appear again in Part 2 — use the table so you know what 03 covers vs what comes next.
 
 | Topic | In this module | Also see |
 |--------|----------------|----------|
@@ -147,7 +147,7 @@ This module focuses on **cluster-level** habits. Several â€œday-2 workloadâ
 | **Security contexts** (runAsUser, capabilities) | **03.4** Pod Security Standards (admission-level guardrails) | **2.8 Security** in this course |
 | **PodDisruptionBudgets** | **03.1** scale and availability mindset | **2.10 Scheduling** when expanded |
 
-For **Kubernetes version skew** and â€œwhat we test against,â€ see [`KUBERNETES_VERSION_MATRIX.md`](../../KUBERNETES_VERSION_MATRIX.md) at the repo root.
+For **Kubernetes version skew** and “what we test against,” see [`KUBERNETES_VERSION_MATRIX.md`](../../KUBERNETES_VERSION_MATRIX.md) at the repo root.
 
 ---
 
@@ -163,4 +163,4 @@ For **Kubernetes version skew** and â€œwhat we test against,â€ see [`KU
 
 ## Next
 
-Continue to [Part 2: Concepts](../../part-2-concepts/README.md) â€” run `bash part-2-concepts/scripts/verify-part2-prerequisites.sh` from the repo root first.
+Continue to [Part 2: Concepts](../../02-Core-Workloads/README.md) — run `bash 02-Core-Workloads/scripts/verify-part2-prerequisites.sh` from the repo root first.

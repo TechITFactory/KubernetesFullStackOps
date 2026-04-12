@@ -1,4 +1,4 @@
-# 2.11.13 System logs — teaching transcript
+# System logs — teaching transcript
 
 ## Intro
 

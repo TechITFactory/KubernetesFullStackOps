@@ -1,4 +1,4 @@
-# 2.6.2 Persistent Volumes — teaching transcript
+# Persistent Volumes — teaching transcript
 
 ## Intro
 

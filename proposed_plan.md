@@ -1,4 +1,4 @@
-﻿## Proposed Restructuring Plan
+## Proposed Restructuring Plan
 
 
 ### 01-Local-First-Operations

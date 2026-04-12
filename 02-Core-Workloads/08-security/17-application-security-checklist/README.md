@@ -1,4 +1,4 @@
-# 2.8.17 Application Security Checklist — teaching transcript
+# Application Security Checklist — teaching transcript
 
 ## Intro
 

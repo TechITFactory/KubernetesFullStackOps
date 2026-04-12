@@ -1,4 +1,4 @@
-# 2.11.4 Certificates — teaching transcript
+# Certificates — teaching transcript
 
 ## Intro
 

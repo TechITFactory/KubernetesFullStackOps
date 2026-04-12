@@ -2,13 +2,13 @@
 
 ## Intro
 
-Part 2 turns what you installed in [Part 1](../part-1-getting-started/README.md) into a **clear model**: how the control plane and nodes cooperate, how workloads and networking are expressed, and where security and policy hooks sit. Before you dive in, you need a cluster whose API answers `kubectl` — otherwise the lessons stay abstract.
+Part 2 turns what you installed in [Part 1](../01-Local-First-Operations/README.md) into a **clear model**: how the control plane and nodes cooperate, how workloads and networking are expressed, and where security and policy hooks sit. Before you dive in, you need a cluster whose API answers `kubectl` — otherwise the lessons stay abstract.
 
 ## One-time setup
 
 ```bash
 COURSE_DIR="$HOME/K8sOps"
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads"
+cd "$COURSE_DIR/02-Core-Workloads"
 ```
 
 > If you set `COURSE_DIR` earlier this session, skip the export and just `cd`.
@@ -51,7 +51,7 @@ We start with the overview, API, and kubectl so every later lesson has shared vo
 bash scripts/verify-part2-prerequisites.sh
 ```
 
-You should see `cluster-info`, a successful `/readyz` check, and your nodes listed. If this fails, fix context and connectivity in [Part 1](../part-1-getting-started/README.md) before continuing.
+You should see `cluster-info`, a successful `/readyz` check, and your nodes listed. If this fails, fix context and connectivity in [Part 1](../01-Local-First-Operations/README.md) before continuing.
 
 ---
 
@@ -59,7 +59,7 @@ You should see `cluster-info`, a successful `/readyz` check, and your nodes list
 
 **What happens when you run this:**
 
-`cd` moves into `part-2-concepts`. The `bash` command runs the prerequisite checker against your current kubeconfig — read-only checks plus API probes as implemented in the script.
+`cd` moves into `02-Core-Workloads`. The `bash` command runs the prerequisite checker against your current kubeconfig — read-only checks plus API probes as implemented in the script.
 
 **Say:**
 
@@ -68,7 +68,7 @@ I make sure I am in the course’s Part 2 directory so script paths work, then I
 **Run:**
 
 ```bash
-cd "$COURSE_DIR/C:/src/K8sOps/02-Core-Workloads"
+cd "$COURSE_DIR/02-Core-Workloads"
 bash scripts/verify-part2-prerequisites.sh
 ```
 
@@ -101,7 +101,7 @@ You know which path you will take after **2.1** (suggested: **2.1 → 2.2 → 2.
 ## Troubleshooting
 
 - **`The connection to the server localhost:8080 was refused`** (or similar) from `kubectl` → wrong kubeconfig or cluster down; run `kubectl config current-context` and restart Minikube, Kind, or your lab control plane
-- **`verify-part2-prerequisites.sh: command not found`** → run from `$COURSE_DIR/part-2-concepts` or pass the full path to the script
+- **`verify-part2-prerequisites.sh: command not found`** → run from `$COURSE_DIR/02-Core-Workloads` or pass the full path to the script
 - **`error: You must be logged in to the server`** → refresh cloud or OIDC credentials per your provider’s docs
 - **`Unable to connect to the server: x509: certificate signed by unknown authority`** → kubeconfig cluster CA data stale; re-fetch admin kubeconfig from the cluster bootstrap path you use
 
@@ -109,7 +109,7 @@ You know which path you will take after **2.1** (suggested: **2.1 → 2.2 → 2.
 
 ## Learning objective
 
-- Located `part-2-concepts` in the repo and ran the Part 2 prerequisite script successfully.
+- Located `02-Core-Workloads` in the repo and ran the Part 2 prerequisite script successfully.
 - Mapped the suggested concept order from overview through cluster administration.
 - Chose whether optional Windows and extension modules apply to your role.
 
@@ -147,30 +147,30 @@ A control plane URL; a non-empty api-resources table; namespace list; node list 
 | Path | Purpose |
 |------|---------|
 | `scripts/verify-part2-prerequisites.sh` | Part 2 gate — cluster reachability checks |
-| `2.1-overview/README.md` | Entry module for API and kubectl mental model |
+| `01-overview/README.md` | Entry module for API and kubectl mental model |
 
 ---
 
 ## Modules
 
-- [2.1 Overview](2.1-overview/README.md)
-- [2.2 Cluster Architecture](2.2-cluster-architecture/README.md)
-- [2.3 Containers](2.3-containers/README.md)
-- [2.4 Workloads](2.4-workloads/README.md)
-- [2.5 Services, Load Balancing, and Networking](2.5-services-load-balancing-and-networking/README.md)
-- [2.6 Storage](2.6-storage/README.md)
-- [2.7 Configuration](2.7-configuration/README.md)
-- [2.8 Security](2.8-security/README.md)
-- [2.9 Policies](2.9-policies/README.md)
-- [2.10 Scheduling, Preemption and Eviction](2.10-scheduling-preemption-and-eviction/README.md)
-- [2.11 Cluster Administration](2.11-cluster-administration/README.md)
-- [2.12 Windows in Kubernetes](2.12-windows-in-kubernetes/README.md)
-- [2.13 Extending Kubernetes](2.13-extending-kubernetes/README.md)
+- [01 Overview](01-overview/README.md)
+- [02 Cluster Architecture](02-cluster-architecture/README.md)
+- [03 Containers](03-containers/README.md)
+- [04 Workloads](04-workloads/README.md)
+- [05 Services, Load Balancing, and Networking](05-services-load-balancing-and-networking/README.md)
+- [06 Storage](06-storage/README.md)
+- [07 Configuration](07-configuration/README.md)
+- [08 Security](08-security/README.md)
+- [09 Policies](09-policies/README.md)
+- [10 Scheduling, Preemption and Eviction](10-scheduling-preemption-and-eviction/README.md)
+- [11 Cluster Administration](11-cluster-administration/README.md)
+- [12 Windows in Kubernetes](12-windows-in-kubernetes/README.md)
+- [13 Extending Kubernetes](13-extending-kubernetes/README.md)
 
-**Format note:** Lessons in **2.1**, **2.2**, and **2.3** use a **teaching transcript** style: **What happens when you run this** before runnable blocks, **Expected** outputs, **Video close** recap commands, and `scripts/*.sh` files include a **WHAT THIS DOES WHEN YOU RUN IT** header where scripts exist. **2.4 Workloads** — module README, **2.4.1**, **2.4.3** parents, **2.4.1.1**, **2.4.3.1–2.4.3.8**, and **2.4.4** match that pattern; other **2.4.x** lessons may still use shorter stubs until expanded. **2.5 Networking** — module README plus **2.5.1 Service**; other **2.5.x** lessons vary in depth until expanded.
+**Format note:** Lessons in **01**, **02**, and **03** use a **teaching transcript** style: **What happens when you run this** before runnable blocks, **Expected** outputs, **Video close** recap commands, and `scripts/*.sh` files include a **WHAT THIS DOES WHEN YOU RUN IT** header where scripts exist. **04 Workloads** — module README, pods, workload-api parents, and individual lessons match that pattern; other sub-lessons may still use shorter stubs until expanded. **05 Networking** — module README plus the Service lesson; other networking lessons vary in depth until expanded.
 
 ---
 
 ## Next
 
-Open [2.1 Overview](2.1-overview/README.md) and work children **2.1.1** through **2.1.4** in order.
+Open [01 Overview](01-overview/README.md) and work the children in order.

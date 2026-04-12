@@ -1,4 +1,4 @@
-﻿# 1.2 Production Environment
+# Production Environment
 
 ## Intro
 
@@ -19,14 +19,14 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/02-production-environmen
 
 ```
   Self-managed                        Alternative
-  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  ──────────────────────────          ─────────────────────
   01-container-runtimes               07-turnkey-cloud-solutions
-           â”‚                                   â”‚
-           â–¼                                   â”‚
-  02 to 06 kubeadm ops                         â”‚
-           â”‚                                   â”‚
-           â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                          â–¼
+           │                                   │
+           ▼                                   │
+  02 to 06 kubeadm ops                         │
+           │                                   │
+           └──────────────┬────────────────────┘
+                          ▼
               Your apps and kubectl
               (same Kubernetes API)
 ```
@@ -37,7 +37,7 @@ Two routes to production Kubernetes: you install the runtime and control plane y
 
 ---
 
-## Step 1 â€” Open the 1.2 module folder
+## Step 1 — Open the 1.2 module folder
 
 **What happens when you run this:**
 
@@ -60,11 +60,11 @@ Path ending with `02-production-environment`.
 
 ---
 
-## Step 2 â€” Choose your track (reading step)
+## Step 2 — Choose your track (reading step)
 
 **What happens when you run this:**
 
-You read the section list and open the README that matches your lab â€” no commands unless that lesson says so.
+You read the section list and open the README that matches your lab — no commands unless that lesson says so.
 
 **Say:**
 
@@ -82,25 +82,25 @@ You know whether you are studying runtime install, kubeadm lifecycle, or managed
 
 ## Troubleshooting
 
-- **`kubectl` works but nodes never become Ready after join** â†’ revisit **01** socket and cgroup checks before chasing CNI issues
-- **Unclear ordering between 01 and 02** â†’ always install and verify the CRI on each node before `kubeadm init` / `join`
-- **No Linux nodes available** â†’ stay on Track **01** until you have VMs or bare metal; read **07** for managed options in parallel
-- **`kubeadm` commands not found on the node** â†’ complete the package install lessons on that OS
-- **Only need conceptual cloud comparison** â†’ read **07** without running kubeadm
+- **`kubectl` works but nodes never become Ready after join** → revisit **01** socket and cgroup checks before chasing CNI issues
+- **Unclear ordering between 01 and 02** → always install and verify the CRI on each node before `kubeadm init` / `join`
+- **No Linux nodes available** → stay on Track **01** until you have VMs or bare metal; read **07** for managed options in parallel
+- **`kubeadm` commands not found on the node** → complete the package install lessons on that OS
+- **Only need conceptual cloud comparison** → read **07** without running kubeadm
 
 ---
 
 ## Learning objective
 
 - Stated the difference between self-managed and managed control planes while recognizing the same Kubernetes API surface.
-- Chose whether **01** to **06** apply to the learnerâ€™s environment.
+- Chose whether **01** to **06** apply to the learner’s environment.
 - Located **07** for evaluating EKS, GKE, AKS, and similar services.
 
 ## Why this matters
 
-Production incidents often trace to skipped prerequisites â€” wrong runtime socket, cgroup mismatch, or missing upgrade story. This module is the checklist teams run before declaring a cluster production-ready.
+Production incidents often trace to skipped prerequisites — wrong runtime socket, cgroup mismatch, or missing upgrade story. This module is the checklist teams run before declaring a cluster production-ready.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 
@@ -139,7 +139,7 @@ Nodes `Ready` when a cluster exists; `kube-system` pods mostly `Running`; client
 
 ### 01 Container Runtimes
 
-Every Kubernetes node needs a container runtime â€” the process that actually pulls images and starts containers. Kubernetes talks to runtimes through the Container Runtime Interface (CRI). This section installs one of three supported runtimes: `containerd`, `CRI-O`, or Docker Engine via `cri-dockerd`.
+Every Kubernetes node needs a container runtime — the process that actually pulls images and starts containers. Kubernetes talks to runtimes through the Container Runtime Interface (CRI). This section installs one of three supported runtimes: `containerd`, `CRI-O`, or Docker Engine via `cri-dockerd`.
 
 ### 02 to 06 Installing Kubernetes with kubeadm
 

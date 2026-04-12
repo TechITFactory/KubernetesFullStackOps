@@ -1,4 +1,4 @@
-# 2.8.8 Controlling Access to the Kubernetes API — teaching transcript
+# Controlling Access to the Kubernetes API — teaching transcript
 
 ## Intro
 

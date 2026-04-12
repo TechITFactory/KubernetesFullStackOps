@@ -1,4 +1,4 @@
-# 2.2.9 Mixed Version Proxy — teaching transcript
+# Mixed Version Proxy — teaching transcript
 
 ## Intro
 
@@ -11,7 +11,7 @@ Kubernetes has a formal **version skew policy**:
 
 During a rolling control plane upgrade, multiple API server replicas briefly run different versions. The mixed version proxy allows any API server to forward requests to another replica that serves a resource the requesting server does not yet support.
 
-**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
+**Prerequisites:** [Part 1](../../../01-Local-First-Operations/README.md).
 
 > **RBAC note:** `yamls/mixed-version-proxy-notes.yaml` targets `kube-system`. On clusters with restrictive RBAC, this write may return `Forbidden`. If so, read the YAML locally or apply it to the `default` namespace with `-n default`.
 
@@ -133,4 +133,4 @@ kubectl get events -A --sort-by=.lastTimestamp | tail -n 20
 
 ## Next
 
-[2.4 Workloads](../../2.4-workloads/README.md) or [2.3 Containers](../../2.3-containers/README.md)
+[2.4 Workloads](../../04-workloads/README.md) or [2.3 Containers](../../03-containers/README.md)

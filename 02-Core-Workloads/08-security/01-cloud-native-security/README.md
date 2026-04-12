@@ -1,4 +1,4 @@
-# 2.8.1 Cloud Native Security — teaching transcript
+# Cloud Native Security — teaching transcript
 
 ## Intro
 

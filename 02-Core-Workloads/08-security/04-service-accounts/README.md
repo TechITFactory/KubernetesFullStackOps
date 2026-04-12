@@ -1,4 +1,4 @@
-# 2.8.4 Service Accounts — teaching transcript
+# Service Accounts — teaching transcript
 
 ## Intro
 

@@ -1,4 +1,4 @@
-# 2.6.15 Windows Storage — teaching transcript
+# Windows Storage — teaching transcript
 
 ## Intro
 

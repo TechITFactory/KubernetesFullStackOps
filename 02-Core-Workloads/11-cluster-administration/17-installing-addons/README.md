@@ -1,4 +1,4 @@
-# 2.11.17 Installing addons — teaching transcript
+# Installing addons — teaching transcript
 
 ## Intro
 

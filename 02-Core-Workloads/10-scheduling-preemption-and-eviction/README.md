@@ -1,4 +1,4 @@
-# 2.10 Scheduling, Preemption and Eviction — teaching transcript
+# Scheduling, Preemption and Eviction — teaching transcript
 
 ## Intro
 

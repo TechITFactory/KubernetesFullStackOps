@@ -1,4 +1,4 @@
-# 2.11.14 Traces for Kubernetes system components — teaching transcript
+# Traces for Kubernetes system components — teaching transcript
 
 ## Intro
 

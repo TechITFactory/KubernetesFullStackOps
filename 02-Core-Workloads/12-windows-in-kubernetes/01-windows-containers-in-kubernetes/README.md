@@ -1,4 +1,4 @@
-# 2.12.1 Windows containers in Kubernetes — teaching transcript
+# Windows containers in Kubernetes — teaching transcript
 
 ## Intro
 

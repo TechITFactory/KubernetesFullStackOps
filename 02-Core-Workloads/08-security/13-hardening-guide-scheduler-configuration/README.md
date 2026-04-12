@@ -1,4 +1,4 @@
-# 2.8.13 Hardening Guide — Scheduler Configuration — teaching transcript
+# Hardening Guide — Scheduler Configuration — teaching transcript
 
 ## Intro
 

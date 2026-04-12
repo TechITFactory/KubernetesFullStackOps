@@ -15,30 +15,34 @@ Course structure generated from the table of contents in `k8s-toc.pdf`.
 
 Version policy and tested lines: [`KUBERNETES_VERSION_MATRIX.md`](KUBERNETES_VERSION_MATRIX.md).
 
-```mermaid
-flowchart TB
-  subgraph foundations[Foundations]
-    T0[00: Prerequisites]
-    T1[01: Local First Ops]
-    T2[02: Core Workloads]
-  end
-  subgraph engineering[Engineering & Day 2]
-    T3[03: Packaging]
-    T4[04: CI/CD & GitOps]
-    T5[05: Security & Policy]
-    T6[06: Observability]
-  end
-  subgraph realworld[Production & Scale]
-    T7[07: Capstone]
-    T8[08: Cloud Extension EKS]
-  end
-  T0 --> T1 --> T2
-  T2 --> T3 --> T4
-  T2 --> T5 --> T6
-  T4 --> T7
-  T6 --> T7
-  T7 --> T8
 ```
+  Foundations
+  00: Prerequisites
+       |
+       v
+  01: Local First Operations
+       |
+       v
+  02: Core Workloads
+       |
+       +---------------------------+
+       |                           |
+       v                           v
+  03: Packaging             05: Security & Policy
+       |                           |
+       v                           v
+  04: CI/CD & GitOps        06: Observability
+       |                           |
+       +---------------------------+
+                   |
+                   v
+         07: Capstone Project
+                   |
+                   v
+       08: Cloud Extension (EKS)
+```
+
+**Say:** We start with prerequisites, move to local cluster operations, then core workloads. From there two parallel tracks — packaging and CI/CD on the left, security and observability on the right — converge at the capstone project. The final module extends everything to EKS.
 
 **Track 2 entry check:** after Track 1, run validation scripts in `02-Core-Workloads`.
 

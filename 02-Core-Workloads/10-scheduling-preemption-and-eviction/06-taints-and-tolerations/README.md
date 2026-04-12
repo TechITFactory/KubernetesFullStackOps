@@ -1,4 +1,4 @@
-# 2.10.6 Taints and Tolerations — teaching transcript
+# Taints and Tolerations — teaching transcript
 
 ## Intro
 

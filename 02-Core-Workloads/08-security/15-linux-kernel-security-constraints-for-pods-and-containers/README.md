@@ -1,4 +1,4 @@
-# 2.8.15 Linux Kernel Security Constraints for Pods and Containers — teaching transcript
+# Linux Kernel Security Constraints for Pods and Containers — teaching transcript
 
 ## Intro
 

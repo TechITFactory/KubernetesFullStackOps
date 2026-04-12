@@ -1,4 +1,4 @@
-# 2.11.7 Admission webhook good practices — teaching transcript
+# Admission webhook good practices — teaching transcript
 
 ## Intro
 

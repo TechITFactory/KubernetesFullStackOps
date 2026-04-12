@@ -1,4 +1,4 @@
-# 2.11.18 Coordinated leader election — teaching transcript
+# Coordinated leader election — teaching transcript
 
 ## Intro
 

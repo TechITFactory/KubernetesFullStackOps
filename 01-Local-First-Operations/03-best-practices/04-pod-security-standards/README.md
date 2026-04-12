@@ -1,4 +1,4 @@
-﻿# 04 Enforcing Pod Security Standards â€” teaching transcript
+# 04 Enforcing Pod Security Standards — teaching transcript
 
 ## Intro
 
@@ -6,7 +6,7 @@ Nothing stops a developer from shipping a root container or a hostPath mount **u
 
 **Pod Security Standards (PSS)** ship with Kubernetes: you label a namespace; the built-in admission plugin evaluates pods against a **level** in one of three **modes**. This lesson enforces **`restricted`** on namespace `pss-restricted`, applies a **compliant** pod, then proves a **non-compliant** pod is **rejected** when mode is `enforce`.
 
-**Teaching tip:** Expect the non-compliant apply to return `Forbidden` â€” that is success. See **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/apply-pod-security-labels.sh`.
+**Teaching tip:** Expect the non-compliant apply to return `Forbidden` — that is success. See **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/apply-pod-security-labels.sh`.
 
 ## One-time setup
 
@@ -21,7 +21,7 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/03-best-practices/04-pod
 
 ```
   [ Step 1 ]          [ Step 2 ]          [ Step 3 ]          [ Step 4 ]
-  Label namespace â†’   Apply namespace â†’   Compliant pod   â†’   Non-compliant
+  Label namespace →   Apply namespace →   Compliant pod   →   Non-compliant
   with script         manifest (GitOps)   (expect OK)         pod (expect DENY)
 ```
 
@@ -31,13 +31,13 @@ I make sure labels exist, align the GitOps manifest, prove a hardened pod passes
 
 ---
 
-## Levels, modes, and the 3Ã—3 matrix
+## Levels, modes, and the 3×3 matrix
 
 **Levels** describe how strict the policy is:
 
-- **`privileged`** â€” unrestricted.
-- **`baseline`** â€” blocks the most dangerous options (host namespaces, privileged, many host volumes, â€¦).
-- **`restricted`** â€” hardens workloads: non-root, dropped capabilities, read-only root filesystem where required, etc.
+- **`privileged`** — unrestricted.
+- **`baseline`** — blocks the most dangerous options (host namespaces, privileged, many host volumes, …).
+- **`restricted`** — hardens workloads: non-root, dropped capabilities, read-only root filesystem where required, etc.
 
 **Modes** describe what happens when a pod violates the **selected** level:
 
@@ -51,7 +51,7 @@ In this lesson all three modes on `pss-restricted` point at **`restricted`**, so
 
 **Safe rollout order on existing clusters:** start with **`audit`**, fix workloads the audit surfaces, move to **`warn`**, then finally **`enforce`** so you do not mass-delete running apps.
 
-## Step 1 â€” Apply Pod Security labels to the namespace
+## Step 1 — Apply Pod Security labels to the namespace
 
 **What happens when you run this:**
 
@@ -59,7 +59,7 @@ In this lesson all three modes on `pss-restricted` point at **`restricted`**, so
 
 **Say:**
 
-Idempotent script â€” safe on re-record. Labels are the entire switch for PSS.
+Idempotent script — safe on re-record. Labels are the entire switch for PSS.
 
 **Run:**
 
@@ -75,7 +75,7 @@ Namespace present; labels applied without error.
 
 ---
 
-## Step 2 â€” Apply the namespace manifest
+## Step 2 — Apply the namespace manifest
 
 **What happens when you run this:**
 
@@ -97,7 +97,7 @@ Namespace configured or unchanged.
 
 ---
 
-## Step 3 â€” Apply the compliant pod
+## Step 3 — Apply the compliant pod
 
 **What happens when you run this:**
 
@@ -105,7 +105,7 @@ Namespace configured or unchanged.
 
 **Say:**
 
-A minimal compliant pod sets **`runAsNonRoot: true`**, **`runAsUser`** to **1000** or higher, **`allowPrivilegeEscalation: false`**, **`readOnlyRootFilesystem: true`**, and **`capabilities.drop: ["ALL"]`**. Your manifest may add volumes for writable paths â€” every `restricted` rule must still pass.
+A minimal compliant pod sets **`runAsNonRoot: true`**, **`runAsUser`** to **1000** or higher, **`allowPrivilegeEscalation: false`**, **`readOnlyRootFilesystem: true`**, and **`capabilities.drop: ["ALL"]`**. Your manifest may add volumes for writable paths — every `restricted` rule must still pass.
 
 **Run:**
 
@@ -119,7 +119,7 @@ Pod created; `kubectl get pods -n pss-restricted` shows `Running` once the conta
 
 ---
 
-## Step 4 â€” Apply the non-compliant pod (expect rejection)
+## Step 4 — Apply the non-compliant pod (expect rejection)
 
 **What happens when you run this:**
 
@@ -127,7 +127,7 @@ Pod created; `kubectl get pods -n pss-restricted` shows `Running` once the conta
 
 **Say:**
 
-Read the server message aloud in the video â€” it names the failed check. That is what developers will paste into chat when policy blocks a deploy.
+Read the server message aloud in the video — it names the failed check. That is what developers will paste into chat when policy blocks a deploy.
 
 **Run:**
 
@@ -137,31 +137,31 @@ kubectl apply -f yamls/restricted-noncompliant-pod.yaml
 
 **Expected:**
 
-`Error from server (Forbidden): ...` â€” pod **not** created.
+`Error from server (Forbidden): ...` — pod **not** created.
 
 ---
 
 ## Troubleshooting
 
-- **`restricted-noncompliant-pod.yaml` creates successfully** â†’ `kubectl get ns pss-restricted --show-labels` must include `pod-security.kubernetes.io/enforce=restricted`
-- **`restricted-compliant-pod.yaml` rejected** â†’ read the message; Kubernetes minor version may add stricter checks â€” compare with upstream `restricted` profile for your version
-- **`Forbidden` writing namespace objects** â†’ use a cluster where you may create namespaces or ask an admin to apply the YAML
-- **Production outage after labeling live namespaces** â†’ roll back to `audit`/`warn` first, fix workloads, then return to `enforce`
-- **PSS not active** â†’ cluster version must be 1.23+ with PodSecurity admission enabled (default on recent kubeadm clusters)
+- **`restricted-noncompliant-pod.yaml` creates successfully** → `kubectl get ns pss-restricted --show-labels` must include `pod-security.kubernetes.io/enforce=restricted`
+- **`restricted-compliant-pod.yaml` rejected** → read the message; Kubernetes minor version may add stricter checks — compare with upstream `restricted` profile for your version
+- **`Forbidden` writing namespace objects** → use a cluster where you may create namespaces or ask an admin to apply the YAML
+- **Production outage after labeling live namespaces** → roll back to `audit`/`warn` first, fix workloads, then return to `enforce`
+- **PSS not active** → cluster version must be 1.23+ with PodSecurity admission enabled (default on recent kubeadm clusters)
 
 ---
 
 ## Learning objective
 
-- Read the 3Ã—3 matrix of **levels Ã— modes** and explained what `enforce`, `warn`, and `audit` do for `baseline` and `restricted`.
+- Read the 3×3 matrix of **levels × modes** and explained what `enforce`, `warn`, and `audit` do for `baseline` and `restricted`.
 - Applied `restricted` labels, shipped a compliant pod, and confirmed a non-compliant pod is **rejected**.
-- Described the safe rollout order **audit â†’ warn â†’ enforce** for existing clusters.
+- Described the safe rollout order **audit → warn → enforce** for existing clusters.
 
 ## Why this matters
 
-Warnings alone do not stop bad deploys. **`enforce`** turns policy into an actual guardrail â€” the same move platform teams use before they point compliance auditors at a cluster.
+Warnings alone do not stop bad deploys. **`enforce`** turns policy into an actual guardrail — the same move platform teams use before they point compliance auditors at a cluster.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 

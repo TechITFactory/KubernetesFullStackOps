@@ -1,14 +1,14 @@
-﻿# 2.1.2.9 Recommended Labels â€” teaching transcript
+# Recommended Labels — teaching transcript
 
 ## Intro
 
-Kubernetes has a standard label vocabulary â€” the `app.kubernetes.io/*` prefix â€” and using it consistently changes how every tool that touches your cluster behaves.
+Kubernetes has a standard label vocabulary — the `app.kubernetes.io/*` prefix — and using it consistently changes how every tool that touches your cluster behaves.
 
 Helm uses these labels. `kubectl` uses them. Dashboards like Kubernetes Dashboard and Grafana use them to group resources by application, version, and component. Cost allocation tools use `app.kubernetes.io/part-of` to aggregate spend. If you're using the standard labels, tooling works out of the box. If you're inventing your own label schema, you're configuring every tool separately.
 
-The labels are not enforced by Kubernetes â€” nothing breaks if you don't use them. But teams that adopt them from day one consistently report that onboarding, debugging, and tool integration are faster.
+The labels are not enforced by Kubernetes — nothing breaks if you don't use them. But teams that adopt them from day one consistently report that onboarding, debugging, and tool integration are faster.
 
-**Prerequisites:** [Part 1](../../part-1-getting-started/README.md).
+**Prerequisites:** [Part 1](../../01-Local-First-Operations/README.md).
 
 ## One-time setup
 
@@ -38,7 +38,7 @@ cd "$COURSE_DIR/02-Core-Workloads/01-overview/11-recommended-labels"
 
 ```
   [ Step 1 ]             [ Step 2 ]            [ Step 3 ]
-  Apply labeled   â†’      Wait for      â†’       Query by
+  Apply labeled   →      Wait for      →       Query by
   Deployment             rollout               standard labels
 ```
 
@@ -48,7 +48,7 @@ Three steps. Apply a Deployment with recommended labels, wait for rollout, then 
 
 ---
 
-## Step 1 â€” Apply the labeled Deployment
+## Step 1 — Apply the labeled Deployment
 
 **What happens when you run this:**
 `kubectl apply -f yamls/recommended-labels-demo.yaml` creates a Deployment with all six `app.kubernetes.io/*` labels set on both the Deployment itself and its pod template. Declarative; safe to re-run.
@@ -68,13 +68,13 @@ kubectl apply -f yamls/recommended-labels-demo.yaml
 
 ---
 
-## Step 2 â€” Wait for rollout
+## Step 2 — Wait for rollout
 
 **What happens when you run this:**
 `kubectl wait --for=condition=available deployment/labels-demo --timeout=120s` waits until the Deployment is Available. Read-only.
 
 **Say:**
-Waiting for available before querying gives me a clean state â€” pods are running and ready, not just scheduled.
+Waiting for available before querying gives me a clean state — pods are running and ready, not just scheduled.
 
 **Run:**
 
@@ -87,13 +87,13 @@ kubectl wait --for=condition=available deployment/labels-demo --timeout=120s
 
 ---
 
-## Step 3 â€” Query using recommended labels
+## Step 3 — Query using recommended labels
 
 **What happens when you run this:**
 `kubectl get deploy labels-demo --show-labels` shows all labels on the Deployment. The `kubectl get -l 'app.kubernetes.io/part-of=overview-module'` query demonstrates cross-resource filtering using the standard label. Both read-only.
 
 **Say:**
-This is the payoff. I can query by `part-of` and get every resource in this module that uses the standard label â€” Deployments, Services, ConfigMaps, whatever. I don't need to know the exact name of each resource. In a large cluster with hundreds of objects, this is how you find everything belonging to a specific application in one command.
+This is the payoff. I can query by `part-of` and get every resource in this module that uses the standard label — Deployments, Services, ConfigMaps, whatever. I don't need to know the exact name of each resource. In a large cluster with hundreds of objects, this is how you find everything belonging to a specific application in one command.
 
 **Run:**
 
@@ -109,9 +109,9 @@ First command: `labels-demo` with all labels shown. Second command: same Deploym
 
 ## Troubleshooting
 
-- **Query returns nothing** â†’ check the label value matches exactly; `app.kubernetes.io/part-of` values are case-sensitive; use `kubectl get deploy labels-demo --show-labels` to see what's actually on the object
-- **Helm overwrites my labels** â†’ Helm sets its own `app.kubernetes.io/managed-by: Helm` label and may manage the selector; if you're using Helm, let it manage labels and annotate additional metadata separately
-- **Label drift between Deployment and pod template** â†’ the Deployment's `spec.selector` must match pod template labels and cannot be changed; ensure the recommended labels on the pod template include the same key-value pairs as the selector
+- **Query returns nothing** → check the label value matches exactly; `app.kubernetes.io/part-of` values are case-sensitive; use `kubectl get deploy labels-demo --show-labels` to see what's actually on the object
+- **Helm overwrites my labels** → Helm sets its own `app.kubernetes.io/managed-by: Helm` label and may manage the selector; if you're using Helm, let it manage labels and annotate additional metadata separately
+- **Label drift between Deployment and pod template** → the Deployment's `spec.selector` must match pod template labels and cannot be changed; ensure the recommended labels on the pod template include the same key-value pairs as the selector
 
 ---
 
@@ -123,11 +123,11 @@ First command: `labels-demo` with all labels shown. Second command: same Deploym
 
 ## Why this matters
 
-Teams that use ad-hoc label schemas spend time configuring every monitoring dashboard, every cost tool, every GitOps controller separately. Teams that use the `app.kubernetes.io/*` vocabulary get most of that for free â€” tools are built to understand these labels out of the box. It's a small discipline that pays returns across every operational tool you'll ever use.
+Teams that use ad-hoc label schemas spend time configuring every monitoring dashboard, every cost tool, every GitOps controller separately. Teams that use the `app.kubernetes.io/*` vocabulary get most of that for free — tools are built to understand these labels out of the box. It's a small discipline that pays returns across every operational tool you'll ever use.
 
 ---
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 jsonpath label dump showing all `app.kubernetes.io` labels on the Deployment, then cleanup.

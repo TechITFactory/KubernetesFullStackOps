@@ -1,4 +1,4 @@
-# 0.1 Linux Basics for Kubernetes — teaching transcript
+# Linux Basics for Kubernetes — teaching transcript
 
 ## Intro
 

@@ -1,4 +1,4 @@
-# 2.11.6 Observability — teaching transcript
+# Observability — teaching transcript
 
 ## Intro
 

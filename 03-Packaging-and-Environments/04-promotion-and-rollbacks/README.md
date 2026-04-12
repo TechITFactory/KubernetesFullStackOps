@@ -1,4 +1,4 @@
-# 3.4 Promotion and rollbacks — teaching transcript
+# Promotion and rollbacks — teaching transcript
 
 ## Intro
 

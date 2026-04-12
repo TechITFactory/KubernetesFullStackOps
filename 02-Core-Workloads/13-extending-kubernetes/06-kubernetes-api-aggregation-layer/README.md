@@ -1,4 +1,4 @@
-# 2.13.2.2 Kubernetes API aggregation layer — teaching transcript
+# Kubernetes API aggregation layer — teaching transcript
 
 ## Intro
 

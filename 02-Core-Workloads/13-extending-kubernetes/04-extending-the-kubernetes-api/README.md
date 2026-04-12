@@ -1,4 +1,4 @@
-# 2.13.2 Extending the Kubernetes API — teaching transcript
+# Extending the Kubernetes API — teaching transcript
 
 ## Intro
 

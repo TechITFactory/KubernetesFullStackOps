@@ -1,4 +1,4 @@
-# 2.13.1.1 Network plugins — teaching transcript
+# Network plugins — teaching transcript
 
 ## Intro
 

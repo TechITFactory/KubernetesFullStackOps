@@ -1,8 +1,8 @@
-﻿# 2.4.3.6 Automatic Cleanup for Finished Jobs â€” teaching transcript
+# Automatic Cleanup for Finished Jobs — teaching transcript
 
 ## Intro
 
-**`ttlSecondsAfterFinished`** tells the control plane to **delete a finished Job** (and dependent Pods per garbage-collection rules) after a **TTL window** counted from when the Job reaches **Complete** or **Failed**. Cleanup is **asynchronous**â€”do not assert sub-second deletion in automation. TTL complements **manual** `kubectl delete` and **CronJob** retention: **`successfulJobsHistoryLimit`** and **`failedJobsHistoryLimit`** trim how many **finished Jobs** from a CronJob remain listedâ€”use those for **schedule-driven** noise, TTL for **one-shot** Jobs you do not want in etcd at all.
+**`ttlSecondsAfterFinished`** tells the control plane to **delete a finished Job** (and dependent Pods per garbage-collection rules) after a **TTL window** counted from when the Job reaches **Complete** or **Failed**. Cleanup is **asynchronous**—do not assert sub-second deletion in automation. TTL complements **manual** `kubectl delete` and **CronJob** retention: **`successfulJobsHistoryLimit`** and **`failedJobsHistoryLimit`** trim how many **finished Jobs** from a CronJob remain listed—use those for **schedule-driven** noise, TTL for **one-shot** Jobs you do not want in etcd at all.
 
 **Prerequisites:** [2.4.3.5 Jobs](../20-jobs/README.md); cluster with **TTLAfterFinished** enabled (default on current Kubernetes).
 
@@ -14,34 +14,34 @@
 
 ## Why this matters
 
-CI namespaces and batch clusters can hold thousands of finished Jobsâ€”slowing **`kubectl get`** and confusing operators.
+CI namespaces and batch clusters can hold thousands of finished Jobs—slowing **`kubectl get`** and confusing operators.
 
 ## Flow of this lesson
 
 ```
   Job Running
-      â”‚
-      â–¼
+      │
+      ▼
   Complete or Failed
-      â”‚
-      â–¼
+      │
+      ▼
   TTL timer starts
-      â”‚
-      â–¼
+      │
+      ▼
   Job + pods garbage-collected (eventually)
 ```
 
 **Say:**
 
-TTL is not log retentionâ€”**aggregate logs** before deletion if audits require them.
+TTL is not log retention—**aggregate logs** before deletion if audits require them.
 
 ## Concepts (short theory)
 
-- TTL starts **after** terminal conditionâ€”while **Active**, no timer.
+- TTL starts **after** terminal condition—while **Active**, no timer.
 
 ---
 
-## Step 1 â€” Apply TTL Job and wait for complete
+## Step 1 — Apply TTL Job and wait for complete
 
 **What happens when you run this:**
 
@@ -64,7 +64,7 @@ kubectl get job job-ttl-demo 2>&1 || true
 
 ---
 
-## Step 2 â€” Verify script (waits for deletion)
+## Step 2 — Verify script (waits for deletion)
 
 **What happens when you run this:**
 
@@ -81,14 +81,14 @@ chmod +x scripts/verify-job-ttl-lesson.sh
 
 ## Troubleshooting
 
-- **TTL ignored** â†’ **TTLAfterFinished** feature disabled on ancient clusters
-- **Job stuck before complete** â†’ TTL never startsâ€”debug pod like any Job
-- **Pods remain after Job deleted** â†’ check **ownerReferences** and **finalizers** (unusual)
-- **Need audit trail** â†’ external logging + shorter TTL, not infinite Job list
-- **Verify script timeout** â†’ slow API; increase wait in script or cluster load
-- **Race in tests** â†’ `get` immediately after complete still shows Jobâ€”expected
+- **TTL ignored** → **TTLAfterFinished** feature disabled on ancient clusters
+- **Job stuck before complete** → TTL never starts—debug pod like any Job
+- **Pods remain after Job deleted** → check **ownerReferences** and **finalizers** (unusual)
+- **Need audit trail** → external logging + shorter TTL, not infinite Job list
+- **Verify script timeout** → slow API; increase wait in script or cluster load
+- **Race in tests** → `get` immediately after complete still shows Job—expected
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 While the Job exists after completion:
 
@@ -103,7 +103,7 @@ kubectl get events -n default --field-selector involvedObject.name=job-ttl-demo 
 |------|---------|
 | `yamls/job-ttl-demo.yaml` | Job with `ttlSecondsAfterFinished: 60` |
 | `yamls/failure-troubleshooting.yaml` | TTL controller delays / feature gate issues |
-| `scripts/verify-job-ttl-lesson.sh` | Complete â†’ assert TTL â†’ wait until Job removed |
+| `scripts/verify-job-ttl-lesson.sh` | Complete → assert TTL → wait until Job removed |
 
 ## Cleanup
 

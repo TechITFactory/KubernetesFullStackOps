@@ -1,4 +1,4 @@
-# 2.9.2 Resource Quotas — teaching transcript
+# Resource Quotas — teaching transcript
 
 ## Intro
 

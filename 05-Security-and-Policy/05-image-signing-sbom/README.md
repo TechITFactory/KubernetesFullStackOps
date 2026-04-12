@@ -1,39 +1,106 @@
-# 05 Image Signing and SBOMs
+# Image signing and SBOMs — teaching transcript
 
-## Metadata
-- Duration: `15 minutes`
-- Difficulty: `Intermediate`
-- Practical/Theory: `50/50`
-- Tested on Kubernetes: `v1.30`
+## Intro
 
-## Learning Objective
-By the end of this lesson, you will be able to:
-- Identify the necessity for Cryptographic Signatures across container payloads.
-- Outline the mechanics of utilizing Sigstore's `cosign` tool to verify images.
+**Vulnerability** **scanning** **answers** **“does** **this** **image** **contain** **known** **bad** **packages?”** **Signing** **answers** **“did** **this** **exact** **artifact** **come** **from** **our** **trusted** **publisher** **after** **we** **approved** **it?”** **Tools** **like** **[Sigstore** **Cosign](https://docs.sigstore.dev/cosign/overview/)** **attach** **signatures** **to** **digests**. **Clusters** **or** **admission** **policies** **can** **verify** **signatures** **before** **Pods** **run**. **The** **sample** **`Job`** **in** **`yamls/verify-verification-job.yaml`** **shows** **a** **`cosign verify`** **invocation** **pattern** **—** **keys** **and** **image** **references** **are** **placeholders** **for** **your** **registry**.
 
-## Why This Matters in Real Jobs
-Even if you scan an image for vulnerabilities, how do you mathematically prove that a hacker didn't tamper with your Docker image *after* you uploaded it to the registry? You use an asymmetric key pair to computationally "sign" the image layer hashes. The Kubernetes admission controller will outright reject booting up any Pod whose cryptographic signature cannot be securely verified. 
+**Prerequisites:** [5.4 Admission controls](../04-admission-controls/README.md); [4.1 Pipeline design](../../04-CICD-and-GitOps/01-pipeline-design/README.md) **(image** **publish** **step)**.
 
-## Lab: Step-by-Step Practical
+## Flow of this lesson
 
-### Step 1 - Open directory
-**Run:**
-```bash
-cd "$COURSE_DIR/05-Security-and-Policy/05-image-signing-sbom"
+```
+  Build produces image digest + signature (out of cluster)
+              │
+              ▼
+  Registry stores image + signature metadata
+              │
+              ▼
+  Job or admission controller runs cosign verify before run
 ```
 
-### Step 2 - The Verification Job
+**Say:**
+
+**SBOMs** **( SPDX**, **CycloneDX)** **pair** **with** **signing** **—** **you** **prove** **what** **is** **inside**, **not** **only** **who** **signed** **the** **tarball**.
+
+## Learning objective
+
+- **Explain** **why** **registry** **TLS** **alone** **does** **not** **replace** **image** **signing**.
+- **Read** **the** **sample** **`Job`** **and** **list** **what** **must** **be** **true** **for** **`cosign verify`** **to** **succeed**.
+
+## Why this matters
+
+**Supply-chain** **attacks** **target** **the** **path** **between** **CI** **and** **the** **node** **—** **signing** **plus** **admission** **verification** **shrinks** **that** **window**.
+
+## One-time setup
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/05-Security-and-Policy/05-image-signing-sbom" 2>/dev/null || cd .
+```
+
+## Step 1 — Inspect the verification Job
 
 **What happens when you run this:**
-You inspect a Kubernetes Job designed to run the `cosign` binary explicitly over a registry payload to prove its cryptographic origin prior to integration.
 
-**Say:**
-In an enterprise environment, this verification isn't done linearly. It is typically integrated permanently into an Admission Controller (like Kyverno from our prior lesson) which seamlessly executes this mathematical verification transparently on every single `kubectl` applied inside the infrastructure!
+**You** **study** **`mock-cosign-verification`**: **container** **image** **`bitnami/cosign:latest`**, **command** **`cosign verify --key cosign.pub`**, **target** **image** **placeholder**.
 
 **Run:**
+
 ```bash
 cat yamls/verify-verification-job.yaml
 ```
 
-## Next Lesson
-[Track 06: Observability and Reliability](../../06-Observability-and-Reliability/01-metrics-server/README.md)
+**Expected:** **`batch/v1` `Job`**, **`restartPolicy: Never`**, **`cosign`** **args** **as** **shown** **in** **file**.
+
+---
+
+## Step 2 — Desk checklist for a real integration
+
+**What happens when you run this:**
+
+**No** **cluster** **required** **—** **list** **artifacts** **you** **must** **supply** **(public** **key**, **signed** **image**, **OIDC** **/ ** **KMS** **signer**, **admission** **policy)**.
+
+**Say:**
+
+**In** **production**, **this** **`Job` pattern** **moves** **into** **Kyverno** **`verifyImages`** **or** **policy** **controllers** **that** **reject** **unsigned** **images** **at** **admission**.
+
+**Run:**
+
+*(none)*
+
+**Expected:** **Written** **checklist** **for** **your** **environment**.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+**If** **you** **experimentally** **`kubectl apply`** **the** **`Job`**, **remove** **it** **afterward** **—** **it** **will** **fail** **without** **valid** **keys** **and** **signed** **images**.
+
+**Run:**
+
+```bash
+kubectl delete job mock-cosign-verification --ignore-not-found
+```
+
+**Expected:** **Job** **absent** **or** **deleted**.
+
+## Troubleshooting
+
+- **Job** **fails** **`ImagePullBackOff`** → **registry** **auth** **or** **rate** **limits**
+- **`verify` fails** → **wrong** **digest**, **wrong** **key**, **or** **unsigned** **image**
+- **Admission** **timeouts** → **optimize** **policy** **or** **cache** **verification** **results**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/verify-verification-job.yaml` | **Example** **`cosign verify`** **Job** **(placeholders)** |
+
+## Cleanup
+
+```bash
+kubectl delete job mock-cosign-verification --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[Track 6: Observability and reliability](../../06-Observability-and-Reliability/README.md)

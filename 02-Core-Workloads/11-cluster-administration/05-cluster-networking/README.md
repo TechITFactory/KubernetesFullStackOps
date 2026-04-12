@@ -1,4 +1,4 @@
-# 2.11.5 Cluster networking — teaching transcript
+# Cluster networking — teaching transcript
 
 ## Intro
 

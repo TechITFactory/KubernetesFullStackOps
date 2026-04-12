@@ -1,4 +1,4 @@
-# 2.11.8 Good practices for dynamic resource allocation as a cluster admin — teaching transcript
+# Good practices for dynamic resource allocation as a cluster admin — teaching transcript
 
 ## Intro
 

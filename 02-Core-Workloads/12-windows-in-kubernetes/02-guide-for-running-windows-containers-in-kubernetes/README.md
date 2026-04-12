@@ -1,4 +1,4 @@
-# 2.12.2 Guide for running Windows containers in Kubernetes — teaching transcript
+# Guide for running Windows containers in Kubernetes — teaching transcript
 
 ## Intro
 

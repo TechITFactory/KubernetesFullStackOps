@@ -1,4 +1,4 @@
-# 2.7 Configuration — teaching transcript
+# Configuration — teaching transcript
 
 ## Intro
 

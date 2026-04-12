@@ -1,4 +1,4 @@
-﻿# 02.1.7 Set up a High Availability etcd Cluster with kubeadm
+# Set up a High Availability etcd Cluster with kubeadm
 
 ## One-time setup
 
@@ -12,7 +12,7 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/02-production-environmen
 ## Flow of this lesson
 
 ```
-  plan etcd members + firewall  â†’  bootstrap each node  â†’  kubeadm cert phases  â†’  point init config at external etcd
+  plan etcd members + firewall  →  bootstrap each node  →  kubeadm cert phases  →  point init config at external etcd
 ```
 
 **Say:**
@@ -21,9 +21,9 @@ External etcd is optional; when I need it, certificates and peer URLs are planne
 
 ---
 
-> **Lab reality:** **External etcd** needs **dedicated etcd nodes** (typically 3+), correct **firewalling** for ports **2379/2380**, and a **certificate distribution** story. It is optional for most teams; **stacked etcd** via kubeadm (covered in 02.03 and 02.1.6) is the common default. If you are not building this topology now, skim the transcript for the mental model and jump to [02.1.8 â€” kubelet config](../06-kubeadm-kubelet-config/README.md).
+> **Lab reality:** **External etcd** needs **dedicated etcd nodes** (typically 3+), correct **firewalling** for ports **2379/2380**, and a **certificate distribution** story. It is optional for most teams; **stacked etcd** via kubeadm (covered in 02.03 and 02.1.6) is the common default. If you are not building this topology now, skim the transcript for the mental model and jump to [02.1.8 — kubelet config](../06-kubeadm-kubelet-config/README.md).
 
-- **Summary**: Plan and provision a dedicated external etcd cluster â€” endpoints, peer URLs, PKI paths â€” that kubeadm will use instead of managing etcd itself.
+- **Summary**: Plan and provision a dedicated external etcd cluster — endpoints, peer URLs, PKI paths — that kubeadm will use instead of managing etcd itself.
 - **Content**: What etcd is, why external etcd, kubeadm's role in PKI for external members, the planning manifest structure, bootstrap script.
 - **Lab**: Run `bootstrap-etcd-member.sh` on each etcd node, use kubeadm to generate etcd certificates, complete `external-etcd-cluster-plan.yaml` with real values, reference it in kubeadm init config.
 
@@ -32,15 +32,15 @@ External etcd is optional; when I need it, certificates and peer URLs are planne
 | Path | Purpose |
 |------|---------|
 | `scripts/bootstrap-etcd-member.sh` | Idempotent: installs etcd binary, creates data and PKI directories, prints next steps |
-| `yamls/external-etcd-cluster-plan.yaml` | Template for endpoint addresses, peer URLs, and PKI file locations â€” fill in before kubeadm init |
+| `yamls/external-etcd-cluster-plan.yaml` | Template for endpoint addresses, peer URLs, and PKI file locations — fill in before kubeadm init |
 
-**Teaching tip:** **What happens when you run this** for the script is in **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/bootstrap-etcd-member.sh`. Certificate phases and kubeadm init are manual after that â€” this lesson is planning-heavy.
+**Teaching tip:** **What happens when you run this** for the script is in **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/bootstrap-etcd-member.sh`. Certificate phases and kubeadm init are manual after that — this lesson is planning-heavy.
 
 ## Quick Start
 
 **What happens when you run this:**  
-- `bootstrap-etcd-member.sh` â€” on each etcd node: may download/install `etcd`/`etcdctl`, creates data + PKI dirs, prints **next steps** (does **not** start etcd or run kubeadm for you).  
-- Comment lines â€” reminders to run `kubeadm init phase certs ...`, distribute certs, edit `external-etcd-cluster-plan.yaml`, then point `ClusterConfiguration` at external etcd â€” **you** execute those separately.
+- `bootstrap-etcd-member.sh` — on each etcd node: may download/install `etcd`/`etcdctl`, creates data + PKI dirs, prints **next steps** (does **not** start etcd or run kubeadm for you).  
+- Comment lines — reminders to run `kubeadm init phase certs ...`, distribute certs, edit `external-etcd-cluster-plan.yaml`, then point `ClusterConfiguration` at external etcd — **you** execute those separately.
 
 ```bash
 # Run on each of the 3 dedicated etcd nodes (as root)
@@ -55,35 +55,35 @@ sudo ETCD_VERSION=v3.5.13 ./scripts/bootstrap-etcd-member.sh
 
 ---
 
-## Transcript â€” 10-Minute Lesson
+## Transcript — 10-Minute Lesson
 
-### [0:00â€“0:45] Hook
+### [0:00–0:45] Hook
 
 In the previous section we talked about why you might choose external etcd topology. Now we build it.
 
-This is the most operationally complex section in the kubeadm series. External etcd means running a separate distributed database cluster â€” provisioned, secured, and backed up independently of Kubernetes. Before you commit to this path, you should be confident that the operational complexity is worth it for your environment.
+This is the most operationally complex section in the kubeadm series. External etcd means running a separate distributed database cluster — provisioned, secured, and backed up independently of Kubernetes. Before you commit to this path, you should be confident that the operational complexity is worth it for your environment.
 
-If you chose stacked etcd â€” which is right for most teams â€” you can skip this section and move to 02.1.8.
+If you chose stacked etcd — which is right for most teams — you can skip this section and move to 02.1.8.
 
 ---
 
-### [0:45â€“2:30] What Is etcd?
+### [0:45–2:30] What Is etcd?
 
-**etcd** is a distributed key-value store â€” the database that holds every Kubernetes object. Every pod, every service, every ConfigMap, every Secret, every deployment â€” stored as key-value pairs in etcd.
+**etcd** is a distributed key-value store — the database that holds every Kubernetes object. Every pod, every service, every ConfigMap, every Secret, every deployment — stored as key-value pairs in etcd.
 
-Analogy: if Kubernetes is a city, etcd is the city hall archives â€” every decision, every record, every plan. If the archives burn down, the city doesn't stop functioning immediately (existing buildings still stand), but no new decisions can be recorded and nothing can be recovered.
+Analogy: if Kubernetes is a city, etcd is the city hall archives — every decision, every record, every plan. If the archives burn down, the city doesn't stop functioning immediately (existing buildings still stand), but no new decisions can be recorded and nothing can be recovered.
 
 **etcd characteristics:**
 - Written in Go. Single binary.
-- Uses the **Raft consensus algorithm** â€” a majority of members must agree on every write.
-- Stores data on disk â€” performance is dominated by disk write latency. Use SSDs, never HDDs or network-attached storage.
-- Supports TLS mutual authentication â€” every connection (client-to-server and peer-to-peer) must present a valid certificate.
+- Uses the **Raft consensus algorithm** — a majority of members must agree on every write.
+- Stores data on disk — performance is dominated by disk write latency. Use SSDs, never HDDs or network-attached storage.
+- Supports TLS mutual authentication — every connection (client-to-server and peer-to-peer) must present a valid certificate.
 
 In stacked etcd, kubeadm manages all of this. In external etcd, you manage it yourself.
 
 ---
 
-### [2:30â€“4:00] The Certificate Chain for External etcd
+### [2:30–4:00] The Certificate Chain for External etcd
 
 This is the most complex part of external etcd: each etcd member has multiple certificates, and the control-plane nodes need additional certificates to connect as clients.
 
@@ -103,34 +103,34 @@ kubeadm init phase certs apiserver-etcd-client
 ```
 
 Each set of certificates must be copied to the appropriate nodes:
-- etcd member certs â†’ to each etcd node
-- `apiserver-etcd-client` cert + etcd CA â†’ to each control-plane node
+- etcd member certs → to each etcd node
+- `apiserver-etcd-client` cert + etcd CA → to each control-plane node
 
 This certificate distribution is the operational risk that makes external etcd harder. Automate it using Ansible or a secrets manager (Vault, AWS Secrets Manager).
 
 ---
 
-### [4:00â€“5:15] The Bootstrap Script
+### [4:00–5:15] The Bootstrap Script
 
 `bootstrap-etcd-member.sh` runs on each dedicated etcd node:
 
 **What it does:**
-1. Checks if the target etcd version is already installed â€” skips download if yes (idempotency).
+1. Checks if the target etcd version is already installed — skips download if yes (idempotency).
 2. Downloads the etcd binary from the official GitHub release.
 3. Installs `etcd` and `etcdctl` to `/usr/local/bin/`.
-4. Creates the data directory (`/var/lib/etcd`) with permissions 700 â€” only root can read etcd data.
+4. Creates the data directory (`/var/lib/etcd`) with permissions 700 — only root can read etcd data.
 5. Creates the PKI directory (`/etc/kubernetes/pki/etcd`) where kubeadm will place the certificates.
-6. Prints the next steps â€” what to do after the binary is installed.
+6. Prints the next steps — what to do after the binary is installed.
 
 **What it does NOT do**: start etcd, configure the systemd unit, or generate certificates. Those steps require the certificate chain to be in place first.
 
-This separation is intentional â€” installing the binary is safe to do at any time. Starting etcd before certificates are ready causes immediate errors.
+This separation is intentional — installing the binary is safe to do at any time. Starting etcd before certificates are ready causes immediate errors.
 
 ---
 
-### [5:15â€“6:30] The Planning Manifest
+### [5:15–6:30] The Planning Manifest
 
-`external-etcd-cluster-plan.yaml` is not a Kubernetes YAML â€” it is a structured planning document (using YAML as a readable format) that you fill in before kubeadm init.
+`external-etcd-cluster-plan.yaml` is not a Kubernetes YAML — it is a structured planning document (using YAML as a readable format) that you fill in before kubeadm init.
 
 It records:
 - Etcd member names, IP addresses, and peer URLs
@@ -159,24 +159,24 @@ etcd:
 
 ---
 
-### [6:30â€“7:30] etcd Port Reference
+### [6:30–7:30] etcd Port Reference
 
 etcd uses two ports:
 
 | Port | Purpose |
 |------|---------|
-| 2379 | **Client port** â€” API server connects here to read/write cluster state |
-| 2380 | **Peer port** â€” etcd members connect to each other here for Raft replication |
+| 2379 | **Client port** — API server connects here to read/write cluster state |
+| 2380 | **Peer port** — etcd members connect to each other here for Raft replication |
 
 Both ports must be open between all etcd nodes (for peering) and from all control-plane nodes to etcd nodes (for client traffic). Firewall rules are a common source of external etcd failures.
 
 ---
 
-### [7:30â€“8:30] Operating etcd After Bootstrap
+### [7:30–8:30] Operating etcd After Bootstrap
 
 External etcd comes with ongoing operational responsibilities that stacked etcd handles automatically:
 
-**Backups** â€” etcd data must be backed up regularly:
+**Backups** — etcd data must be backed up regularly:
 ```bash
 etcdctl snapshot save /backup/etcd-snapshot-$(date +%Y%m%d).db \
   --cacert=/etc/kubernetes/pki/etcd/ca.crt \
@@ -184,44 +184,44 @@ etcdctl snapshot save /backup/etcd-snapshot-$(date +%Y%m%d).db \
   --key=/etc/kubernetes/pki/etcd/healthcheck-client.key
 ```
 
-**Monitoring** â€” watch etcd metrics at `:2379/metrics`. Key metrics: `etcd_server_has_leader` (must be 1), `etcd_disk_wal_fsync_duration_seconds` (must be low â€” high values indicate disk pressure).
+**Monitoring** — watch etcd metrics at `:2379/metrics`. Key metrics: `etcd_server_has_leader` (must be 1), `etcd_disk_wal_fsync_duration_seconds` (must be low — high values indicate disk pressure).
 
-**Certificate rotation** â€” etcd certificates expire (usually 1 year). Set a calendar reminder. Expired etcd certificates crash the entire cluster.
+**Certificate rotation** — etcd certificates expire (usually 1 year). Set a calendar reminder. Expired etcd certificates crash the entire cluster.
 
-**Defragmentation** â€” over time, etcd accumulates fragmented space. Run periodically:
+**Defragmentation** — over time, etcd accumulates fragmented space. Run periodically:
 ```bash
 etcdctl defrag --endpoints=https://127.0.0.1:2379 --cacert=... --cert=... --key=...
 ```
 
 ---
 
-### [8:30â€“9:30] Real World â€” Who Actually Uses External etcd
+### [8:30–9:30] Real World — Who Actually Uses External etcd
 
 External etcd is common in:
 
-- **Large clusters** (500+ nodes) â€” where etcd write throughput becomes a bottleneck and dedicated hardware is justified.
-- **Regulated industries** â€” where auditors require strict separation between the cluster control plane and the database that stores secrets.
-- **Managed service providers** â€” who run etcd as a separately SLA'd service across multiple customer clusters.
-- **Kubernetes distributions** â€” OpenShift, Rancher, and k0s all manage etcd separately from the control plane in their HA configurations.
+- **Large clusters** (500+ nodes) — where etcd write throughput becomes a bottleneck and dedicated hardware is justified.
+- **Regulated industries** — where auditors require strict separation between the cluster control plane and the database that stores secrets.
+- **Managed service providers** — who run etcd as a separately SLA'd service across multiple customer clusters.
+- **Kubernetes distributions** — OpenShift, Rancher, and k0s all manage etcd separately from the control plane in their HA configurations.
 
 For a team running a 20-node cluster for a single product, the overhead is rarely worth it. For a platform team running 10+ clusters serving dozens of product teams, external etcd with dedicated monitoring and backup pipelines is common practice.
 
 ---
 
-### [9:30â€“10:00] Recap
+### [9:30–10:00] Recap
 
 - **etcd** = the cluster database. Every Kubernetes object lives here. Losing it without a backup means losing the cluster.
 - **External etcd** = 3+ dedicated etcd nodes, provisioned and operated separately from Kubernetes.
-- **bootstrap-etcd-member.sh** â€” installs the binary, creates directories, idempotent. Does not start etcd.
-- **Certificate complexity** â€” the hardest part of external etcd. Use kubeadm's `phase certs` commands and automate distribution.
+- **bootstrap-etcd-member.sh** — installs the binary, creates directories, idempotent. Does not start etcd.
+- **Certificate complexity** — the hardest part of external etcd. Use kubeadm's `phase certs` commands and automate distribution.
 - **Ongoing ops**: backups, certificate rotation, defragmentation, monitoring. Budget time for these.
 
-Next: 02.1.8 â€” Configuring each kubelet in your cluster using kubeadm.
+Next: 02.1.8 — Configuring each kubelet in your cluster using kubeadm.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**  
-Read-only: nodes; filter `kube-system` for etcd/API server pods (or first lines) â€” sanity check after external etcd + CP are up.
+Read-only: nodes; filter `kube-system` for etcd/API server pods (or first lines) — sanity check after external etcd + CP are up.
 
 ```bash
 kubectl get nodes -o wide

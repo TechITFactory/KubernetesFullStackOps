@@ -1,4 +1,4 @@
-# 2.10.5 Pod Topology Spread Constraints — teaching transcript
+# Pod Topology Spread Constraints — teaching transcript
 
 ## Intro
 

@@ -1,12 +1,12 @@
-﻿# 2.3.3 Runtime Class â€” teaching transcript
+# Runtime Class — teaching transcript
 
 ## Intro
 
-**RuntimeClass** is a cluster-level object that maps a **name** you put on a Pod (`runtimeClassName`) to a **handler** string the nodeâ€™s container runtime understands. That handler might select **runc** (default Linux OCI runtime), or a sandboxed stack such as **gVisor** (`runsc`) or **Kata Containers** (VM-backed isolation), depending on what was installed and registered on the node. If you **omit** `runtimeClassName`, the pod uses the runtimeâ€™s **default handler** â€” there is nothing wrong with that; most clusters never set RuntimeClass at all. Scheduling a pod with a handler the node cannot satisfy produces **Failed** or **Pending** events you diagnose by comparing **RuntimeClass.spec.handler** to what containerd or CRI-O actually exposes (often visible in config on the node or via runtime docs).
+**RuntimeClass** is a cluster-level object that maps a **name** you put on a Pod (`runtimeClassName`) to a **handler** string the node’s container runtime understands. That handler might select **runc** (default Linux OCI runtime), or a sandboxed stack such as **gVisor** (`runsc`) or **Kata Containers** (VM-backed isolation), depending on what was installed and registered on the node. If you **omit** `runtimeClassName`, the pod uses the runtime’s **default handler** — there is nothing wrong with that; most clusters never set RuntimeClass at all. Scheduling a pod with a handler the node cannot satisfy produces **Failed** or **Pending** events you diagnose by comparing **RuntimeClass.spec.handler** to what containerd or CRI-O actually exposes (often visible in config on the node or via runtime docs).
 
-**Prerequisites:** [Part 1](../../../part-1-getting-started/README.md).
+**Prerequisites:** [Part 1](../../../01-Local-First-Operations/README.md).
 
-**Teaching tip:** This lesson creates a **cluster-scoped** `RuntimeClass` object. **Scheduling a Pod** with `runtimeClassName: sandboxed-runtime` only works if nodes advertise that handler â€” many labs have no such runtime; treat apply here as **API learning**, not guaranteed pod success.
+**Teaching tip:** This lesson creates a **cluster-scoped** `RuntimeClass` object. **Scheduling a Pod** with `runtimeClassName: sandboxed-runtime` only works if nodes advertise that handler — many labs have no such runtime; treat apply here as **API learning**, not guaranteed pod success.
 
 ## One-time setup
 
@@ -20,27 +20,27 @@ cd "$COURSE_DIR/02-Core-Workloads/03-containers/03-runtime-class"
 ## Flow of this lesson
 
 ```
-  apply RuntimeClass (name â†’ handler)  â†’  get / describe API object
-                        â”‚
-                        â–¼
+  apply RuntimeClass (name → handler)  →  get / describe API object
+                        │
+                        ▼
               (optional) compare to node runtime config / labels
 ```
 
 **Say:**
 
-We register a RuntimeClass in the API so you see the shape of the object; whether pods can use it depends on whether your nodesâ€™ runtimes actually implement handler `sandboxed`.
+We register a RuntimeClass in the API so you see the shape of the object; whether pods can use it depends on whether your nodes’ runtimes actually implement handler `sandboxed`.
 
 ---
 
-## Step 1 â€” Create the RuntimeClass object
+## Step 1 — Create the RuntimeClass object
 
 **What happens when you run this:**
 
-`kubectl apply -f yamls/runtimeclass-demo.yaml` creates cluster-scoped `RuntimeClass` `sandboxed-runtime` with `handler: sandboxed`. Handlers are opaque strings to Kubernetes â€” the **runtime** interprets them.
+`kubectl apply -f yamls/runtimeclass-demo.yaml` creates cluster-scoped `RuntimeClass` `sandboxed-runtime` with `handler: sandboxed`. Handlers are opaque strings to Kubernetes — the **runtime** interprets them.
 
 **Say:**
 
-In production, `sandboxed` might map to gVisor or Kata in containerdâ€™s config; here we only teach the API contract. With **no** `runtimeClassName` on a pod, kubelet uses the default runtime path (typically **runc** under containerd/CRI-O).
+In production, `sandboxed` might map to gVisor or Kata in containerd’s config; here we only teach the API contract. With **no** `runtimeClassName` on a pod, kubelet uses the default runtime path (typically **runc** under containerd/CRI-O).
 
 **Run:**
 
@@ -55,15 +55,15 @@ kubectl apply -f yamls/runtimeclass-demo.yaml
 
 ---
 
-## Step 2 â€” List RuntimeClass objects
+## Step 2 — List RuntimeClass objects
 
 **What happens when you run this:**
 
-`kubectl get runtimeclass` lists cluster-scoped RuntimeClass resources â€” read-only.
+`kubectl get runtimeclass` lists cluster-scoped RuntimeClass resources — read-only.
 
 **Say:**
 
-This is how you discover what names developers can place in `spec.runtimeClassName`. Empty output on a minimal cluster is normal before this lessonâ€™s apply.
+This is how you discover what names developers can place in `spec.runtimeClassName`. Empty output on a minimal cluster is normal before this lesson’s apply.
 
 **Run:**
 
@@ -77,11 +77,11 @@ Row for `sandboxed-runtime` with `HANDLER` column showing `sandboxed` (exact col
 
 ---
 
-## Step 3 â€” Describe the RuntimeClass
+## Step 3 — Describe the RuntimeClass
 
 **What happens when you run this:**
 
-`kubectl describe` prints spec details and events if any â€” read-only.
+`kubectl describe` prints spec details and events if any — read-only.
 
 **Say:**
 
@@ -99,11 +99,11 @@ kubectl describe runtimeclass sandboxed-runtime
 
 ---
 
-## Step 4 â€” Relate handlers to nodes (read-only cluster view)
+## Step 4 — Relate handlers to nodes (read-only cluster view)
 
 **What happens when you run this:**
 
-`kubectl get nodes -o wide` shows schedulable capacity â€” read-only. Full handler discovery is **node-local**: on a Linux node you inspect runtime config or use vendor docs; the API does not always list every OCI handler in one place.
+`kubectl get nodes -o wide` shows schedulable capacity — read-only. Full handler discovery is **node-local**: on a Linux node you inspect runtime config or use vendor docs; the API does not always list every OCI handler in one place.
 
 **Say:**
 
@@ -123,12 +123,12 @@ At least one node on a healthy lab cluster.
 
 ## Troubleshooting
 
-- **`FailedScheduling` with RuntimeClass-related message** â†’ handler not configured on any node runtime; fix node config or remove `runtimeClassName` from the pod
-- **Pod `RunContainerError` after schedule** â†’ handler name mismatch between RuntimeClass and runtime registration
-- **No `RuntimeClass` resource type** â†’ cluster version or feature gate; upgrade or enable APIs per your distribution
-- **Expecting gVisor/Kata but only runc works** â†’ install and register the alternate runtime on nodes before referencing it in RuntimeClass
-- **Omitting `runtimeClassName` and â€œwrongâ€ isolation** â†’ default handler is intentional; add RuntimeClass only when policy requires sandboxing
-- **`Forbidden` creating RuntimeClass** â†’ need cluster-scoped create RBAC
+- **`FailedScheduling` with RuntimeClass-related message** → handler not configured on any node runtime; fix node config or remove `runtimeClassName` from the pod
+- **Pod `RunContainerError` after schedule** → handler name mismatch between RuntimeClass and runtime registration
+- **No `RuntimeClass` resource type** → cluster version or feature gate; upgrade or enable APIs per your distribution
+- **Expecting gVisor/Kata but only runc works** → install and register the alternate runtime on nodes before referencing it in RuntimeClass
+- **Omitting `runtimeClassName` and “wrong” isolation** → default handler is intentional; add RuntimeClass only when policy requires sandboxing
+- **`Forbidden` creating RuntimeClass** → need cluster-scoped create RBAC
 
 ---
 
@@ -142,11 +142,11 @@ At least one node on a healthy lab cluster.
 
 Security and compliance teams ask for sandboxed workloads; RuntimeClass is the knob, but the handler must exist on the node or pods fail in confusing ways.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 
-RuntimeClass wide listing and nodes wide â€” read-only.
+RuntimeClass wide listing and nodes wide — read-only.
 
 **Say:**
 

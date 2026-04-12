@@ -1,10 +1,10 @@
-﻿# 2.1.2 Objects In Kubernetes â€” teaching transcript
+# Objects In Kubernetes — teaching transcript
 
 ## Intro
 
 Kubernetes **objects** are declarative records: metadata, spec, status, ownership, and lifecycle hooks (finalizers). This module breaks that down into teachable slices.
 
-**Prerequisites:** [Part 1](../../part-1-getting-started/README.md).
+**Prerequisites:** [Part 1](../../01-Local-First-Operations/README.md).
 
 **Teaching tip:** Run subsection lessons **in order** when possible; each has **What happens** before commands.
 
@@ -21,15 +21,15 @@ cd "$COURSE_DIR/02-Core-Workloads/01-overview/02-objects-in-kubernetes"
 
 ```
   Manifest YAML
-       â”‚
-       â–¼ kubectl apply
+       │
+       ▼ kubectl apply
   API server (validates + stores)
-       â”‚                    â–²
-       â–¼                    â”‚ reconcile
+       │                    ▲
+       ▼                    │ reconcile
      etcd            Controllers
   (desired state)
-       â”‚
-       â–¼
+       │
+       ▼
   Node agents (kubelet)
 ```
 
@@ -39,7 +39,7 @@ You write YAML, `kubectl apply` sends desired state, the API persists it in etcd
 
 ---
 
-## Step 1 â€” Open this module directory
+## Step 1 — Open this module directory
 
 **What happens when you run this:**
 
@@ -62,11 +62,11 @@ Path ending with `../02-objects-in-kubernetes`.
 
 ---
 
-## Step 2 â€” Start subsection 2.1.2.1 (reading step)
+## Step 2 — Start subsection 2.1.2.1 (reading step)
 
 **What happens when you run this:**
 
-You open the first child README â€” no API calls until that file tells you to run them.
+You open the first child README — no API calls until that file tells you to run them.
 
 **Say:**
 
@@ -84,16 +84,16 @@ You are reading lesson **2.1.2.1**.
 
 ## Troubleshooting
 
-- **`cd` fails** â†’ re-export `COURSE_DIR` to your actual clone path
-- **Skipping sub-lessons** â†’ later lessons assume labels, namespaces, and finalizers vocabulary from earlier files
-- **`kubectl apply` errors on shared cluster** â†’ you may lack RBAC; use a personal lab context
-- **Cleanup missed between videos** â†’ many lessons end with `kubectl delete -f`; run the Video close block before re-recording
+- **`cd` fails** → re-export `COURSE_DIR` to your actual clone path
+- **Skipping sub-lessons** → later lessons assume labels, namespaces, and finalizers vocabulary from earlier files
+- **`kubectl apply` errors on shared cluster** → you may lack RBAC; use a personal lab context
+- **Cleanup missed between videos** → many lessons end with `kubectl delete -f`; run the Video close block before re-recording
 
 ---
 
 ## Learning objective
 
-- Drew the apply â†’ API â†’ etcd â†’ controllers â†’ kubelet lifecycle in one diagram.
+- Drew the apply → API → etcd → controllers → kubelet lifecycle in one diagram.
 - Located every subsection README under `$COURSE_DIR` for sequential study.
 - Ran the cross-module labels demo using paths rooted at `$COURSE_DIR`.
 
@@ -101,7 +101,7 @@ You are reading lesson **2.1.2.1**.
 
 Objects are how Kubernetes stores intent. If metadata concepts are fuzzy, every workload and networking lesson feels like memorization instead of structure.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 

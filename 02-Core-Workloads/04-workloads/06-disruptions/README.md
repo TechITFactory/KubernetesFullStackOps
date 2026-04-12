@@ -1,4 +1,4 @@
-﻿# 2.4.1.5 Disruptions â€” teaching transcript
+# Disruptions — teaching transcript
 
 ## Intro
 
@@ -10,15 +10,15 @@
 
 ```
   Voluntary: drain / rollout / delete
-            â”‚
-            â”œâ”€â–º PDB allows? â”€â”€yesâ”€â”€â–º pods evicted/replaced
-            â”‚        â”‚
-            â”‚        no (ALLOWED DISRUPTIONS 0)
-            â”‚              â””â”€â”€â–º drain blocks / eviction denied
+            │
+            ├─► PDB allows? ──yes──► pods evicted/replaced
+            │        │
+            │        no (ALLOWED DISRUPTIONS 0)
+            │              └──► drain blocks / eviction denied
 
   Involuntary: node loss / OOM
-            â”‚
-            â””â”€â”€â–º PDB does not prevent loss; controllers recreate pods
+            │
+            └──► PDB does not prevent loss; controllers recreate pods
 ```
 
 **Say:**
@@ -38,10 +38,10 @@ A PDB set too strictly freezes node upgrades; one set too loosely takes out an e
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.4-workloads/01-pods/06-disruptions" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/02-Core-Workloads/04-workloads/06-disruptions" 2>/dev/null || cd .
 ```
 
-## Step 1 â€” Apply PDB demo and describe
+## Step 1 — Apply PDB demo and describe
 
 **What happens when you run this:**
 
@@ -49,7 +49,7 @@ The PDB is admitted; **status** may show **0** allowed until matching Pods exist
 
 **Say:**
 
-I explain **`minAvailable: 1`** means â€œnever voluntarily go to zero healthy pods matching this selector.â€
+I explain **`minAvailable: 1`** means “never voluntarily go to zero healthy pods matching this selector.”
 
 **Run:**
 
@@ -63,11 +63,11 @@ kubectl describe poddisruptionbudget disruption-demo
 
 ---
 
-## Step 2 â€” Dry-run drain on a node (read-only rehearsal)
+## Step 2 — Dry-run drain on a node (read-only rehearsal)
 
 **What happens when you run this:**
 
-**`--dry-run=server`** asks the API server to validate eviction without doing itâ€”shows PDB conflicts early.
+**`--dry-run=server`** asks the API server to validate eviction without doing it—shows PDB conflicts early.
 
 **Say:**
 
@@ -82,7 +82,7 @@ kubectl drain "$NODE" --dry-run=server --ignore-daemonsets 2>&1 | head -n 40 || 
 
 **Expected:** Output lists what would be evicted or errors if PDB / unsafe parameters; no actual drain.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 ```bash
 kubectl get pdb
@@ -91,12 +91,12 @@ kubectl get pods -l app=disruption-demo 2>/dev/null || true
 
 ## Troubleshooting
 
-- **Drain stuck with PDB** â†’ check **`kubectl describe pdb`** for **ALLOWED DISRUPTIONS 0**; relax budget temporarily or add replicas
-- **PDB never matches pods** â†’ fix **selector** labels on Pods
-- **Involuntary outage took quorum** â†’ PDB would not help; fix HA topology and storage
-- **`Forbidden` on eviction** â†’ RBAC for **`pods/eviction`**
-- **DaemonSet pods block drain** â†’ use **`--ignore-daemonsets`** consciously; know what stays on the node
-- **Dry-run differs from real drain** â†’ race conditions still possible; re-check PDB before production drain
+- **Drain stuck with PDB** → check **`kubectl describe pdb`** for **ALLOWED DISRUPTIONS 0**; relax budget temporarily or add replicas
+- **PDB never matches pods** → fix **selector** labels on Pods
+- **Involuntary outage took quorum** → PDB would not help; fix HA topology and storage
+- **`Forbidden` on eviction** → RBAC for **`pods/eviction`**
+- **DaemonSet pods block drain** → use **`--ignore-daemonsets`** consciously; know what stays on the node
+- **Dry-run differs from real drain** → race conditions still possible; re-check PDB before production drain
 
 ## Repo files (reference)
 

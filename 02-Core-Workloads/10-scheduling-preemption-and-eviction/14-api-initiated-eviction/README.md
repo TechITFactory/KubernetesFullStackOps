@@ -1,4 +1,4 @@
-# 2.10.14 API-initiated Eviction — teaching transcript
+# API-initiated Eviction — teaching transcript
 
 ## Intro
 

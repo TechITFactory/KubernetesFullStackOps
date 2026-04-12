@@ -1,4 +1,4 @@
-# 2.8.12 Hardening Guide — Authentication Mechanisms — teaching transcript
+# Hardening Guide — Authentication Mechanisms — teaching transcript
 
 ## Intro
 

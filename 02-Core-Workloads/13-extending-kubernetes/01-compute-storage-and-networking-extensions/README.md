@@ -1,4 +1,4 @@
-# 2.13.1 Compute, storage, and networking extensions — teaching transcript
+# Compute, storage, and networking extensions — teaching transcript
 
 ## Intro
 

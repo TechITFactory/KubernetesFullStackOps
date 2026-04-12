@@ -1,4 +1,4 @@
-# 2.11.16 API Priority and Fairness — teaching transcript
+# API Priority and Fairness — teaching transcript
 
 ## Intro
 

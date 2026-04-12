@@ -1,4 +1,4 @@
-# 2.10.11 Resource Bin Packing — teaching transcript
+# Resource Bin Packing — teaching transcript
 
 ## Intro
 

@@ -1,58 +1,125 @@
-# 03 Progressive Delivery
+# Progressive delivery — teaching transcript
 
-## Metadata
-- Duration: `20 minutes`
-- Difficulty: `Advanced`
-- Practical/Theory: `60/40`
-- Tested on Kubernetes: `v1.30`
+## Intro
 
-## Learning Objective
-By the end of this lesson, you will be able to:
-- Define Progressive Delivery and distinguish it from a basic Rolling Update.
-- Analyze an Argo Rollouts configuration for a Canary deployment.
+**A** **plain** **`Deployment`** **rolling** **update** **eventually** **replaces** **all** **Pods** **with** **the** **new** **template** **—** **if** **the** **new** **version** **is** **bad**, **you** **still** **commit** **full** **fleet** **risk** **unless** **you** **add** **gates** **outside** **the** **default** **controller**. **Progressive** **delivery** **(for** **example** **canary)** **shifts** **a** **small** **percentage** **of** **traffic** **to** **the** **new** **revision**, **pauses**, **and** **evaluates** **health** **before** **raising** **weight**. **Argo** **Rollouts** **implements** **`Rollout`** **resources** **that** **feel** **like** **`Deployment`** **YAML** **but** **carry** **`strategy.canary.steps`**. **The** **sample** **in** **`yamls/rollout.yaml`** **is** **read-first**; **`kubectl apply`** **requires** **the** **Argo** **Rollouts** **controller** **and** **CRDs**.
 
-## Why This Matters in Real Jobs
-A standard Kubernetes `Deployment` does a Rolling Update, shutting down old pods while bringing up new pods unconditionally. If the new code crashes on live API traffic, the rollout replaces everything anyway—causing a global outage. **Progressive Delivery** exposes the new code to a tiny fraction of traffic (e.g., 20%), pauses, and evaluates metrics before committing to 100%.
+**Prerequisites:** [4.2 GitOps with Argo CD](../02-gitops-with-argocd/README.md); **[Track** **2](../../02-Core-Workloads/README.md)** **(Deployments)**; **Argo** **Rollouts** **installed** **for** **optional** **apply**.
 
-## Concepts (Short Theory)
-- **Canary:** Releasing a new feature to a heavily restricted subset of live users before rolling out globally.
-- **Blue/Green:** Maintaining two completely independent environments (v1 and v2) and instantaneously flipping traffic from one to the other via a load balancer switch.
-- **Argo Rollouts:** A Kubernetes controller (similar to a Deployment) that natively implements advanced progressive traffic shaping.
+## Flow of this lesson
 
-## Visual: Canary Rollout Flow
-
-```mermaid
-flowchart LR
-    Start([v1 Live: 100%]) --> Step1[v2 Canary: 20%]
-    Step1 --> Wait[Observe Error Rates for 10s]
-    Wait -->|Healthy| Step2[v2 Canary: 40%]
-    Wait -->|Failing| Abort[Auto-Rollback to v1]
-    Step2 --> Done([v2 Live: 100%])
 ```
-
-## Lab: Step-by-Step Practical
-
-### Step 1 - Open directory
-**Run:**
-```bash
-cd "$COURSE_DIR/04-CICD-and-GitOps/03-progressive-delivery"
+  Rollout replaces Deployment for the workload shape
+              │
+              ▼
+  canary.steps: setWeight → pause → setWeight → pause → …
+              │
+              ▼
+  metrics / analysis (out of band) decide continue vs abort
 ```
-
-### Step 2 - Inspect a Progressive Canary Spec
-
-**What happens when you run this:**
-You examine an `argoproj.io/v1alpha1` Rollout resource. Notice that it looks identical to a Deployment, but adds a strict mathematical `strategy` matrix.
 
 **Say:**
-Argo Rollouts directly replaces the Deployment object. By looking closely at the YAML `steps:`, you can read the rollout plan exactly: Route 20% of traffic, pause for exactly 10 seconds, then expand to 40%. The rollout guarantees a catastrophic feature will never reach 100% of global users.
+
+**Read** **`setWeight: 20` then** **`pause: {duration: 10s}` as** **a** **script** **the** **controller** **executes** **—** **no** **magic**, **just** **state** **machine**.
+
+## Learning objective
+
+- **Contrast** **default** **`Deployment`** **rolling** **updates** **with** **canary-style** **progressive** **delivery**.
+- **Interpret** **`yamls/rollout.yaml`** **(`steps`**, **`selector`**, **`template`)**.
+
+## Why this matters
+
+**Big-bang** **rollouts** **turn** **one** **bad** **commit** **into** **a** **company-wide** **outage** **—** **progressive** **delivery** **buys** **time** **to** **observe** **real** **traffic**.
+
+## One-time setup
+
+```bash
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/04-CICD-and-GitOps/03-progressive-delivery" 2>/dev/null || cd .
+```
+
+## Step 1 — Inspect the Rollout spec
+
+**What happens when you run this:**
+
+You **study** **`argoproj.io/v1alpha1` `Rollout`** **with** **replica** **count**, **pod** **template**, **and** **canary** **steps**.
 
 **Run:**
+
 ```bash
 cat yamls/rollout.yaml
 ```
 
-## Expected Output
-You'll see a valid Kubernetes YAML demonstrating weights (`setWeight: 20`) and controlled logical pausing mechanisms. 
+**Expected:** **`metadata.name: canary-demo`**, **`replicas: 5`**, **`strategy.canary.steps`** **with** **`setWeight`** **and** **`pause`**, **`selector`** **`app: rollout-demo`**.
 
-## Next Lesson
-[04 Release Strategies](../04-release-strategies/README.md)
+---
+
+## Step 2 — Optional CRD check
+
+**What happens when you run this:**
+
+**Confirms** **whether** **`kubectl apply`** **would** **succeed** **on** **this** **cluster**.
+
+**Run:**
+
+```bash
+kubectl api-resources 2>/dev/null | grep -i rollout | head -n 10 || true
+```
+
+**Expected:** **`rollouts.argoproj.io`** **(or** **similar)** **when** **Rollouts** **is** **installed**.
+
+---
+
+## Step 3 — Optional apply (lab only)
+
+**What happens when you run this:**
+
+**Creates** **`canary-demo`** **Rollout** **in** **the** **current** **namespace** **—** **only** **if** **Step** **2** **showed** **the** **API**.
+
+**Say:**
+
+**Without** **Ingress** **or** **service** **mesh** **integration**, **traffic** **splitting** **may** **not** **do** **what** **students** **expect** **—** **call** **out** **that** **this** **YAML** **is** **the** **controller** **contract**, **not** **the** **whole** **prod** **topology**.
+
+**Run:**
+
+```bash
+kubectl apply -f yamls/rollout.yaml
+kubectl get rollout 2>/dev/null || kubectl get rollouts.argoproj.io 2>/dev/null || true
+```
+
+**Expected:** **Rollout** **object** **listed** **or** **apply** **error** **if** **CRD** **missing**.
+
+## Video close — fast validation
+
+**What happens when you run this:**
+
+**Removes** **the** **sample** **Rollout** **if** **you** **applied** **it**.
+
+**Run:**
+
+```bash
+kubectl delete -f yamls/rollout.yaml --ignore-not-found 2>/dev/null || true
+```
+
+**Expected:** **Resource** **gone** **or** **nothing** **to** **delete**.
+
+## Troubleshooting
+
+- **`no matches for kind "Rollout"`** → **install** **[Argo** **Rollouts](https://argo-rollouts.readthedocs.io/en/stable/installation/)**
+- **Canary** **traffic** **unchanged** → **need** **Service**, **Ingress**, **or** **mesh** **integration** **per** **Rollouts** **docs**
+- **Image** **pull** **errors** → **registry** **reachability** **or** **policy**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/rollout.yaml` | **Canary** **`Rollout`** **example** |
+
+## Cleanup
+
+```bash
+kubectl delete -f yamls/rollout.yaml --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[4.4 Release strategies](../04-release-strategies/README.md)

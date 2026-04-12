@@ -1,8 +1,8 @@
-﻿# 2.5.10 Networking on Windows â€” teaching transcript
+# Networking on Windows — teaching transcript
 
 ## Intro
 
-**Windows nodes** run a different **kubelet**, **container runtime** path, and historically **Windows-specific kube-proxy** implementations compared to Linux. **CNIs** must support **Windows data planes** (often **Overlay** or **host-gw** modes with **VXLAN**); mismatches between Linux and Windows **CNI** versions cause **partial** cluster networking. **Services** still exist with the same **API**, but packet paths differâ€”**NodePort**, **LoadBalancer**, and **Ingress** behavior should be validated per vendor matrix. **Linux-only** manifests (privileged **hostPath**, certain **securityContext** fields) will not schedule on Windowsâ€”separate DaemonSets per OS are common.
+**Windows nodes** run a different **kubelet**, **container runtime** path, and historically **Windows-specific kube-proxy** implementations compared to Linux. **CNIs** must support **Windows data planes** (often **Overlay** or **host-gw** modes with **VXLAN**); mismatches between Linux and Windows **CNI** versions cause **partial** cluster networking. **Services** still exist with the same **API**, but packet paths differ—**NodePort**, **LoadBalancer**, and **Ingress** behavior should be validated per vendor matrix. **Linux-only** manifests (privileged **hostPath**, certain **securityContext** fields) will not schedule on Windows—separate DaemonSets per OS are common.
 
 **Prerequisites:** [2.5.1 Service](../01-service/README.md).
 
@@ -10,10 +10,10 @@
 
 ```
   Hybrid cluster (Linux + Windows nodes)
-              â”‚
-              â”œâ”€â”€ Linux: standard CNI + kube-proxy path
-              â”‚
-              â””â”€â”€ Windows: Windows CNI + kube-proxy / datapath variant
+              │
+              ├── Linux: standard CNI + kube-proxy path
+              │
+              └── Windows: Windows CNI + kube-proxy / datapath variant
 ```
 
 **Say:**
@@ -28,15 +28,15 @@ I never assume a **DaemonSet** that mounts **/var/run** on Linux runs on Windows
 
 ## Why this matters
 
-Enterprise clusters often add a **Windows** pool for .NET workloadsâ€”Linux networking muscle memory misleads debugging.
+Enterprise clusters often add a **Windows** pool for .NET workloads—Linux networking muscle memory misleads debugging.
 
 ## One-time setup
 
 ```bash
-cd "$(git rev-parse --show-toplevel 2>/dev/null)/part-2-concepts/2.5-services-load-balancing-and-networking/10-networking-on-windows" 2>/dev/null || cd .
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/02-Core-Workloads/2.5-services-load-balancing-and-networking/10-networking-on-windows" 2>/dev/null || cd .
 ```
 
-## Step 1 â€” Apply notes ConfigMap
+## Step 1 — Apply notes ConfigMap
 
 **What happens when you run this:**
 
@@ -53,7 +53,7 @@ kubectl get cm -n kube-system 2-5-10-networking-on-windows-notes -o name
 
 ---
 
-## Step 2 â€” List nodes and OS images
+## Step 2 — List nodes and OS images
 
 **What happens when you run this:**
 
@@ -67,7 +67,7 @@ kubectl get nodes -o wide 2>/dev/null | head -n 20
 
 **Expected:** Linux-only labs show Linux nodes only; hybrid clusters show Windows rows.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 ```bash
 kubectl get nodes -l kubernetes.io/os=windows 2>/dev/null || kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.nodeInfo.operatingSystem}{"\n"}{end}'
@@ -75,12 +75,12 @@ kubectl get nodes -l kubernetes.io/os=windows 2>/dev/null || kubectl get nodes -
 
 ## Troubleshooting
 
-- **Pods stuck Pending on Windows** â†’ image OS/arch mismatch; use **Windows container** images
-- **Service reachable Linuxâ†’Windows inconsistent** â†’ CNI **overlay** misconfiguration
-- **kube-proxy Windows version skew** â†’ match **Kubernetes** minor with vendor guidance
-- **Ingress only hits Linux nodes** â†’ controller **DaemonSet** may lack Windows tolerationsâ€”by design
-- **HNS / VFP issues** â†’ Windows host networkingâ€”use platform support channels
-- **No Windows nodes** â†’ lesson is **preview** content; narration still valid
+- **Pods stuck Pending on Windows** → image OS/arch mismatch; use **Windows container** images
+- **Service reachable Linux→Windows inconsistent** → CNI **overlay** misconfiguration
+- **kube-proxy Windows version skew** → match **Kubernetes** minor with vendor guidance
+- **Ingress only hits Linux nodes** → controller **DaemonSet** may lack Windows tolerations—by design
+- **HNS / VFP issues** → Windows host networking—use platform support channels
+- **No Windows nodes** → lesson is **preview** content; narration still valid
 
 ## Repo files (reference)
 

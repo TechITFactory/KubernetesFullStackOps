@@ -1,4 +1,4 @@
-﻿# 02.1.8 Configuring each kubelet in your Cluster Using kubeadm
+# Configuring each kubelet in your Cluster Using kubeadm
 
 ## One-time setup
 
@@ -12,12 +12,12 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/02-production-environmen
 ## Flow of this lesson
 
 ```
-  edit KubeletConfiguration patch  â†’  apply via kubeadm drop-in  â†’  restart kubelet  â†’  verify effective config
+  edit KubeletConfiguration patch  →  apply via kubeadm drop-in  →  restart kubelet  →  verify effective config
 ```
 
 **Say:**
 
-Cgroup driver and eviction settings must match across nodes â€” kubeadmâ€™s drop-in directory is how I keep that uniform.
+Cgroup driver and eviction settings must match across nodes — kubeadm’s drop-in directory is how I keep that uniform.
 
 ---
 
@@ -32,13 +32,13 @@ Cgroup driver and eviction settings must match across nodes â€” kubeadmâ�
 | `scripts/apply-kubelet-config.sh` | Idempotent: writes kubelet config to the kubeadm drop-in directory, restarts kubelet |
 | `yamls/kubeletconfiguration.yaml` | KubeletConfiguration with cgroup driver, eviction thresholds, and authentication settings |
 
-**Teaching tip:** **WHAT THIS DOES WHEN YOU RUN IT** is in `scripts/apply-kubelet-config.sh`. The `kubectl proxy` + `curl configz` path exposes kubelet config over the API â€” use a real node name and stop proxy when done.
+**Teaching tip:** **WHAT THIS DOES WHEN YOU RUN IT** is in `scripts/apply-kubelet-config.sh`. The `kubectl proxy` + `curl configz` path exposes kubelet config over the API — use a real node name and stop proxy when done.
 
 ## Quick Start
 
 **What happens when you run this:**  
-- `apply-kubelet-config.sh` â€” copies `yamls/kubeletconfiguration.yaml` to `/var/lib/kubelet/config.yaml`, **restarts kubelet** (brief disruption risk on that node).  
-- `kubectl proxy` â€” starts local HTTP proxy to the API in background; `curl .../configz` reads kubeletâ€™s live config via the apiserver **node proxy** (replace `<node-name>`).
+- `apply-kubelet-config.sh` — copies `yamls/kubeletconfiguration.yaml` to `/var/lib/kubelet/config.yaml`, **restarts kubelet** (brief disruption risk on that node).  
+- `kubectl proxy` — starts local HTTP proxy to the API in background; `curl .../configz` reads kubelet’s live config via the apiserver **node proxy** (replace `<node-name>`).
 
 ```bash
 # Run as root on each node (control-plane and workers)
@@ -51,11 +51,11 @@ curl -s http://localhost:8001/api/v1/nodes/<node-name>/proxy/configz | python3 -
 
 ---
 
-## Transcript â€” 10-Minute Lesson
+## Transcript — 10-Minute Lesson
 
-### [0:00â€“0:45] Hook
+### [0:00–0:45] Hook
 
-We have configured the API server, the scheduler, the controller-manager, kube-proxy. There is one more component that runs on every single node in the cluster â€” control plane and workers alike â€” and it needs its own configuration: **kubelet**.
+We have configured the API server, the scheduler, the controller-manager, kube-proxy. There is one more component that runs on every single node in the cluster — control plane and workers alike — and it needs its own configuration: **kubelet**.
 
 Inconsistent kubelet configuration across nodes is a silent source of production problems. One node using `cgroupfs`, another using `systemd`. One node with aggressive eviction, another with none. Same cluster, wildly different behaviour.
 
@@ -63,22 +63,22 @@ This lesson is about making kubelet configuration uniform, explicit, and managed
 
 ---
 
-### [0:45â€“2:00] What kubelet Does
+### [0:45–2:00] What kubelet Does
 
 **kubelet** is the agent that runs on every node. It is the bridge between the Kubernetes control plane and the container runtime on that node.
 
 Its core responsibilities:
 1. **Watch the API server** for pod specifications assigned to this node.
 2. **Tell the runtime** to start, stop, or inspect containers.
-3. **Report node status** back to the API server â€” CPU, memory usage, conditions, events.
-4. **Run health checks** â€” liveness and readiness probes, restarting containers that fail.
-5. **Manage volumes** â€” mounting and unmounting storage as pods are created and deleted.
+3. **Report node status** back to the API server — CPU, memory usage, conditions, events.
+4. **Run health checks** — liveness and readiness probes, restarting containers that fail.
+5. **Manage volumes** — mounting and unmounting storage as pods are created and deleted.
 
-kubelet is not optional. Every node must run kubelet. If kubelet crashes, the node's pods become unmanaged â€” they keep running but cannot be updated, restarted, or removed by Kubernetes.
+kubelet is not optional. Every node must run kubelet. If kubelet crashes, the node's pods become unmanaged — they keep running but cannot be updated, restarted, or removed by Kubernetes.
 
 ---
 
-### [2:00â€“3:30] The kubeadm Drop-in Directory
+### [2:00–3:30] The kubeadm Drop-in Directory
 
 kubeadm manages kubelet configuration through a **drop-in directory**:
 
@@ -96,18 +96,18 @@ For `KubeletConfiguration`, kubeadm writes a config file that kubelet reads at s
 
 The `apply-kubelet-config.sh` script writes to this location. Any time you update this file and restart kubelet, the new settings take effect.
 
-This is how kubeadm intends configuration to be managed â€” not by editing kubelet's command-line flags in the systemd unit, but by writing a structured `KubeletConfiguration` manifest.
+This is how kubeadm intends configuration to be managed — not by editing kubelet's command-line flags in the systemd unit, but by writing a structured `KubeletConfiguration` manifest.
 
 ---
 
-### [3:30â€“5:00] Key KubeletConfiguration Fields
+### [3:30–5:00] Key KubeletConfiguration Fields
 
-**`cgroupDriver`** â€” must match the container runtime. Set to `systemd` on all modern Linux systems:
+**`cgroupDriver`** — must match the container runtime. Set to `systemd` on all modern Linux systems:
 ```yaml
 cgroupDriver: systemd
 ```
 
-**Eviction thresholds** â€” when a node runs low on resources, kubelet evicts pods to protect the node. Thresholds define when eviction starts:
+**Eviction thresholds** — when a node runs low on resources, kubelet evicts pods to protect the node. Thresholds define when eviction starts:
 ```yaml
 evictionHard:
   memory.available: "200Mi"
@@ -116,7 +116,7 @@ evictionHard:
 ```
 `200Mi` of available memory triggers pod eviction. This protects against OOM kills that crash the node. Without eviction, the kernel OOM killer may kill kubelet or system processes instead of pods.
 
-**`authentication` and `authorization`** â€” kubelet exposes an API on port 10250. Securing it:
+**`authentication` and `authorization`** — kubelet exposes an API on port 10250. Securing it:
 ```yaml
 authentication:
   anonymous:
@@ -128,14 +128,14 @@ authorization:
 ```
 `anonymous: false` + `Webhook` mode means every request to the kubelet API must be authenticated and authorised through the Kubernetes API server. Without this, anyone who can reach port 10250 on a node can exec into pods.
 
-**`maxPods`** â€” maximum pods schedulable on this node. Default is 110. Adjust based on node size:
+**`maxPods`** — maximum pods schedulable on this node. Default is 110. Adjust based on node size:
 ```yaml
 maxPods: 110
 ```
 
 ---
 
-### [5:00â€“6:15] The Apply Script
+### [5:00–6:15] The Apply Script
 
 `apply-kubelet-config.sh` reads the `KubeletConfiguration` YAML and places it in the correct location. The pattern should be familiar:
 
@@ -146,7 +146,7 @@ maxPods: 110
 - Restarts kubelet.
 - Waits and verifies kubelet is active.
 
-**Idempotency**: copying a config file and restarting kubelet is idempotent. The same config applied twice produces the same state. Restarting kubelet on a node causes a brief window where pods may be restarted â€” on a live cluster, drain the node first:
+**Idempotency**: copying a config file and restarting kubelet is idempotent. The same config applied twice produces the same state. Restarting kubelet on a node causes a brief window where pods may be restarted — on a live cluster, drain the node first:
 
 ```bash
 kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
@@ -158,7 +158,7 @@ In production, never restart kubelet on a running node without draining it first
 
 ---
 
-### [6:15â€“7:15] Applying to All Nodes
+### [6:15–7:15] Applying to All Nodes
 
 In a cluster of 10+ nodes, you do not run this script manually on each node. You use:
 
@@ -171,13 +171,13 @@ In a cluster of 10+ nodes, you do not run this script manually on each node. You
   notify: restart kubelet
 ```
 
-**kubeadm upgrade** â€” when you upgrade a cluster with kubeadm, it automatically applies the new KubeletConfiguration to each node as part of the upgrade process.
+**kubeadm upgrade** — when you upgrade a cluster with kubeadm, it automatically applies the new KubeletConfiguration to each node as part of the upgrade process.
 
-**DaemonSet** â€” some teams deploy a DaemonSet that writes kubelet configuration and handles restarts. This is a more advanced pattern suitable for clusters where dynamic node configuration is needed.
+**DaemonSet** — some teams deploy a DaemonSet that writes kubelet configuration and handles restarts. This is a more advanced pattern suitable for clusters where dynamic node configuration is needed.
 
 ---
 
-### [7:15â€“8:15] Verifying the Effective Configuration
+### [7:15–8:15] Verifying the Effective Configuration
 
 After applying, verify kubelet is actually running with the new settings. Do not assume the file write succeeded:
 
@@ -197,7 +197,7 @@ Also check node conditions:
 kubectl describe node <node-name> | grep -A5 Conditions
 ```
 
-`MemoryPressure: False`, `DiskPressure: False`, `PIDPressure: False` â€” these confirm eviction is not active and the node is healthy.
+`MemoryPressure: False`, `DiskPressure: False`, `PIDPressure: False` — these confirm eviction is not active and the node is healthy.
 
 ## Failure Troubleshooting Asset
 
@@ -205,7 +205,7 @@ kubectl describe node <node-name> | grep -A5 Conditions
 
 ---
 
-### [8:15â€“9:15] Real World â€” Drift and Configuration Management
+### [8:15–9:15] Real World — Drift and Configuration Management
 
 In production, kubelet configuration drift is a real operational risk. Without a systematic approach:
 
@@ -219,20 +219,20 @@ Tools like **Kubelet Configuration Controller** (part of the Node Feature Discov
 
 ---
 
-### [9:15â€“10:00] Recap
+### [9:15–10:00] Recap
 
 - **kubelet** = node agent. Runs on every node. Translates API server instructions into runtime actions.
 - **`/var/lib/kubelet/config.yaml`** = the KubeletConfiguration manifest. Managed by kubeadm, written by the apply script.
 - **Critical fields**: `cgroupDriver` (must match runtime), eviction thresholds (protect nodes from OOM), authentication mode (secure the kubelet API).
-- **Drain before applying** on live nodes â€” kubelet restart interrupts pod management briefly.
-- **Verify with `configz`** â€” do not assume file writes produced the expected running configuration.
+- **Drain before applying** on live nodes — kubelet restart interrupts pod management briefly.
+- **Verify with `configz`** — do not assume file writes produced the expected running configuration.
 
-Next: 02.1.9 â€” Dual-stack Support with kubeadm, for clusters that need to serve both IPv4 and IPv6 traffic.
+Next: 02.1.9 — Dual-stack Support with kubeadm, for clusters that need to serve both IPv4 and IPv6 traffic.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**  
-`systemctl is-active kubelet` on this host; `kubectl` reads first nodeâ€™s conditions slice from describe â€” read-only except systemd query.
+`systemctl is-active kubelet` on this host; `kubectl` reads first node’s conditions slice from describe — read-only except systemd query.
 
 ```bash
 sudo systemctl is-active kubelet

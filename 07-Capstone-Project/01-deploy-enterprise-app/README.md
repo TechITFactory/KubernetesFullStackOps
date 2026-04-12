@@ -1,55 +1,124 @@
-# 01 Deploy Enterprise Application
+# Deploy enterprise application — teaching transcript
 
-## Metadata
-- Duration: `30 minutes`
-- Difficulty: `Capstone`
-- Practical/Theory: `100/0`
-- Tested on Kubernetes: `v1.30`
+## Intro
 
-## Capstone Scenario Introduction
-Welcome to the Capstone Project. You are the newly hired Lead SRE for *CloudSphere Inc*. The company is launching a highly anticipated multi-tier application. Your mission: Architect, secure, scale, and defend this application using every skill you have learned across Tracks 1 through 6. 
+**You** **stand** **up** **a** **minimal** **two-tier** **demo** **in** **`capstone-prod`:** **`redis-master`** **(Deployment** **+** **ClusterIP** **Service)** **and** **`capstone-frontend`** **(nginx** **Deployment** **with** **`REDIS_HOST`**, **plus** **a** **`NodePort`** **Service)**. **The** **scenario** **frames** **you** **as** **lead** **SRE** **for** **a** **launch** **—** **the** **YAML** **is** **intentionally** **small** **so** **you** **can** **reason** **about** **every** **field**.
 
-## Learning Objective
-- Instantiate a multi-tier architectural foundation (Frontend + Backend Database) natively.
+**Prerequisites:** [Track 7 module](../README.md); [Track 2: Core workloads](../../02-Core-Workloads/README.md) **(Deployments** **and** **Services)**.
 
-## Lab: Step-by-Step Practical
+## Flow of this lesson
 
-### Step 1 - Open directory
-**Run:**
-```bash
-cd "$COURSE_DIR/07-Capstone-Project/01-deploy-enterprise-app"
+```
+  kubectl create namespace capstone-prod
+              │
+              ▼
+  apply redis-backend.yaml → apply python-frontend.yaml
+              │
+              ▼
+  kubectl get all -n capstone-prod
 ```
 
-### Step 2 - Create the Isolation Boundary
+**Say:**
 
-**What happens when you run this:**
-You mandate a strict operational namespace for the entire Capstone lifespan.
+**The** **frontend** **manifest** **filename** **says** **`python`** **but** **the** **container** **image** **is** **`nginx`** **—** **read** **the** **file** **before** **you** **narrate** **the** **stack**.
 
-**Run:**
+## Learning objective
+
+- **Create** **`capstone-prod`** **and** **apply** **both** **manifest** **files** **in** **order**.
+- **Verify** **Deployments**, **Services**, **and** **Pods** **reach** **Ready**.
+
+## Why this matters
+
+**Later** **phases** **assume** **`redis-master`** **DNS** **and** **`app: frontend` / `app: redis` labels** **—** **if** **7.1** **is** **wrong**, **everything** **else** **wobbles**.
+
+## One-time setup
+
 ```bash
-kubectl create namespace capstone-prod
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/07-Capstone-Project/01-deploy-enterprise-app" 2>/dev/null || cd .
 ```
 
-### Step 3 - Deploy the Architecture
+## Step 1 — Create the namespace
 
 **What happens when you run this:**
-We drop the Redis master persistent cache and wire the stateless Frontend deployment directly to it via internal DNS (`redis-master`).
+
+**Creates** **`capstone-prod`** **for** **all** **capstone** **objects**.
 
 **Run:**
+
+```bash
+kubectl create namespace capstone-prod 2>/dev/null || true
+kubectl get ns capstone-prod
+```
+
+**Expected:** **Namespace** **`capstone-prod`** **exists**.
+
+---
+
+## Step 2 — Deploy Redis and frontend
+
+**What happens when you run this:**
+
+**Applies** **Redis** **and** **frontend** **manifests** **into** **`capstone-prod`**.
+
+**Run:**
+
 ```bash
 kubectl apply -f yamls/redis-backend.yaml -n capstone-prod
 kubectl apply -f yamls/python-frontend.yaml -n capstone-prod
 ```
 
-### Step 4 - Verify the Boot Sequence
+**Expected:** **Deployments** **`redis-master`**, **`capstone-frontend`** **and** **matching** **Services** **created**.
+
+---
+
+## Step 3 — Verify
+
+**What happens when you run this:**
+
+**Lists** **core** **objects** **in** **the** **namespace**.
 
 **Run:**
+
 ```bash
 kubectl get all -n capstone-prod
+kubectl get endpoints -n capstone-prod
 ```
 
-## Expected Output
-A fully operational cluster mapping 1 Redis Pod to 2 active Nginx Frontend Pods, securely walled inside `capstone-prod`.
+**Expected:** **Pods** **Running**; **endpoints** **show** **IPs** **for** **`redis-master`** **and** **`capstone-frontend`**.
 
-## Next Mission
-[Phase 02: CI/CD and GitOps Integration](../02-cicd-gitops-flow/README.md)
+## Video close — fast validation
+
+**What happens when you run this:**
+
+**Optional** **full** **teardown** **between** **practice** **runs** **(deletes** **everything** **in** **the** **namespace** **including** **later** **labs)**.
+
+**Run:**
+
+```bash
+kubectl delete namespace capstone-prod --ignore-not-found
+```
+
+**Expected:** **Namespace** **terminating** **or** **gone**.
+
+## Troubleshooting
+
+- **`ImagePullBackOff`** → **registry** **policy**, **offline** **cluster**, **or** **wrong** **arch**
+- **No** **endpoints** **on** **Service** → **selector** **mismatch** **or** **Pods** **not** **Ready**
+- **NodePort** **unreachable** → **cloud** **SG**, **local** **firewall**, **or** **`minikube service`**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `yamls/redis-backend.yaml` | **Redis** **Deployment** **+** **`redis-master`** **Service** |
+| `yamls/python-frontend.yaml` | **Frontend** **Deployment** **+** **`capstone-frontend`** **Service** **(nginx)** |
+
+## Cleanup
+
+```bash
+kubectl delete namespace capstone-prod --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[7.2 CI/CD and GitOps flow](../02-cicd-gitops-flow/README.md)

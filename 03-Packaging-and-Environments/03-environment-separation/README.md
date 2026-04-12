@@ -1,4 +1,4 @@
-# 3.3 Environment separation — teaching transcript
+# Environment separation — teaching transcript
 
 ## Intro
 

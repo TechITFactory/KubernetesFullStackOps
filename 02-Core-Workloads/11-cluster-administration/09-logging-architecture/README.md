@@ -1,4 +1,4 @@
-# 2.11.9 Logging architecture — teaching transcript
+# Logging architecture — teaching transcript
 
 ## Intro
 

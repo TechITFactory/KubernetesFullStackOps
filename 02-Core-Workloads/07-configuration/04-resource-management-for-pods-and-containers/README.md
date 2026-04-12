@@ -1,4 +1,4 @@
-# 2.7.4 Resource Management for Pods and Containers — teaching transcript
+# Resource Management for Pods and Containers — teaching transcript
 
 ## Intro
 

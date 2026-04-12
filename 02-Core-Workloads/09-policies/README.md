@@ -1,4 +1,4 @@
-# 2.9 Policies — teaching transcript
+# Policies — teaching transcript
 
 ## Intro
 

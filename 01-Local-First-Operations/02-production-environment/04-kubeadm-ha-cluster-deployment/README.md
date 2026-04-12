@@ -1,4 +1,4 @@
-﻿# 02.1.6 Creating Highly Available Clusters with kubeadm
+# Creating Highly Available Clusters with kubeadm
 
 ## One-time setup
 
@@ -12,16 +12,16 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/02-production-environmen
 ## Flow of this lesson
 
 ```
-  init first CP + --upload-certs  â†’  CNI  â†’  join extra CPs  â†’  join workers  â†’  verify
+  init first CP + --upload-certs  →  CNI  →  join extra CPs  →  join workers  →  verify
 ```
 
 **Say:**
 
-Every additional control plane needs the load-balanced endpoint and the certificate key from the first init â€” I never improvise those strings.
+Every additional control plane needs the load-balanced endpoint and the certificate key from the first init — I never improvise those strings.
 
 ---
 
-> **Lab reality:** This lesson assumes **multiple control-plane nodes**, a **load balancer** (or stable VIP) in front of **TCP 6443**, and **root** on each node. Most learners finish [02.03 â€” Creating a cluster with kubeadm](../02-kubeadm-single-control-plane/README.md) first. If you only have a single VM or laptop lab, read [02.1.5 â€” HA topology options](../03-kubeadm-ha-topology-options/README.md) for the decision tree, then continue to [02.1.8 â€” kubelet config](../06-kubeadm-kubelet-config/README.md) without performing the multi-node joins below.
+> **Lab reality:** This lesson assumes **multiple control-plane nodes**, a **load balancer** (or stable VIP) in front of **TCP 6443**, and **root** on each node. Most learners finish [02.03 — Creating a cluster with kubeadm](../02-kubeadm-single-control-plane/README.md) first. If you only have a single VM or laptop lab, read [02.1.5 — HA topology options](../03-kubeadm-ha-topology-options/README.md) for the decision tree, then continue to [02.1.8 — kubelet config](../06-kubeadm-kubelet-config/README.md) without performing the multi-node joins below.
 
 - **Summary**: Bootstrap the first HA control-plane node with `--upload-certs`, then join additional control-plane nodes behind a shared load balancer.
 - **Content**: `--upload-certs` mechanics, joining control-plane vs worker nodes, verifying control-plane distribution, load balancer health checks.
@@ -32,17 +32,17 @@ Every additional control plane needs the load-balanced endpoint and the certific
 | Path | Purpose |
 |------|---------|
 | `scripts/init-ha-control-plane.sh` | Idempotent: runs `kubeadm init` with `--upload-certs`, skips if already initialised |
-| `yamls/ha-kubeadm-config.yaml` | HA cluster config â€” requires `controlPlaneEndpoint` set to your load balancer address |
+| `yamls/ha-kubeadm-config.yaml` | HA cluster config — requires `controlPlaneEndpoint` set to your load balancer address |
 
 **Teaching tip:** **What happens when you run this** matches **WHAT THIS DOES WHEN YOU RUN IT** in `scripts/init-ha-control-plane.sh`. Replace join placeholders with the real command from your `kubeadm init` output.
 
 ## Quick Start
 
 **What happens when you run this:**  
-1. `init-ha-control-plane.sh` â€” `kubeadm init --config ... --upload-certs` on first CP (skips if already init); uploads cert bundle for other CP joins.  
-2. `kubectl apply` CNI â€” same as single-CP path; required before extra nodes go Ready.  
-3. `kubeadm join ... --control-plane --certificate-key` â€” on **each additional** CP node; pulls certs, starts local control-plane static pods.  
-4. `kubectl get nodes -l ...control-plane` â€” lists control-plane nodes only (read-only).
+1. `init-ha-control-plane.sh` — `kubeadm init --config ... --upload-certs` on first CP (skips if already init); uploads cert bundle for other CP joins.  
+2. `kubectl apply` CNI — same as single-CP path; required before extra nodes go Ready.  
+3. `kubeadm join ... --control-plane --certificate-key` — on **each additional** CP node; pulls certs, starts local control-plane static pods.  
+4. `kubectl get nodes -l ...control-plane` — lists control-plane nodes only (read-only).
 
 ```bash
 # 1. On first control-plane node (as root)
@@ -51,7 +51,7 @@ sudo ./scripts/init-ha-control-plane.sh
 # 2. Install CNI on the first node (required before other nodes can join)
 kubectl apply -f <your-cni-manifest>
 
-# 3. Join additional control-plane nodes â€” use the '--control-plane' join command printed by init
+# 3. Join additional control-plane nodes — use the '--control-plane' join command printed by init
 # (run as root on each additional control-plane node)
 sudo kubeadm join api.mycompany.com:6443 \
   --token <token> \
@@ -65,21 +65,21 @@ kubectl get nodes -l node-role.kubernetes.io/control-plane
 
 ---
 
-## Transcript â€” 10-Minute Lesson
+## Transcript — 10-Minute Lesson
 
-### [0:00â€“0:45] Hook
+### [0:00–0:45] Hook
 
-We have chosen HA topology â€” stacked etcd, three control-plane nodes behind a load balancer. Now we execute it.
+We have chosen HA topology — stacked etcd, three control-plane nodes behind a load balancer. Now we execute it.
 
-The difference between a single control-plane init and an HA init is one flag and some join commands. But that one flag â€” `--upload-certs` â€” does important work. Understanding it means understanding how trust is established between control-plane nodes without manually copying certificate files.
+The difference between a single control-plane init and an HA init is one flag and some join commands. But that one flag — `--upload-certs` — does important work. Understanding it means understanding how trust is established between control-plane nodes without manually copying certificate files.
 
 ---
 
-### [0:45â€“2:00] The Certificate Problem
+### [0:45–2:00] The Certificate Problem
 
-A Kubernetes control plane is secured by certificates. The CA, the API server cert, the etcd certs, the front-proxy certs â€” all generated by kubeadm during init, all stored in `/etc/kubernetes/pki/`.
+A Kubernetes control plane is secured by certificates. The CA, the API server cert, the etcd certs, the front-proxy certs — all generated by kubeadm during init, all stored in `/etc/kubernetes/pki/`.
 
-When you add a second control-plane node, it also needs these certificates. But you do not want to copy private keys between nodes manually â€” that creates security exposure. You want an automated, time-limited mechanism.
+When you add a second control-plane node, it also needs these certificates. But you do not want to copy private keys between nodes manually — that creates security exposure. You want an automated, time-limited mechanism.
 
 **`--upload-certs`** solves this. When used with `kubeadm init`, it:
 1. Encrypts the certificates using a randomly generated key.
@@ -99,7 +99,7 @@ kubeadm init phase upload-certs --upload-certs
 
 ---
 
-### [2:00â€“3:30] The HA Init Script
+### [2:00–3:30] The HA Init Script
 
 `init-ha-control-plane.sh`:
 
@@ -123,9 +123,9 @@ This value is embedded in the certificates and used in kubeconfig files. It cann
 
 ---
 
-### [3:30â€“5:00] Reading the Init Output
+### [3:30–5:00] Reading the Init Output
 
-After `kubeadm init --upload-certs` completes, you see two join commands printed at the bottom. Read them carefully â€” they look similar but are different:
+After `kubeadm init --upload-certs` completes, you see two join commands printed at the bottom. Read them carefully — they look similar but are different:
 
 **Control-plane join command** (for additional CP nodes):
 ```
@@ -145,11 +145,11 @@ kubeadm join api.mycompany.com:6443 \
 ```
 No `--control-plane`, no `--certificate-key`.
 
-Using the wrong command on the wrong node type causes errors. Copy each command to a secure location immediately â€” the certificate key expires in 2 hours.
+Using the wrong command on the wrong node type causes errors. Copy each command to a secure location immediately — the certificate key expires in 2 hours.
 
 ---
 
-### [5:00â€“6:15] Joining Additional Control-Plane Nodes
+### [5:00–6:15] Joining Additional Control-Plane Nodes
 
 On each additional control-plane node (as root, after installing runtime + kubeadm):
 
@@ -168,11 +168,11 @@ This node:
 4. Starts API server, controller-manager, scheduler.
 5. Appears in `kubectl get nodes` as a control-plane node.
 
-Run this on nodes 2 and 3 sequentially (not simultaneously â€” etcd needs to establish quorum one member at a time). Wait for each node to show `Ready` before joining the next.
+Run this on nodes 2 and 3 sequentially (not simultaneously — etcd needs to establish quorum one member at a time). Wait for each node to show `Ready` before joining the next.
 
 ---
 
-### [6:15â€“7:15] Verifying HA is Working
+### [6:15–7:15] Verifying HA is Working
 
 ```bash
 # All three control-plane nodes visible
@@ -190,7 +190,7 @@ You should see three etcd members, all with `isLearner=false` and status `starte
 
 ---
 
-### [7:15â€“8:30] Load Balancer Health Checks
+### [7:15–8:30] Load Balancer Health Checks
 
 Configure your load balancer to health-check each control-plane node at `HTTPS :6443/healthz`. The API server returns `200 OK` when healthy.
 
@@ -209,7 +209,7 @@ If this fails, the load balancer is not reaching any API server. Check security 
 
 ---
 
-### [8:30â€“9:30] Real World â€” HA in Production
+### [8:30–9:30] Real World — HA in Production
 
 Production HA control planes commonly look like:
 
@@ -217,26 +217,26 @@ Production HA control planes commonly look like:
 - **GCP**: 3 Compute Engine instances across 3 zones, behind an internal TCP load balancer.
 - **On-premise**: 3 VMs across 3 physical hosts (no two on the same hypervisor), HAProxy with keepalived managing a VIP.
 
-The key pattern in all cases: **spread control-plane nodes across independent failure domains** â€” different AZs, different racks, different physical hosts. Three nodes on the same physical machine gives you redundancy in software but not in hardware.
+The key pattern in all cases: **spread control-plane nodes across independent failure domains** — different AZs, different racks, different physical hosts. Three nodes on the same physical machine gives you redundancy in software but not in hardware.
 
 For etcd specifically: etcd is sensitive to disk latency. In cloud environments, use **dedicated local SSD volumes** for etcd data, not network-attached storage. A slow disk can cause etcd leader elections and cluster instability even when all nodes are healthy.
 
 ---
 
-### [9:30â€“10:00] Recap
+### [9:30–10:00] Recap
 
 - **`--upload-certs`** = encrypts certificates, uploads to kube-system Secret, enables secure cert distribution to joining control-plane nodes. Expires in 2 hours.
 - **Two join commands**: control-plane join (with `--control-plane --certificate-key`) and worker join (without). Do not mix them up.
-- **Join sequentially** â€” wait for each CP node to be `Ready` before joining the next. etcd needs to stabilise.
+- **Join sequentially** — wait for each CP node to be `Ready` before joining the next. etcd needs to stabilise.
 - **Verify etcd quorum** with `etcdctl member list` after all three nodes join.
-- **Load balancer health checks** at `/healthz:6443` â€” required for automatic failover.
+- **Load balancer health checks** at `/healthz:6443` — required for automatic failover.
 
-Next: 02.1.7 â€” Set up a High Availability etcd Cluster with kubeadm, for teams choosing the external etcd topology.
+Next: 02.1.7 — Set up a High Availability etcd Cluster with kubeadm, for teams choosing the external etcd topology.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**  
-Nodes wide output; control-plane-related `kube-system` pods (or fallback head); `kubernetes` Service endpoints â€” all read-only HA health snapshot.
+Nodes wide output; control-plane-related `kube-system` pods (or fallback head); `kubernetes` Service endpoints — all read-only HA health snapshot.
 
 ```bash
 kubectl get nodes -o wide

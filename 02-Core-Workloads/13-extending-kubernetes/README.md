@@ -1,4 +1,4 @@
-# 2.13 Extending Kubernetes — teaching transcript
+# Extending Kubernetes — teaching transcript
 
 ## Intro
 

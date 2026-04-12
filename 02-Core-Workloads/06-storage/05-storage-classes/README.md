@@ -1,4 +1,4 @@
-# 2.6.5 Storage Classes — teaching transcript
+# Storage Classes — teaching transcript
 
 ## Intro
 

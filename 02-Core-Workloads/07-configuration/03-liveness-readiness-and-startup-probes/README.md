@@ -1,4 +1,4 @@
-# 2.7.3 Liveness, Readiness, and Startup Probes — teaching transcript
+# Liveness, Readiness, and Startup Probes — teaching transcript
 
 ## Intro
 

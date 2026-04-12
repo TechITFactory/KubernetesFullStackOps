@@ -1,4 +1,4 @@
-﻿# 001 containerd â€” teaching transcript
+# 001 containerd — teaching transcript
 
 ## Intro
 
@@ -22,7 +22,7 @@ cd "$COURSE_DIR/C:/src/K8sOps/01-Local-First-Operations/02-production-environmen
 ## Flow of this lesson
 
 ```
-  chmod scripts  â†’  sudo install   â†’  systemctl +    â†’  socket ls   â†’  crictl info  â†’  kubeadm YAML
+  chmod scripts  →  sudo install   →  systemctl +    →  socket ls   →  crictl info  →  kubeadm YAML
                     containerd         status                          grep           recap
 ```
 
@@ -32,10 +32,10 @@ We make the install script executable, run the installer as root, confirm system
 
 ---
 
-## Step 1 â€” Open this lesson in the terminal
+## Step 1 — Open this lesson in the terminal
 
 **What happens when you run this:**  
-`cd` into the lesson; `pwd` confirms; `chmod +x scripts/*.sh` makes install script runnable â€” no packages installed yet.
+`cd` into the lesson; `pwd` confirms; `chmod +x scripts/*.sh` makes install script runnable — no packages installed yet.
 
 **Say:**  
 I run install scripts from this folder so `./scripts` resolves.
@@ -53,10 +53,10 @@ Path ends with `001-containerd`.
 
 ---
 
-## Step 2 â€” Install containerd (root, idempotent)
+## Step 2 — Install containerd (root, idempotent)
 
 **What happens when you run this:**  
-`sudo ./scripts/install-containerd.sh` runs the script as root: `apt` install/patch config/enable systemd for containerd â€” see script header for the exact sequence.
+`sudo ./scripts/install-containerd.sh` runs the script as root: `apt` install/patch config/enable systemd for containerd — see script header for the exact sequence.
 
 **Say:**  
 The script installs packages, generates or patches config (`SystemdCgroup = true`), and restarts **containerd**. Safe to run again on the same node.
@@ -72,14 +72,14 @@ Script completes without error; no duplicate-install explosions on re-run.
 
 ---
 
-## Step 3 â€” Service is up
+## Step 3 — Service is up
 
 **What happens when you run this:**  
-`systemctl is-active` prints `active` or not; `systemctl status` shows unit state and recent log lines â€” read-only aside from systemdâ€™s status query.
+`systemctl is-active` prints `active` or not; `systemctl status` shows unit state and recent log lines — read-only aside from systemd’s status query.
 
 **Say:**
 
-I confirm the unit is active before I trust any socket or `crictl` output â€” a stopped daemon explains both failures at once.
+I confirm the unit is active before I trust any socket or `crictl` output — a stopped daemon explains both failures at once.
 
 **Run:**
 
@@ -93,10 +93,10 @@ sudo systemctl status containerd --no-pager
 
 ---
 
-## Step 4 â€” CRI socket exists
+## Step 4 — CRI socket exists
 
 **What happens when you run this:**  
-`ls -la` shows the Unix socket file metadata â€” confirms containerd is listening on the expected path.
+`ls -la` shows the Unix socket file metadata — confirms containerd is listening on the expected path.
 
 **Say:**  
 kubelet will dial this socket. Wrong path = node never becomes Ready later.
@@ -112,10 +112,10 @@ Socket file present.
 
 ---
 
-## Step 5 â€” CRI responds
+## Step 5 — CRI responds
 
 **What happens when you run this:**  
-`crictl ... info` calls the CRI over the socket and prints JSON runtime info â€” proves the API answers; does not start a workload.
+`crictl ... info` calls the CRI over the socket and prints JSON runtime info — proves the API answers; does not start a workload.
 
 **Run:**
 
@@ -124,14 +124,14 @@ sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock info
 ```
 
 **Expected:**  
-JSON with healthy runtime info (no â€œconnection refusedâ€).
+JSON with healthy runtime info (no “connection refused”).
 
 ---
 
-## Step 6 â€” Match kubeadm to this socket
+## Step 6 — Match kubeadm to this socket
 
 **What happens when you run this:**  
-`grep` searches the example YAML for `criSocket` lines â€” read-only; shows what youâ€™ll pass to kubeadm later.
+`grep` searches the example YAML for `criSocket` lines — read-only; shows what you’ll pass to kubeadm later.
 
 **Say:**  
 When you bootstrap with kubeadm, node registration must use the **same** socket. This repo ships an example manifest.
@@ -147,14 +147,14 @@ Line showing `unix:///run/containerd/containerd.sock` (or equivalent).
 
 ---
 
-## Step 7 â€” Fast recap
+## Step 7 — Fast recap
 
 **What happens when you run this:**  
-`systemctl status` again for sanity; `crictl version` prints client/server CRI versions â€” still verification only.
+`systemctl status` again for sanity; `crictl version` prints client/server CRI versions — still verification only.
 
 **Say:**
 
-Last pass: daemon still healthy, CRI client and server versions print â€” that is what kubelet will rely on after join.
+Last pass: daemon still healthy, CRI client and server versions print — that is what kubelet will rely on after join.
 
 **Run:**
 
@@ -170,23 +170,23 @@ Service OK; `crictl` prints client/server versions.
 
 ## Troubleshooting
 
-- **`sudo: install-containerd.sh: command not found`** â†’ run Step 1 `cd` and `chmod +x scripts/*.sh`
-- **`crictl: rpc error: code = Unavailable desc = transport is closing`** â†’ `sudo systemctl restart containerd`; re-check the socket path
-- **`cgroup` or `systemd` errors when kubelet starts** â†’ confirm `SystemdCgroup = true` in containerdâ€™s config and kubelet `cgroupDriver: systemd`
-- **`no such file or directory` for `/run/containerd/containerd.sock`** â†’ daemon not running or different socket path for your distro â€” compare with distro docs
-- **`permission denied` on the socket without sudo** â†’ use `sudo crictl` on lab nodes unless your org configures group access
+- **`sudo: install-containerd.sh: command not found`** → run Step 1 `cd` and `chmod +x scripts/*.sh`
+- **`crictl: rpc error: code = Unavailable desc = transport is closing`** → `sudo systemctl restart containerd`; re-check the socket path
+- **`cgroup` or `systemd` errors when kubelet starts** → confirm `SystemdCgroup = true` in containerd’s config and kubelet `cgroupDriver: systemd`
+- **`no such file or directory` for `/run/containerd/containerd.sock`** → daemon not running or different socket path for your distro — compare with distro docs
+- **`permission denied` on the socket without sudo** → use `sudo crictl` on lab nodes unless your org configures group access
 
 ---
 
 ## Learning objective
 
-- Installed containerd, verified the socket and `crictl`, and aligned kubeadmâ€™s `criSocket` with the endpoint kubelet must use.
+- Installed containerd, verified the socket and `crictl`, and aligned kubeadm’s `criSocket` with the endpoint kubelet must use.
 
 ## Why this matters
 
 Wrong runtime or cgroup mismatch is a top reason fresh kubeadm nodes stay **NotReady**.
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
 
@@ -194,7 +194,7 @@ Read-only: systemd active check and `crictl info` against the containerd socket.
 
 **Say:**
 
-I close with the same pair as the module READMEâ€™s containerd block â€” active unit, JSON from `crictl info`.
+I close with the same pair as the module README’s containerd block — active unit, JSON from `crictl info`.
 
 **Run:**
 

@@ -1,64 +1,137 @@
-# 05 The Final Defense
+# The final defense — teaching transcript
 
-## Metadata
-- Duration: `20 minutes`
-- Difficulty: `Capstone Boss Fight`
+## Intro
 
-## Learning Objective
-- Rapidly diagnose a live production outage and salvage the architecture under high duress.
+**A** **scripted** **“chaos”** **step** **deletes** **`Service/redis-master`** **in** **`capstone-prod`**, **simulating** **accidental** **destruction** **of** **the** **data** **plane** **network** **front** **door**. **Your** **job** **is** **to** **notice** **missing** **endpoints**, **re-apply** **the** **known-good** **manifest** **from** **[7.1](../01-deploy-enterprise-app/README.md)**, **and** **confirm** **traffic** **paths** **recover**. **Requires** **`kubectl`** **configured** **and** **`bash`**.
 
-## The Mission
-A junior engineer ran a rogue script on production! The application API is completely unreachable. 
-You must isolate the outage, observe the broken logs, and execute a fix scenario. 
+**Prerequisites:** [7.4 Observability and scaling](../04-observability-verification/README.md); **[7.1](../01-deploy-enterprise-app/README.md)** **manifests** **still** **on** **disk**.
 
-## Lab: Step-by-Step Practical
+## Flow of this lesson
 
-### Step 1 - Open directory
-**Run:**
-```bash
-cd "$COURSE_DIR/07-Capstone-Project/05-final-defense"
+```
+  chaos-monkey.sh → kubectl delete service redis-master
+              │
+              ▼
+  kubectl get all / endpoints → missing Service
+              │
+              ▼
+  kubectl apply redis-backend.yaml → Service restored
 ```
 
-### Step 2 - Watch Production Burn
+**Say:**
 
-**What happens when you run this:**
-This script simulates an unrecoverable structural damage to the networking tier.
+**Real** **chaos** **engineering** **needs** **blast** **radius** **controls** **and** **approval** **—** **this** **script** **is** **a** **toy** **for** **one** **namespace** **only**.
 
-**Run:**
+## Learning objective
+
+- **Execute** **`scripts/chaos-monkey.sh`**, **diagnose** **with** **`kubectl`**, **and** **restore** **`redis-master`** **from** **the** **baseline** **YAML** **in** **[7.1](../01-deploy-enterprise-app/README.md)**.
+
+## Why this matters
+
+**Incidents** **are** **timed** **tests** **of** **whether** **your** **artifacts** **and** **runbooks** **actually** **work** **—** **not** **whether** **you** **memorized** **slides**.
+
+## One-time setup
+
 ```bash
-./scripts/chaos-monkey.sh
+cd "$(git rev-parse --show-toplevel 2>/dev/null)/07-Capstone-Project/05-final-defense" 2>/dev/null || cd .
 ```
 
-### Step 3 - Triage the Damage
+## Step 1 — Run the chaos script
 
 **What happens when you run this:**
-You scan the namespaces to identify exactly what was deleted.
+
+**Deletes** **`service/redis-master`** **in** **`capstone-prod`** **(silent** **on** **failure** **if** **already** **gone)**.
 
 **Run:**
+
+```bash
+bash scripts/chaos-monkey.sh
+```
+
+**Expected:** **Console** **messages** **from** **script**; **`redis-master`** **Service** **absent**.
+
+---
+
+## Step 2 — Triage
+
+**What happens when you run this:**
+
+**Shows** **whether** **Pods** **still** **run** **while** **the** **Service** **is** **missing**.
+
+**Run:**
+
 ```bash
 kubectl get all -n capstone-prod
+kubectl get endpoints -n capstone-prod
 ```
-*Wait... the pods are up, but `service/redis-master` is structurally missing! Zero data can flow!*
 
-### Step 4 - The Final Fix
+**Expected:** **Redis** **Pods** **may** **still** **exist** **;** **`redis-master`** **endpoints** **empty** **or** **missing**.
+
+---
+
+## Step 3 — Restore from baseline YAML
 
 **What happens when you run this:**
-As the SRE, you execute an immediate cluster patch, referencing the original YAML baseline artifact from Phase 1 to reconstitute the database network bridge.
+
+**Re-applies** **the** **Redis** **Deployment** **and** **Service** **from** **phase** **7.1**.
 
 **Run:**
+
 ```bash
 kubectl apply -f ../01-deploy-enterprise-app/yamls/redis-backend.yaml -n capstone-prod
 ```
 
-### Step 5 - Validate Perfection
+**Expected:** **`redis-master`** **Service** **recreated** **;** **Deployment** **unchanged** **or** **reconciled**.
+
+---
+
+## Step 4 — Validate endpoints
+
+**What happens when you run this:**
+
+**Confirms** **the** **Service** **again** **has** **backend** **Pod** **IPs**.
 
 **Run:**
+
 ```bash
-kubectl get endpoints -n capstone-prod
+kubectl get endpoints redis-master -n capstone-prod -o wide
 ```
-*The endpoint is mapped. The traffic is flowing. You saved the company.*
 
-## Conclusion
-Congratulations. You started this course pulling a basic Minikube image, and you ended it by designing, securing, observing, auto-scaling, and aggressively repairing a multi-tier microservice architecture in a fully isolated namespace.
+**Expected:** **Non-empty** **subsets** **with** **Redis** **Pod** **IPs**.
 
-**You are undeniably ready for production operations.**
+## Video close — fast validation
+
+**What happens when you run this:**
+
+**Optional** **full** **namespace** **delete** **when** **you** **are** **done** **with** **the** **entire** **capstone**.
+
+**Run:**
+
+```bash
+kubectl delete namespace capstone-prod --ignore-not-found
+```
+
+**Expected:** **Namespace** **removed**.
+
+## Troubleshooting
+
+- **`chaos-monkey.sh` permission** **denied** → **`chmod +x scripts/chaos-monkey.sh`** **or** **`bash scripts/chaos-monkey.sh`**
+- **Wrong** **context** → **`kubectl config current-context`**
+- **Apply** **still** **no** **endpoints** → **Pods** **not** **Ready** **or** **selector** **mismatch**
+
+## Repo files (reference)
+
+| Path | Purpose |
+|------|---------|
+| `scripts/chaos-monkey.sh` | **Deletes** **`redis-master`** **Service** **(lab** **chaos)** |
+
+## Cleanup
+
+```bash
+kubectl apply -f ../01-deploy-enterprise-app/yamls/redis-backend.yaml -n capstone-prod 2>/dev/null || true
+kubectl delete namespace capstone-prod --ignore-not-found 2>/dev/null || true
+```
+
+## Next
+
+[Course overview and further tracks](../../README.md)

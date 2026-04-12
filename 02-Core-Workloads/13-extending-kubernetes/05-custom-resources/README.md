@@ -1,4 +1,4 @@
-# 2.13.2.1 Custom resources — teaching transcript
+# Custom resources — teaching transcript
 
 ## Intro
 

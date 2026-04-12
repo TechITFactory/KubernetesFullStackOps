@@ -1,4 +1,4 @@
-# 2.10.12 Pod Priority and Preemption — teaching transcript
+# Pod Priority and Preemption — teaching transcript
 
 ## Intro
 

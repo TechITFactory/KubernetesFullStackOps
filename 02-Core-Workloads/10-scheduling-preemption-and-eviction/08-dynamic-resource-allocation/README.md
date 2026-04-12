@@ -1,4 +1,4 @@
-# 2.10.8 Dynamic Resource Allocation — teaching transcript
+# Dynamic Resource Allocation — teaching transcript
 
 ## Intro
 

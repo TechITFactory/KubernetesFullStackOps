@@ -1,4 +1,4 @@
-# 2.13.1.2 Device plugins — teaching transcript
+# Device plugins — teaching transcript
 
 ## Intro
 

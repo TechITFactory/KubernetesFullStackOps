@@ -1,4 +1,4 @@
-# 2.6.10 CSI Volume Cloning — teaching transcript
+# CSI Volume Cloning — teaching transcript
 
 ## Intro
 

@@ -1,14 +1,14 @@
-﻿# 2.1.4 The kubectl Command-Line Tool â€” teaching transcript
+# The kubectl Command-Line Tool — teaching transcript
 
 ## Intro
 
-`kubectl` is the tool you'll use more than any other in this course â€” and most of your career as a Kubernetes operator.
+`kubectl` is the tool you'll use more than any other in this course — and most of your career as a Kubernetes operator.
 
 It's not just a way to talk to the cluster. It's how you inspect state, debug problems, apply changes safely, and understand what's running. The difference between someone who knows `kubectl get pods` and someone who knows `kubectl get pods -o jsonpath`, `kubectl rollout status`, `kubectl exec`, and `kubectl debug` is the difference between knowing the basics and being productive under pressure.
 
 This lesson covers the foundational habits: always knowing which cluster you're talking to before you change anything, using output formats effectively, and applying manifests with the practice namespace.
 
-**Prerequisites:** [Part 1](../../part-1-getting-started/README.md).
+**Prerequisites:** [Part 1](../../01-Local-First-Operations/README.md).
 
 ## One-time setup
 
@@ -23,17 +23,17 @@ cd "$COURSE_DIR/02-Core-Workloads/01-overview/14-the-kubectl-command-line-tool"
 
 ```
   [ Step 1 ]                    [ Step 2 ]
-  kubectl-essentials.sh  â†’      Apply practice
+  kubectl-essentials.sh  →      Apply practice
   (context, formatting)         namespace
 ```
 
 **Say:**
 
-Two steps â€” run the essentials script to see context, namespaces, and output formats in action, then apply the practice namespace manifest.
+Two steps — run the essentials script to see context, namespaces, and output formats in action, then apply the practice namespace manifest.
 
 ---
 
-## Step 1 â€” Run the kubectl essentials script
+## Step 1 — Run the kubectl essentials script
 
 **What happens when you run this:**
 `chmod +x scripts/*.sh` makes the script executable. `kubectl-essentials.sh` runs: `kubectl config current-context` (which cluster am I talking to?), `kubectl get ns` (what namespaces exist?), a sample `kubectl api-resources` filtered view, and a custom-columns node view showing name and status. All read-only.
@@ -54,13 +54,13 @@ Context name printed; namespace list; filtered api-resources; custom node column
 
 ---
 
-## Step 2 â€” Apply the practice namespace
+## Step 2 — Apply the practice namespace
 
 **What happens when you run this:**
 `kubectl apply -f yamls/kubectl-practice-namespace.yaml` creates namespace `kubectl-practice`. `kubectl get ns kubectl-practice` confirms it exists.
 
 **Say:**
-This namespace is the sandbox for kubectl practice commands. Anything you apply here is isolated â€” it won't affect the rest of the cluster. Creating it with `apply` (not `create`) means I can re-run this any time without errors.
+This namespace is the sandbox for kubectl practice commands. Anything you apply here is isolated — it won't affect the rest of the cluster. Creating it with `apply` (not `create`) means I can re-run this any time without errors.
 
 **Run:**
 
@@ -124,7 +124,7 @@ kubectl diff -f manifest.yaml            # diff current vs manifest
 The single most common `kubectl` mistake is running a destructive command on the wrong cluster. Production and staging may use similar resource names. A quick `kubectl delete deployment api` against production because your context was wrong is an incident.
 
 **Build this habit:**
-1. Before any `apply`, `delete`, `patch`, or `exec` â€” run `kubectl config current-context`.
+1. Before any `apply`, `delete`, `patch`, or `exec` — run `kubectl config current-context`.
 2. For anything that modifies state, set a permanent alias in your shell profile:
    ```bash
    alias kctx='kubectl config current-context'
@@ -135,10 +135,10 @@ The single most common `kubectl` mistake is running a destructive command on the
 
 ## Troubleshooting
 
-- **`error: You must be logged in to the server`** â†’ your kubeconfig credentials have expired; re-authenticate with your cluster's auth method (OIDC refresh, `aws eks update-kubeconfig`, `gcloud container clusters get-credentials`, etc.)
-- **`kubectl` commands are slow** â†’ could be API server load, network latency, or slow etcd; check `kubectl cluster-info` response time as a baseline
-- **Wrong output from `-o jsonpath`** â†’ jsonpath syntax is strict; test with `-o json` first to see the full structure, then build the path; use `{range .items[*]}...{end}` for arrays
-- **`kubectl exec` permission denied** â†’ the container doesn't run as a user with shell access, or there's no shell in the image; try `kubectl debug` with a busybox or alpine sidecar instead
+- **`error: You must be logged in to the server`** → your kubeconfig credentials have expired; re-authenticate with your cluster's auth method (OIDC refresh, `aws eks update-kubeconfig`, `gcloud container clusters get-credentials`, etc.)
+- **`kubectl` commands are slow** → could be API server load, network latency, or slow etcd; check `kubectl cluster-info` response time as a baseline
+- **Wrong output from `-o jsonpath`** → jsonpath syntax is strict; test with `-o json` first to see the full structure, then build the path; use `{range .items[*]}...{end}` for arrays
+- **`kubectl exec` permission denied** → the container doesn't run as a user with shell access, or there's no shell in the image; try `kubectl debug` with a busybox or alpine sidecar instead
 
 ---
 
@@ -154,10 +154,10 @@ The single most common `kubectl` mistake is running a destructive command on the
 
 ---
 
-## Video close â€” fast validation
+## Video close — fast validation
 
 **What happens when you run this:**
-Context name; nodes; grep for the practice namespace â€” read-only.
+Context name; nodes; grep for the practice namespace — read-only.
 
 **Say:**
 Same three commands I'd run at the start of any kubectl session: context, nodes, and a quick namespace grep to confirm what I'm working with. These are the orientation checks.
@@ -170,7 +170,7 @@ kubectl get ns | grep kubectl-practice || true
 
 **Expected:**
 
-Context name prints; nodes list; `kubectl-practice` line appears if the namespace still exists â€” `|| true` keeps `grep` from failing the take when you deleted the namespace earlier.
+Context name prints; nodes list; `kubectl-practice` line appears if the namespace still exists — `|| true` keeps `grep` from failing the take when you deleted the namespace earlier.
 
 ---
 
@@ -186,4 +186,4 @@ Context name prints; nodes list; `kubectl-practice` line appears if the namespac
 
 ## Next
 
-[2.2 Cluster architecture](../2.2-cluster-architecture/README.md)
+[2.2 Cluster architecture](../02-cluster-architecture/README.md)

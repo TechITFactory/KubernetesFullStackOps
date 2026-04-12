@@ -1,4 +1,4 @@
-# 2.6.4 Ephemeral Volumes — teaching transcript
+# Ephemeral Volumes — teaching transcript
 
 ## Intro
 
