@@ -24,7 +24,8 @@
 # ── Claude Code project memory (never push) ───────────────────────────────────
 /.claude/
 
-# ── Transcript source files (internal) ───────────────────────────────────────
+# ── Transcript / README files (internal — students use video + lab files) ────
+**/README.md
 **/TRANSCRIPT*.md
 **/*transcript*.md
 
