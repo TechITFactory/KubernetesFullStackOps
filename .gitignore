@@ -1,10 +1,34 @@
-# Course planning artifacts (do not push)
+# ── Author-only: planning docs ────────────────────────────────────────────────
 /COURSE_MASTER_PLAN.md
 /LESSON_TEMPLATE.md
 /TRANSCRIPT_STYLE_GUIDE.md
 /ROADMAP.md
 /KUBERNETES_VERSION_MATRIX.md
+/proposed_plan.md
 
-# Transcript files (do not push)
+# ── Author-only: scripts and tools ───────────────────────────────────────────
+/generate_course_structure.py
+/plan.ps1
+/tools/
+
+# ── Author-only: validation / temp output ─────────────────────────────────────
+/global_validation.txt
+/missing_assets.txt
+/missing_overview.txt
+/validation_results.md
+/tmp_*.txt
+
+# ── Author-only: archived originals ──────────────────────────────────────────
+/_Archived-Official-Docs-Folders/
+
+# ── Claude Code project memory (never push) ───────────────────────────────────
+/.claude/
+
+# ── Transcript source files (internal) ───────────────────────────────────────
 **/TRANSCRIPT*.md
 **/*transcript*.md
+
+# ── OS / editor noise ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp

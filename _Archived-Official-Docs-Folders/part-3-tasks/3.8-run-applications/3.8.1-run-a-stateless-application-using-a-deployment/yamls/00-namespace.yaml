@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: stateless-lab
-  labels:
-    course: kubernetes-full-stack-ops
-    section: "3.8.1"

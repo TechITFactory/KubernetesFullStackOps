@@ -1,7 +1,0 @@
-﻿C:\src\K8sOps\02-Core-Workloads\04-workloads\18-statefulsets\scripts\verify-statefulset-lesson.sh
-C:\src\K8sOps\02-Core-Workloads\04-workloads\19-daemonset\scripts\verify-daemonset-lesson.sh
-C:\src\K8sOps\02-Core-Workloads\04-workloads\20-jobs\scripts\verify-jobs-lesson.sh
-C:\src\K8sOps\02-Core-Workloads\04-workloads\21-automatic-cleanup-for-finished-jobs\scripts\verify-job-ttl-lesson.sh
-C:\src\K8sOps\02-Core-Workloads\04-workloads\22-cronjob\scripts\verify-cronjob-lesson.sh
-C:\src\K8sOps\02-Core-Workloads\04-workloads\23-replicationcontroller\scripts\verify-replicationcontroller-lesson.sh
-C:\src\K8sOps\02-Core-Workloads\04-workloads\24-managing-workloads\yamls\manage-workloads-demo.yaml
